@@ -25,6 +25,10 @@ export class BootScene extends Phaser.Scene {
     const boot = document.getElementById('boot');
     if (boot) boot.style.display = 'none';
 
+    // ⚠️ index.html 的启动看门狗靠这个标记判断「游戏是否真的起来了」。
+    //    不要删：删了之后任何启动失败都会静默停在 Loading，无从诊断。
+    (window as unknown as { __bootDone?: boolean }).__bootDone = true;
+
     this.scene.start('Menu');
   }
 

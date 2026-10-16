@@ -14,10 +14,38 @@ npm run build:pg            # → dist/playgama
 npm run build:taptap        # → dist/taptap
 npm run build:all           # 全部（仅在确实要全平台时才用）
 npm run zip:all             # 打成 dist/<platform>.zip
+npm run serve:cg            # 起本地 HTTP 预览 dist/crazygames（默认 5199 端口）
+npm run standalone          # 打「双击即玩」单文件 HTML → dist/standalone.html
+npm run test:standalone     # 回归测试 file:// 下的两种情形
 ```
 
 > ⚠️ **只构建用户选定的平台**，不要默认 `build:all` —— 未选定的平台产物会被
 > `gate_check.py --stage ship` 判为「超出交付范围」。
+
+## ⚠️ 不能双击 index.html（两次踩同一个坑，已从源头修）
+
+构建产物是**外部 ES module**（`<script type="module" src="./index.js">`）。浏览器在 `file://` 下
+会以 CORS（origin 为 `null`）为由**拒绝执行它，而且不报任何错** —— 页面就永远停在 `Loading…`，
+看起来像卡死。同理，Phaser 加载器对图片 / 音频 / JSON 的 XHR 在 `file://` 下也会失败。
+
+三种正确姿势：
+
+| 想做什么 | 怎么做 |
+|---|---|
+| 本地看效果 | `npm run serve:cg`，然后开 `http://127.0.0.1:5199` |
+| 双击即玩 / 发给别人看 | `npm run standalone` → 打开 `dist/standalone.html`（JS 内联 + 资源全变 data URI，零外部请求） |
+| 提交平台 | 用 `dist/<平台>/` 或 `<平台>.zip`，平台自己会起 HTTP |
+
+**已内置的两道防线**：
+
+1. `index.html` 里的**启动看门狗**：`file://` 直开、脚本抛异常、8 秒未就绪，都会在页面上打印
+   可操作的中文/英文提示，而不是静默停在 Loading。它依赖 `BootScene.create()` 里的
+   `window.__bootDone = true`，**不要删那个标记**。
+2. `scripts/test-standalone.mjs`：自动断言「单文件版在 file:// 下能跑」+
+   「常规产物在 file:// 下会给出提示」。改完构建配置记得跑一次。
+
+> 项目落地后，请把 `test-standalone.mjs` 的断言补成真实交互（进关卡 + 点一下真的生效）——
+> 「能显示菜单」不等于「能玩」。
 
 ## 目录职责
 
@@ -30,6 +58,11 @@ npm run zip:all             # 打成 dist/<platform>.zip
 | `src/game/scenes/` | 场景：Boot / Menu / Play / GameOver |
 | `src/game/util.ts` | 从 registry 取平台实例、存档读写、缩放工具 |
 | `scripts/zip-all.mjs` | 打包脚本 |
+| `scripts/serve.mjs` | 本地静态 HTTP 服务（预览用，产物不能双击打开） |
+| `scripts/build-standalone.mjs` | 把构建产物内联成单文件 HTML（双击即玩） |
+| `scripts/test-standalone.mjs` | file:// 启动行为回归测试 |
+| `vite.standalone.config.ts` | 单文件版的构建配置（资源全部内联成 data URI） |
+| `index.html` | 含启动看门狗：启动失败必须给出可操作提示，不得静默停在 Loading |
 
 ## 平台适配器
 

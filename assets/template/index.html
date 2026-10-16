@@ -49,5 +49,57 @@
   <div id="game"></div>
   <div id="boot">Loading…</div>
   <script type="module" src="/src/main.ts"></script>
+  <script>
+    /*
+     * 启动看门狗 —— 存在的唯一目的：让「没起来」这件事可见、可诊断。
+     *
+     * 踩过的坑（两次都栽在这）：构建产物是外部 ES module，浏览器在 file:// 下会以 CORS
+     * 为由拒绝执行，而且**不报任何错**，页面就永远停在 Loading…，看起来像"卡死"。
+     * 这里覆盖三种失败：file:// 直开、脚本抛异常、超时未就绪。
+     * 单文件版（window.__STANDALONE__）由 scripts/build-standalone.mjs 标记，跳过 file:// 检查。
+     */
+    (function () {
+      var TIMEOUT_MS = 8000;
+      function el() { return document.getElementById('boot'); }
+      /* 与脚本放置位置无关：即使本脚本早于 #boot 解析，也等 DOM 就绪再写 */
+      function fail(title, detail) {
+        var render = function () {
+          var node = el();
+          if (!node) return;
+          node.style.pointerEvents = 'auto';
+          node.innerHTML =
+            '<div style="max-width:540px;padding:26px;text-align:left">' +
+            '<div style="font-size:17px;font-weight:700;color:#ff5c5c;margin-bottom:12px">' + title + '</div>' +
+            '<div style="font-size:13px;color:#8b93a8;line-height:1.8">' + detail + '</div>' +
+            '</div>';
+        };
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', render);
+        else render();
+      }
+      if (location.protocol === 'file:' && !window.__STANDALONE__) {
+        fail(
+          'This build must be served over HTTP — it was opened from the file system.',
+          'The build output is an external ES module, which browsers refuse to execute under ' +
+          '<code>file://</code> (CORS, origin <code>null</code>). Nothing errors out — the page just waits forever.<br><br>' +
+          '&#8226; <b>To preview:</b> serve the folder over HTTP, e.g. <code>npm run serve:cg</code> or <code>npx serve .</code><br>' +
+          '&#8226; <b>To double-click and play:</b> run <code>npm run standalone</code> and open the generated single-file HTML'
+        );
+        return;
+      }
+      window.addEventListener('error', function (e) {
+        if (window.__bootDone) return;
+        fail('The game failed to start.', String((e && (e.message || e.error)) || 'Unknown error'));
+      });
+      setTimeout(function () {
+        if (!window.__bootDone) {
+          fail(
+            'The game did not start within ' + (TIMEOUT_MS / 1000) + 's.',
+            'Open the browser console for details. If it is a network issue, check that all build ' +
+            'assets are reachable and that no request is blocked.'
+          );
+        }
+      }, TIMEOUT_MS);
+    })();
+  </script>
 </body>
 </html>

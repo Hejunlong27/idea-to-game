@@ -79,6 +79,39 @@ npm run build:taptap    # → dist/taptap           (mode taptap)
 npm run build:cg && npm run build:taptap
 ```
 
+### 5b. 确认「双击即玩」与启动看门狗就位（★ 两次踩过的坑）
+
+**症状**：用户双击 `dist/crazygames/index.html`，页面永远停在 `Loading…`，控制台一句报错都没有。
+
+**根因**：构建产物是外部 ES module（`<script type="module" src="./index.js">`）。
+浏览器在 `file://` 下以 CORS（origin 为 `null`）**拒绝执行它，且不产生任何报错**。
+Phaser 加载器对图片 / 音频 / JSON 的 XHR 在 `file://` 下同样会失败。
+
+**两道防线，模板已内置，不得删除：**
+
+1. **启动看门狗**（`index.html`）—— 让失败可见、可诊断：
+   - `location.protocol === 'file:'` 且非单文件版 → 立即给出可操作提示
+   - `window.error` → 打印错误信息
+   - 8 秒未就绪 → 打印超时提示
+   - **依赖 `BootScene.create()` 里的 `window.__bootDone = true`**，删了这个标记看门狗就失效
+
+2. **单文件版**（`npm run standalone`）—— 给用户一条真的能走的路：
+
+   ```bash
+   npm run standalone        # → dist/standalone.html（约等于 bundle 体积，全部内联）
+   npm run test:standalone   # 必须通过：file:// 下能跑 + 常规产物会给提示
+   ```
+
+   `vite.standalone.config.ts` 把 `assetsInlineLimit` 拉到极大，使 mp3 / png 等全部变成 data URI；
+   `scripts/build-standalone.mjs` 再把 JS 整段内联进 HTML，并在结尾**自检有没有残留的外部文件引用**
+   （有残留会退出码 2 并列出文件，避免"以为内联了其实没有"）。
+
+   ⚠️ 内联大段 JS 时**必须用函数形式的 `String.replace`** —— 传字符串时 `$&` / `$'` / `` $` ``
+   会被当成替换模式，压缩后的 bundle 里必然出现这些序列，会把后面的 HTML 塞进 JS 中间。
+
+**交付时必须把两条路径都写清楚**：`npm run serve:cg` 起 HTTP 看效果；`npm run standalone` 拿双击即玩的单文件。
+不要只丢一个 `dist/` 目录给用户。
+
 ### 6. 核对并填入各平台 SDK 的 script 标签
 
 `vite.config.ts` 中的 `SDK_SCRIPTS` 常量负责按构建模式把平台 SDK 注入 `index.html`。
@@ -144,6 +177,16 @@ export interface PlatformBridge {
 - [ ] `src/game/` 内无 `src/platform/` 引用
 - [ ] **各平台 SDK script 标签 URL 已对照官方文档核对**（taptap / playgama 应为空）
 - [ ] `npm run build:cg` 后 `dist/crazygames/index.html` 中出现 SDK script 标签
+- [ ] **`index.html` 含启动看门狗，且 `BootScene.create()` 设了 `window.__bootDone = true`**
+- [ ] **`npm run standalone` 跑通，`npm run test:standalone` 全 PASS**
 - [ ] 每个产物中能检索到对应的 `i2g-platform:<key>` 标识
 - [ ] `index.html` 已含 `user-select: none` 与移动端 viewport 设置
 - [ ] 构建产物无绝对路径
+
+## 常见错误
+
+| 错误 | 后果 | 纠正 |
+|---|---|---|
+| 把 `dist/` 目录直接交给用户，没说怎么打开 | 用户双击 index.html →「卡在 Loading」，来回排查 | 交付说明必须写清 `serve:cg`（HTTP 预览）与 `standalone`（双击即玩）两条路径 |
+| 删掉启动看门狗或 `window.__bootDone` | 启动失败重新变成静默停滞，无从诊断 | 这两样是诊断基础设施，不要动 |
+| 单文件版忘了 `assetsInlineLimit` | 产出的 HTML 仍会去请求外部 mp3/png，`file://` 下静默缺资源 | `build-standalone.mjs` 结尾有自检，看到 WARN 就必须修 |

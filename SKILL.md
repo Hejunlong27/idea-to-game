@@ -92,7 +92,12 @@ agent_created: true
 6. **门禁必须人工**：G0、G1、G2 三处必须停下来向用户确认，不得自行通过。
 7. **可降级**：生图或配乐不可用时退化为程序化占位（纯色几何 + Web Audio 合成音），游戏必须仍能运行。
 8. **不自动提交平台**：`modules/11-ship.md` 只产出 zip 与自检清单。实际提交（含 TapTap 前置备案、Poki 提报、taptap-cli 上传）永远由用户执行。
-9. **SDK script URL 必须核对**：`vite.config.ts` 的 `SDK_SCRIPTS` 中预填了各平台 SDK 的 CDN 地址，提交前必须对照官方文档核对一次 —— 平台会更换 CDN。TapTap 与 Playgama 故意留空，原因见 `modules/02-scaffold.md`。
+9. **SDK script URL 必须核对**：`vite.config.ts` 的 `SDK_SCRIPTS` 中预填了各平台 SDK 的 CDN 地址，提交前必须对照官方文档核对一次 —— 平台会更换 CDN。
+10. **产物不能双击打开，必须给用户一条能走的路径**：构建产物是外部 ES module，浏览器在 `file://` 下会以 CORS（origin `null`）**拒绝执行且不报错**，页面永远停在 `Loading…`。
+    因此模板内置了两道防线，**不得删除**：
+    - `index.html` 的**启动看门狗**（file:// 直开 / 脚本异常 / 8 秒超时 → 页面给出可操作提示，而不是静默 Loading）
+    - `npm run standalone` 出的**单文件 HTML**（JS 内联 + 资源全变 data URI，双击即玩）
+    交付时**必须**在交付说明里给出这两条路径；`npm run test:standalone` 必须通过。TapTap 与 Playgama 故意留空，原因见 `modules/02-scaffold.md`。
 
 ## 模块索引
 
@@ -103,7 +108,7 @@ agent_created: true
 | 编排 | `references/pipeline.md` | 阶段定义、门禁规则、回退策略、并行关系 | — |
 | **P-1** | **`modules/00-platforms.md`** | **确认目标平台（G0）、定体积预算、写平台计划** | `docs/00-platforms/platform-plan.md` |
 | P0 | `modules/01-brief.md` | idea → 一页 GDD + 范围边界 + 素材清单 | `docs/01-brief/` |
-| P1 | `modules/02-scaffold.md` | 项目骨架 + 平台适配层 + 目标平台构建脚本 | `src/`、`package.json` |
+| P1 | `modules/02-scaffold.md` | 项目骨架 + 平台适配层 + 目标平台构建脚本 + **单文件版与启动看门狗** | `src/`、`package.json` |
 | P1 | `modules/03-art-bible.md` | 参考图 → 色板 + 风格规范 + 提示词模板 | `docs/02-art/` |
 | P2 | `modules/04-core-loop.md` | 灰盒玩法主循环实现 | `src/game/` |
 | P2 | `modules/05-art-forge.md` | 按 Art Bible 生图 | `assets/raw/` |
@@ -111,7 +116,7 @@ agent_created: true
 | P2 | `modules/07-audio-forge.md` | BGM + 音效 | `assets/audio/` |
 | P3 | `modules/08-polish.md` | 手感 juice + UI 接线 + 难度曲线 + 存档 | 优化后的 `src/` |
 | P3 | `modules/09-perf-audit.md` | 逐平台体积 / 帧率 / 内存审计 | `docs/06-perf/report.md` |
-| P4 | `modules/10-qa.md` | 自动化走查 + 试玩链接 | `docs/07-qa/report.html` |
+| P4 | `modules/10-qa.md` | 自动化走查 + **file:// 启动行为回归** + 试玩链接 | `docs/07-qa/report.html` |
 | P4 | `modules/11-ship.md` | 按选定平台打包 + 过审自检 | `dist/<平台>.zip`、`docs/08-ship/` |
 
 ## 快速开始
@@ -233,6 +238,7 @@ python <skill>/scripts/precheck.py --dir dist/taptap     --platform taptap
 | 某阶段连续失败 3 次 | 停止并上报失败原因与建议，交人工决策 |
 | 平台 SDK 加载失败 | 适配层捕获异常静默降级，游戏照常可玩 |
 | TapTap 无 `tap` 全局对象 | 属预期（网页游戏形态），自动降级为本地行为 |
+| **用户双击 `index.html` 说"卡在 Loading"** | 属预期（`file://` 拦掉外部 ES module）。**不要**去改游戏代码：让用户跑 `npm run serve:cg` 走 HTTP，或 `npm run standalone` 拿单文件版。若页面上没有提示文案，说明启动看门狗被删了，先补回来 |
 
 ## 资源索引
 
