@@ -41,7 +41,7 @@ function sdk() {
 
 export function createCrazyGamesPlatform(): PlatformBridge {
   return {
-    name: 'crazygames',
+    name: 'i2g-platform:crazygames',
 
     async init() {
       if (!window.CrazyGames?.SDK) {

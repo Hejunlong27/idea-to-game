@@ -1,6 +1,13 @@
 # 模块 01 · 立项（brief）
 
-**阶段**：P0 ｜ **前置**：无 ｜ **产出**：`docs/01-brief/gdd.md`、`docs/01-brief/scope.json` ｜ **后置门禁**：G1
+**阶段**：P0 ｜ **前置**：**门禁 G0 通过（`delivery.platform_confirmed: true`）** ｜ **产出**：`docs/01-brief/gdd.md`、`docs/01-brief/scope.json` ｜ **后置门禁**：G1
+
+## 前置检查（不满足则退回）
+
+- [ ] `docs/00-platforms/platform-plan.md` 存在
+- [ ] `state.yaml` 的 `delivery.platforms` 非空且 `platform_confirmed: true`
+
+**不满足时不要继续** —— 回到 `modules/00-platforms.md`，先向用户确认目标平台。
 
 ## 目标
 
@@ -58,17 +65,20 @@ python <skill>/scripts/gate_check.py --project <project> --stage brief
 
 ## 自检
 
+- [ ] G0 已通过（`delivery.platform_confirmed: true`）
 - [ ] GDD 八个必答问题全部有答案
 - [ ] `scope.json` 的 `assets` 清单能覆盖玩法所需（无遗漏、无冗余）
 - [ ] MVP 功能数 ≤5
 - [ ] `out_of_scope` 非空（说明确实做了取舍）
+- [ ] GDD 中记录了**用户选定的平台**，且玩法的屏幕方向与平台要求相容
 - [ ] 已获用户明确确认
 
 ## 常见错误
 
 | 错误 | 后果 | 纠正 |
 |---|---|---|
+| **跳过 G0 直接立项** | 交付包范围与用户预期不符，返工 | 必须先确认平台 |
 | 范围过大（做了 8 个功能） | 做不完或质量差 | 砍到 ≤5 项 |
 | 素材清单漏项 | P2 生图后才发现缺素材，返工 | 逐条对照玩法推演所需素材 |
-| 未做差异化（同款游戏） | IP 风险 | 至少一处机制或美术上的差异 |
+| 未做差异化（同款游戏） | IP 风险；GD 会因同款拒收 | 至少一处机制或美术上的差异 |
 | 跳过 G1 直接开工 | 方向错了全白干 | 必须停下来问 |

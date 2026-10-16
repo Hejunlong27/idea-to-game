@@ -110,11 +110,75 @@ Unity、Defold、Godot、Phaser、PlayCanvas、Construct、Pixi.js、BabylonJS�
 - **SDK 接入方式**：Playgama Bridge 通常通过 script 标签挂到 `window.bridge`。模板的适配器只读取 `window.bridge`，不做网络请求 —— 目标是 Playgama 时需自行在 `index.html` 加入 Bridge SDK 的 script 标签，或 `npm i @playgama/bridge` 后改为静态 import
 - 发布后进入分发网络，伙伴通过可分享链接嵌入
 
+## TapTap（国内）
+
+体量：活跃玩家 4737 万+、入驻开发者 22 万+、上线游戏 28 万+。**平台不抽成**（收益全部归开发者）。
+
+### 两种 Web 形态（同一个构建可覆盖两者）
+
+| 形态 | 说明 | 是否需要 SDK | 提交方式 |
+|---|---|---|---|
+| **网页游戏（H5 / WEB）** | 即点即玩，TapTap 作为链接跳转/内嵌宿主。适合轻量玩法与活动内容 | **不需要**，也拿不到平台能力 | 链接与版本快速发布 |
+| **Tap 小游戏（MINI GAMES）** | 运行在 TapTap 小游戏容器内，从内容与推荐场景直接进入游戏 | **需要**，宿主注入全局对象 `tap` | 上传包体 → 自动化测试 / 自测 → 提审 |
+
+> 模板的 TapTap 适配器**自动探测**：没有 `tap` 全局对象时降级为本地行为（即网页游戏形态），有则启用平台能力。**同一份包两处都能用。**
+
+### 硬约束
+
+- **首包包体 < 60MB（压缩后）**；官方"优秀数据参考"是 **20MB**
+- 启动越快取消率越低；提供了 Wasm 分包工具优化首包
+- 调试：上传后台后可做「自动化测试」与「自测」，自测支持 Chrome / Safari 与扫码真机调试
+- 正式上架**必须前置完成小游戏前置备案**（中国大陆合规要求，TapTap 提供一站式备案服务）
+- 宣传物料需完整上传；有独立的小游戏审核规范
+- Tap 小游戏 SDK 由容器注入，**不要自行引入 SDK script**（`vite.config.ts` 的 `SDK_SCRIPTS.taptap` 故意留空）
+
+### 平台能力（Tap 小游戏，按需接入）
+
+| 类别 | 能力 |
+|---|---|
+| **必接** | 添加到桌面 |
+| 变现 | 广告（Banner / 激励视频 / 插屏 / 原生模板）；**广告位需先在 Dirichlet 广告平台 `https://ssp.dirichlet.cn/` 创建并拿到 `adUnitId`**，再提交广告位审核 |
+| 生态 | TapTap 登录、排行榜、好友与分享、成就、多人联机 |
+| 通用 | 云存档、离线游玩 |
+
+广告接入成本参考：云存档 0.5–1 天、排行榜 0.5–1 天、登录 0.5–1 天。插屏建议展示间隔 **≥2–3 分钟**，激励视频让用户主动选择。
+
+### 官方 CLI（可选，但推荐）
+
+TapTap 提供官方 CLI 与配套 AI 能力，可做半自动上架：
+
+```bash
+npm i -g @taptap/cli --registry=https://registry.npmjs.org/
+taptap-cli auth login
+taptap-cli version
+taptap-cli skills list          # 查看随 CLI 同步的 AI 能力说明
+```
+
+关键约束：上传与创建属**写操作**，必须先 `--dry-run` 预览，用户确认后加 `--yes`；
+正式提审是 high-risk-write，需 `prepare-review-snapshot` → `precheck-app-review` → `submit-app-review` 三步，
+并原样携带 `review_fingerprint`。
+
+> ⚠️ 涉及账号登录与提审，属**对外发布动作**，必须由用户自己执行，技能不得代跑。
+
+### 文档入口
+
+- 小游戏文档指引：`https://developer.taptap.cn/minigameapidoc/quick-start/document-guide/`
+- 开发者服务首页：`https://developer.taptap.cn/`
+- CLI 文档：`https://developer.taptap.cn/v3/cli/`
+
 ## 平台投递顺序建议
+
+### 海外优先
 
 1. **CrazyGames Basic Launch** —— 门槛最低，7–21 天拿真实数据
 2. **Playgama** —— 一次上传铺量长尾，零额外成本
 3. **Poki** —— 准备截图与文案后提报，价值最高
 4. **GameDistribution** —— 做差异化版本后提交（避免同款判定）
 
+### 国内优先
+
+1. **TapTap 网页游戏（H5/WEB）** —— 零 SDK、无需备案，最快拿到社区反馈
+2. **TapTap 小游戏** —— 完成前置备案后上，才能拿到 SDK 生态能力与广告变现
+
 **不要第一天把同一份包全平台投递**：GD 拒收同款，CG/Poki 常有首发或独家窗口要求。
+国内平台另有备案周期，需提前排期。

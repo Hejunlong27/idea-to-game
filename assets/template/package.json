@@ -11,7 +11,8 @@
     "build:poki": "vite build --mode poki --outDir dist/poki",
     "build:pg": "vite build --mode playgama --outDir dist/playgama",
     "build:gd": "vite build --mode gamedistribution --outDir dist/gamedistribution",
-    "build:all": "npm run build:cg && npm run build:poki && npm run build:pg && npm run build:gd",
+    "build:taptap": "vite build --mode taptap --outDir dist/taptap",
+    "build:all": "npm run build:cg && npm run build:poki && npm run build:gd && npm run build:pg && npm run build:taptap",
     "zip:all": "node scripts/zip-all.mjs",
     "preview:cg": "npx --yes serve dist/crazygames -l 5173"
   },

@@ -8,7 +8,7 @@ const KEY = 'i2g:save';
 
 export function createMockPlatform(): PlatformBridge {
   return {
-    name: 'mock',
+    name: 'i2g-platform:mock',
 
     async init() {
       // eslint-disable-next-line no-console

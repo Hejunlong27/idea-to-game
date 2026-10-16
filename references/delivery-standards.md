@@ -2,6 +2,18 @@
 
 逐档验收。低档未通过不得进入高档。
 
+> **验收范围 = 用户在 G0 选定的平台**。体积/帧率等硬指标一律取**选定平台中最严的一条**作为预算。
+
+## 前置：平台确认（G0）
+
+进入 L1 之前必须满足：
+
+- [ ] 已向用户输出技能支持的平台清单
+- [ ] 用户已明确回复目标平台（`delivery.platforms` 非空）
+- [ ] `delivery.platform_confirmed: true`
+- [ ] `docs/00-platforms/platform-plan.md` 已产出，含全程体积预算与投递顺序
+- [ ] 若含 `taptap`，已提醒前置备案周期；若含 `poki`，已提醒需准备 3 张实机截图；若含 `gamedistribution`，已提醒需做差异化版本
+
 ## L1 · 可玩（Playable）
 
 > 目标：证明这个玩法成立。素材可以是几何占位。
@@ -37,18 +49,20 @@
 - [ ] 存档可用（localStorage 或平台云存档），刷新后进度保留
 - [ ] 控制台零报错、零未捕获异常
 - [ ] `src/game/` 内无平台 SDK 引用
-- [ ] **首包 ≤ 20MB**
+- [ ] **首包满足选定平台中最严的红线**（`delivery.size_budget_mb`）
 - [ ] 总文件数 ≤ 1500
 - [ ] 构建产物全部相对路径
 - [ ] 4GB 内存基准下稳定 60fps
 
 ## L3 · 可过审（Submittable）
 
-> 目标：能直接提交 CrazyGames / Poki / GameDistribution。
+> 目标：能直接提交**用户选定的那些平台**。
 
-- [ ] `scripts/precheck.py` 自检全绿
+- [ ] `scripts/precheck.py` 对**每个选定平台**分别自检、全部全绿
+- [ ] **交付包平台范围与 `delivery.platforms` 完全一致**（不多不少）
 - [ ] 每平台独立 zip，解压后本地可直接运行
-- [ ] SDK 集成正确：`gameplayStart` / `gameplayStop` 事件在正确时机触发
+- [ ] 每个 zip 内含正确的适配层标识（`i2g-platform:<key>`），无 `i2g-platform:mock`
+- [ ] SDK 集成正确：`gameplayStart` / `gameplayStop` 事件在正确时机触发（TapTap 不强制）
 - [ ] 广告调用有失败降级（广告拦截器场景下游戏照常可玩）
 - [ ] iOS 音频恢复逻辑已实现：在 `touchend` / `click` 回调内调用 `audioContext.resume()`
 - [ ] `body` 已加 `user-select: none`（含 -webkit/-moz/-ms 前缀）
@@ -56,6 +70,7 @@
 - [ ] 商店素材齐备：标题 ≤60 字符、简短描述 ≤120、详细描述 ≤500、3 张实机截图（PNG/JPEG/WebP，单张 ≤5MiB）
 - [ ] 隐私政策页面（若收集任何数据）
 - [ ] 素材版权链清晰，AI 生成素材保留生成记录
+- [ ] **国内平台专项**：TapTap 小游戏前置备案已完成；广告位已在 Dirichlet 创建并拿到 `adUnitId`
 
 ## 最终交付报告
 

@@ -8,15 +8,19 @@ import { defineConfig, type Plugin } from 'vite';
  *    Poki       : https://sdk.poki.com/
  *    Playgama   : https://wiki.playgama.com/playgama/bridge-sdk/getting-started
  *    GD         : https://gamedistribution.com/developers/
+ *    TapTap     : https://developer.taptap.cn/minigameapidoc/quick-start/document-guide/
  *
- * 留空表示该平台不使用 script 标签注入（如 Playgama 需自行加入 Bridge SDK，
- * 或改用 npm 包后静态 import）。
+ * 留空表示该平台不使用 script 标签注入：
+ *   - playgama：需自行加入 Bridge SDK script，或改用 npm 包静态 import
+ *   - taptap  ：网页游戏形态无需 SDK；Tap 小游戏形态由 TapTap 容器注入全局 `tap`，
+ *               不需要也不允许自行引入 SDK script
  */
 const SDK_SCRIPTS: Record<string, string> = {
   crazygames: 'https://sdk.crazygames.com/crazygames-sdk-v3.js',
   poki: 'https://game-cdn.poki.com/scripts/v2/poki-sdk.js',
   gamedistribution: 'https://html5.api.gamedistribution.com/main.min.js',
   playgama: '',
+  taptap: '',
 };
 
 function sdkInjectPlugin(mode: string): Plugin {

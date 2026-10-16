@@ -118,6 +118,76 @@ def iter_files(root: Path):
 TEXT_EXT = {".html", ".htm", ".js", ".mjs", ".cjs", ".css", ".json", ".txt", ".xml", ".svg"}
 
 
+# ---------------------------------------------------------------- 平台定义
+#
+# 单一真相源：SKILL.md 的「支持的平台」表、precheck.py、measure_bundle.py
+# 都从这里取数，新增平台只改这一处。
+#
+# marker      —— 构建产物中必须出现的适配层标识（防止误用 mock 或其他平台包）
+# sdk_marker  —— 平台 SDK 的 CDN / 全局对象标识（第三方 SDK 类平台才有）
+# initial_mb  —— 首包上限（MB）；mobile_mb 为移动端首页资格上限，无此规则则同 initial_mb
+PLATFORMS = {
+    "crazygames": {
+        "label": "CrazyGames",
+        "region": "海外",
+        "total_mb": 250,
+        "files": 1500,
+        "initial_mb": 50,
+        "mobile_mb": 20,
+        "sdk_markers": ["sdk.crazygames.com", "CrazyGames.SDK"],
+        "notes": "两阶段发布：Basic Launch（无广告无收入）→ Full Launch（开广告分成）",
+    },
+    "poki": {
+        "label": "Poki",
+        "region": "海外",
+        "total_mb": 250,
+        "files": 1500,
+        "initial_mb": 50,
+        "mobile_mb": 20,
+        "sdk_markers": ["game-cdn.poki.com", "PokiSDK"],
+        "notes": "提报制，需可玩构建链接 + 3 张实机截图",
+    },
+    "gamedistribution": {
+        "label": "GameDistribution",
+        "region": "海外",
+        "total_mb": 250,
+        "files": 1500,
+        "initial_mb": 50,
+        "mobile_mb": 20,
+        "sdk_markers": ["html5.api.gamedistribution.com", "gdsdk", "GD_OPTIONS"],
+        "notes": "SDK 强制集成；审核最长 3 周；不接受目录内同款游戏",
+    },
+    "playgama": {
+        "label": "Playgama",
+        "region": "海外",
+        "total_mb": 250,
+        "files": 1500,
+        "initial_mb": 50,
+        "mobile_mb": 20,
+        "sdk_markers": ["playgama", "bridge"],
+        "notes": "一套 SDK 覆盖 25+ 平台；不代发 Poki / CrazyGames",
+    },
+    "taptap": {
+        "label": "TapTap",
+        "region": "国内",
+        "total_mb": 250,
+        "files": 1500,
+        "initial_mb": 60,
+        "mobile_mb": 60,
+        "sdk_markers": [],  # 由宿主容器注入 tap 全局对象，无 CDN script
+        "notes": "网页游戏 H5 无需 SDK；Tap 小游戏需前置备案（中国大陆合规）",
+    },
+}
+
+PLATFORM_KEYS = list(PLATFORMS.keys())
+
+
+def platform_conf(key: str) -> dict:
+    if key not in PLATFORMS:
+        die(f"未知平台 {key}；可选：{', '.join(PLATFORM_KEYS)}")
+    return PLATFORMS[key]
+
+
 def scan_absolute_paths(root: Path):
     """扫描构建产物中的**根绝对路径**引用。
 

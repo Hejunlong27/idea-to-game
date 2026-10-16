@@ -20,7 +20,7 @@ const KEY = 'i2g:save';
 
 export function createGameDistributionPlatform(): PlatformBridge {
   return {
-    name: 'gamedistribution',
+    name: 'i2g-platform:gamedistribution',
 
     async init() {
       if (!window.gdsdk) {

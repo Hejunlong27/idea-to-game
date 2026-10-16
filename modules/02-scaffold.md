@@ -52,21 +52,32 @@ npm run dev
 | `platform/mock.ts` | 本地开发用（广告直接返回成功，存档走 localStorage） |
 | `platform/crazygames.ts` | CrazyGames SDK v3 |
 | `platform/poki.ts` | Poki SDK v2 |
-| `platform/playgama.ts` | Playgama Bridge |
+| `platform/playgama.ts` | Playgama Bridge（读 `window.bridge`） |
 | `platform/gamedistribution.ts` | GameDistribution SDK |
+| `platform/taptap.ts` | TapTap（读宿主注入的全局 `tap`；网页游戏形态自动降级） |
 
 平台实例由 `src/main.ts` 通过 `game.registry.set('platform', ...)` 注入；场景用 `src/game/util.ts` 的 `bridge(scene)` 读取。
 
+**适配器必须保留 `name: 'i2g-platform:<key>'` 标识** —— `precheck.py` 靠它在构建产物里判定适配层是否被正确注入，比猜字符串可靠。
+
 ### 5. 确认构建脚本
 
+模板提供 5 个平台目标：
+
 ```bash
-npm run build:cg      # → dist/crazygames
-npm run build:poki    # → dist/poki
-npm run build:pg      # → dist/playgama
-npm run build:all     # 全部
+npm run build:cg        # → dist/crazygames       (mode crazygames)
+npm run build:poki      # → dist/poki             (mode poki)
+npm run build:gd        # → dist/gamedistribution (mode gamedistribution)
+npm run build:pg        # → dist/playgama         (mode playgama)
+npm run build:taptap    # → dist/taptap           (mode taptap)
 ```
 
-三个脚本都必须能跑通。
+**只跑用户在 G0 选定的那几个目标**，不要 `build:all` 一把梭 —— 未选定的平台产物会被 `gate_check.py --stage ship` 判为「超出交付范围」。
+
+```bash
+# 示例：用户只选了 crazygames 与 taptap
+npm run build:cg && npm run build:taptap
+```
 
 ### 6. 核对并填入各平台 SDK 的 script 标签
 
@@ -79,12 +90,15 @@ npm run build:all     # 全部
 | crazygames | `https://sdk.crazygames.com/crazygames-sdk-v3.js` | `docs.crazygames.com` |
 | poki | `https://game-cdn.poki.com/scripts/v2/poki-sdk.js` | `sdk.poki.com` |
 | gamedistribution | `https://html5.api.gamedistribution.com/main.min.js` | `gamedistribution.com/developers/` |
-| playgama | 留空 | 需自行在 `index.html` 加入 Bridge SDK script，或改用 npm 包静态 import |
+| playgama | **留空** | 需自行在 `index.html` 加入 Bridge SDK script，或改用 npm 包静态 import |
+| taptap | **留空（故意）** | Tap 小游戏的 SDK 由 TapTap 容器注入全局 `tap`；**自行引入会被判违规**。网页游戏形态本就不需要 SDK |
 
 核对方式：构建一次，检查 `dist/<platform>/index.html` 的 `</head>` 前是否出现对应 script 标签。
 
 ```bash
 npm run build:cg && grep -o 'sdk.crazygames.com[^"]*' dist/crazygames/index.html
+# taptap 应确认「没有」外部 SDK script
+npm run build:taptap && grep -c 'taptap' dist/taptap/index.html
 ```
 
 ### 7. 写架构说明
@@ -119,15 +133,17 @@ export interface PlatformBridge {
 **规则**：
 - `src/game/` 内禁止 import `src/platform/`；需要平台能力时用 `src/game/util.ts` 的 `bridge(scene)`
 - 所有 SDK 调用必须 try/catch，失败时静默降级（广告拦截器场景下游戏必须照常可玩）
-- 新增平台 = 新增一个 adapter 文件 + 在 `platform/index.ts` 注册 + 加一条 `build:<name>` 脚本，不改玩法代码
+- 适配器的 `name` 必须为 `i2g-platform:<key>`（供构建产物校验）
+- 新增平台 = 新增一个 adapter 文件 + 在 `platform/index.ts` 的 `PLATFORM_TARGETS` 与 switch 注册 + 加一条 `build:<name>` 脚本 + 在 `_common.py` 的 `PLATFORMS` 表登记，不改玩法代码
 
 ## 自检
 
 - [ ] `npm run dev` 零报错
-- [ ] 三个 `build:*` 脚本均可执行
-- [ ] 适配层文件齐备（`src/types.ts` + `src/platform/` 6 个文件）
+- [ ] **用户在 G0 选定的每个平台，其 `build:*` 脚本都能跑通**
+- [ ] 适配层文件齐备（`src/types.ts` + `src/platform/` 共 7 个文件，含 `taptap.ts`）
 - [ ] `src/game/` 内无 `src/platform/` 引用
-- [ ] **各平台 SDK script 标签 URL 已对照官方文档核对**
+- [ ] **各平台 SDK script 标签 URL 已对照官方文档核对**（taptap / playgama 应为空）
 - [ ] `npm run build:cg` 后 `dist/crazygames/index.html` 中出现 SDK script 标签
+- [ ] 每个产物中能检索到对应的 `i2g-platform:<key>` 标识
 - [ ] `index.html` 已含 `user-select: none` 与移动端 viewport 设置
 - [ ] 构建产物无绝对路径

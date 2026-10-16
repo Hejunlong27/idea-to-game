@@ -27,7 +27,7 @@ export function createPokiPlatform(): PlatformBridge {
   let ready = false;
 
   return {
-    name: 'poki',
+    name: 'i2g-platform:poki',
 
     async init() {
       if (!window.PokiSDK) {

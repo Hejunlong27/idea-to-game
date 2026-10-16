@@ -10,6 +10,7 @@
 │  ├─ state.yaml
 │  └─ logs/
 ├─ docs/
+│  ├─ 00-platforms/ platform-plan.md
 │  ├─ 01-brief/   gdd.md  scope.json
 │  ├─ 02-art/     art-bible.md  palette.json  prompts/
 │  ├─ 03-scaffold/ architecture.md
@@ -28,7 +29,7 @@
 │  ├─ processed/  切图抠图后
 │  ├─ atlas/      图集 png + json
 │  └─ audio/{bgm,sfx}/
-├─ dist/{crazygames,poki,playgama}/
+├─ dist/<选定平台>/
 └─ package.json
 ```
 
@@ -56,15 +57,28 @@ stages:
   ship:         { status: pending }
 
 delivery:
-  tier: L2_shippable
-  platforms: [crazygames, poki, playgama]
+  tier: L3_submittable
+  # ★ 平台确认（门禁 G0）—— 交付包严格按此清单产出，不多不少
+  platform_confirmed: true
+  platforms: [crazygames, taptap]
+  platform_notes:
+    taptap: "需前置备案，排期在后；先发网页游戏形态拿反馈"
+  # 全程体积预算 = 选定平台中最严的一条（此处 crazygames 移动端首页 20MB）
+  size_budget_mb: 20
 ```
 
 字段规则：
 - `status`：`pending` / `in_progress` / `done` / `failed` / `degraded` / `skipped`
 - `gate`：仅 `brief` 与 `art_bible` 阶段有，取值 `G1_passed` / `G2_passed`
 - `retries`：仅 `perf_audit` 使用，回退计数
+- `delivery.platforms`：**交付契约的核心字段**。合法值只有 `crazygames` / `poki` / `gamedistribution` / `playgama` / `taptap`
+- `delivery.platform_confirmed`：用户是否已明确回复平台（G0 门禁）。`false` 时禁止进入 P0
+- `delivery.size_budget_mb`：全程体积预算，取所有选定平台中**最严**的一条
 - `degraded` 必须在最终交付报告中显式列出
+
+## `docs/00-platforms/platform-plan.md`
+
+至少包含：选定平台清单、各平台红线与**取最严后的全程预算**、需要用户自己完成的前置事项（实名认证 / 前置备案 / 广告位创建 / 提报）、投递顺序与排期、各平台商店素材要求。
 
 ## `docs/01-brief/scope.json`
 
@@ -135,13 +149,19 @@ Phaser 标准纹理图集格式（TexturePacker JSON Hash）：
 
 | 路径 | 内容 |
 |---|---|
-| `dist/<platform>/` | 该平台可独立运行的构建产物 |
-| `dist/<platform>.zip` | 提交用压缩包（内部相对路径，根目录直接是 index.html） |
+| `dist/<平台>/` | 该平台可独立运行的构建产物 |
+| `dist/<平台>.zip` | 提交用压缩包（内部相对路径，根目录直接是 index.html） |
 | `docs/08-ship/submit-checklist.md` | 过审自检清单，逐条打勾并附实测值 |
 | `docs/08-ship/store-copy.md` | 标题（≤60 字符）、简短描述（≤120）、详细描述（≤500）、截图清单 |
+
+**交付包的平台范围必须与 `delivery.platforms` 完全一致**：
+- 选定但缺产物 → 校验失败
+- 未选却出现产物 → 校验失败
 
 ## 硬性约束（违反即视为契约破坏）
 
 1. `src/game/` 内**禁止**出现任何平台 SDK 或 `src/platform/` 的引用；平台能力一律通过 `src/game/util.ts` 的 `bridge(scene)` 读取注入的实例。
-2. 构建产物中**禁止**出现绝对路径引用（CrazyGames 会直接拒审）。
+2. 构建产物中**禁止**出现绝对路径引用（CrazyGames 等平台会直接拒审）。
 3. `state.yaml` 必须与磁盘实际产物一致；不一致时以磁盘为准并修正状态。
+4. **未完成 G0（`delivery.platform_confirmed: true`）不得进入任何后续阶段。**
+5. 每个平台适配器必须保留 `name: 'i2g-platform:<key>'` 标识（构建产物中需可检索），`precheck.py` 依赖它判定适配层是否被正确注入。

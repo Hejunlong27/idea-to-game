@@ -19,14 +19,14 @@ from collections import defaultdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _common import human_size, iter_files, scan_absolute_paths, scan_external_urls  # noqa: E402
-
-LIMITS = {
-    "total_mb": 250,
-    "file_count": 1500,
-    "initial_mb": 50,
-    "initial_mb_mobile": 20,
-}
+from _common import (  # noqa: E402
+    PLATFORM_KEYS,
+    human_size,
+    iter_files,
+    platform_conf,
+    scan_absolute_paths,
+    scan_external_urls,
+)
 
 # 首屏关键文件：入口与它直接依赖的常见资源类型
 ENTRY = {"index.html", "index.js", "index.css"}
@@ -61,7 +61,7 @@ def guess_initial(files: list[tuple[Path, int]], root: Path):
 def main() -> int:
     ap = argparse.ArgumentParser(description="构建产物审计")
     ap.add_argument("--dir", required=True, help="构建产物目录")
-    ap.add_argument("--platform", default="crazygames")
+    ap.add_argument("--platform", default="crazygames", choices=PLATFORM_KEYS)
     ap.add_argument("--json", default="", help="同时输出 JSON 报告路径")
     ap.add_argument("--top", type=int, default=12, help="列出最大的 N 个文件")
     args = ap.parse_args()
@@ -70,6 +70,8 @@ def main() -> int:
     if not root.is_dir():
         print(f"ERROR: 目录不存在：{root}", file=sys.stderr)
         return 1
+
+    conf = platform_conf(args.platform)
 
     files = [(p, p.stat().st_size) for p in iter_files(root)]
     total = sum(s for _, s in files)
@@ -84,24 +86,24 @@ def main() -> int:
     initial, initial_list = guess_initial(files, root)
 
     print(f"目录: {root}")
-    print(f"平台: {args.platform}")
+    print(f"平台: {conf['label']}（{conf['region']}）")
     print("=" * 58)
-    print(f"总大小    : {human_size(total):>10}   (红线 <= {LIMITS['total_mb']}MB)")
-    print(f"文件数    : {count:>10}   (红线 <= {LIMITS['file_count']})")
+    print(f"总大小    : {human_size(total):>10}   (红线 <= {conf['total_mb']}MB)")
+    print(f"文件数    : {count:>10}   (红线 <= {conf['files']})")
     print(f"首包(估)  : {human_size(initial):>10}   "
-          f"(红线 <= {LIMITS['initial_mb']}MB / 移动首页 <= {LIMITS['initial_mb_mobile']}MB)")
+          f"(红线 <= {conf['initial_mb']}MB / 移动端 <= {conf['mobile_mb']}MB)")
 
     fails = []
     warns = []
-    if total > LIMITS["total_mb"] * 1024 * 1024:
-        fails.append(f"总大小超出 {LIMITS['total_mb']}MB")
-    if count > LIMITS["file_count"]:
-        fails.append(f"文件数超出 {LIMITS['file_count']}")
-    if initial > LIMITS["initial_mb_mobile"] * 1024 * 1024:
-        if initial > LIMITS["initial_mb"] * 1024 * 1024:
-            fails.append(f"首包超出 {LIMITS['initial_mb']}MB，无法发布")
+    if total > conf["total_mb"] * 1024 * 1024:
+        fails.append(f"总大小超出 {conf['total_mb']}MB")
+    if count > conf["files"]:
+        fails.append(f"文件数超出 {conf['files']}")
+    if initial > conf["mobile_mb"] * 1024 * 1024:
+        if initial > conf["initial_mb"] * 1024 * 1024:
+            fails.append(f"首包超出 {conf['initial_mb']}MB，无法发布")
         else:
-            warns.append(f"首包超出 {LIMITS['initial_mb_mobile']}MB，将失去移动端首页资格")
+            warns.append(f"首包超出 {conf['mobile_mb']}MB，将失去移动端首页资格")
 
     print("-" * 58)
     print("按类型:")
@@ -116,7 +118,7 @@ def main() -> int:
     abs_hits = scan_absolute_paths(root)
     if abs_hits:
         print("-" * 58)
-        print(f"根绝对路径引用 {len(abs_hits)} 处（CrazyGames 会因绝对路径拒审）：")
+        print(f"根绝对路径引用 {len(abs_hits)} 处（CrazyGames 等平台会因绝对路径拒审）：")
         for rel, frag in abs_hits[:10]:
             print(f"  {rel}: {frag}")
         fails.append("存在根绝对路径引用")

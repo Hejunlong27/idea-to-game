@@ -18,7 +18,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _common import STAGES, iter_files, project_dir  # noqa: E402
 
 REQUIRED_FILES = {
-    "brief": ["docs/01-brief/gdd.md", "docs/01-brief/scope.json"],
+    "brief": [
+        "docs/00-platforms/platform-plan.md",
+        "docs/01-brief/gdd.md",
+        "docs/01-brief/scope.json",
+    ],
     "scaffold": [
         "package.json",
         "index.html",
@@ -31,6 +35,7 @@ REQUIRED_FILES = {
         "src/platform/poki.ts",
         "src/platform/playgama.ts",
         "src/platform/gamedistribution.ts",
+        "src/platform/taptap.ts",
     ],
     "art_bible": ["docs/02-art/art-bible.md", "docs/02-art/palette.json"],
     "core_loop": ["docs/04-core-loop/notes.md", "src/game"],
@@ -49,6 +54,27 @@ def nonempty_dir(p: Path) -> bool:
 
 
 def check_brief(proj: Path, errs: list, warns: list):
+    # 先校验平台确认（门禁 G0）—— 未确认平台不得进入立项
+    state_file = proj / ".gamedev" / "state.yaml"
+    if state_file.exists():
+        from _common import load_state
+
+        try:
+            st = load_state(proj)
+        except SystemExit:
+            st = {}
+        d = (st or {}).get("delivery", {}) or {}
+        plats = d.get("platforms") or []
+        if not plats:
+            errs.append(
+                "尚未确认目标平台（delivery.platforms 为空）—— 必须先执行 modules/00-platforms.md 的 G0 门禁"
+            )
+        elif not d.get("platform_confirmed"):
+            errs.append(
+                f"目标平台 {plats} 已设置但未经用户确认（platform_confirmed=false）—— "
+                "确认后执行 state.py set-platforms --confirm"
+            )
+
     sp = proj / "docs/01-brief/scope.json"
     if not sp.exists():
         return
@@ -158,15 +184,61 @@ def check_sprite_tools(proj: Path, errs: list, warns: list):
 
 
 def check_ship(proj: Path, errs: list, warns: list):
+    from _common import PLATFORM_KEYS, load_state
+
+    state_file = proj / ".gamedev" / "state.yaml"
+    platforms = []
+    if state_file.exists():
+        try:
+            st = load_state(proj)
+            platforms = ((st or {}).get("delivery", {}) or {}).get("platforms") or []
+        except SystemExit:
+            pass
+
     dist = proj / "dist"
-    zips = list(dist.glob("*.zip")) if dist.is_dir() else []
-    if not zips:
-        errs.append("dist/ 下无平台 zip 包")
+    if not platforms:
+        errs.append("未记录目标平台，无法校验交付包与平台是否一致（请先完成 G0）")
+        return
+
+    # 交付包必须与用户选定的平台完全一致（不多不少）
+    missing, extra = [], []
+    for p in platforms:
+        if p not in PLATFORM_KEYS:
+            errs.append(f"delivery.platforms 含未知平台：{p}")
+            continue
+        d = dist / p
+        z = dist / f"{p}.zip"
+        if not d.is_dir() and not z.exists():
+            missing.append(p)
+    if dist.is_dir():
+        for item in dist.iterdir():
+            name = item.name[:-4] if item.name.endswith(".zip") else item.name
+            if item.is_dir() or item.name.endswith(".zip"):
+                if name in PLATFORM_KEYS and name not in platforms:
+                    extra.append(name)
+            elif item.is_file():
+                continue
+    if missing:
+        errs.append(f"缺少选定平台的交付产物：{', '.join(missing)}")
+    if extra:
+        errs.append(
+            f"存在未在用户选定范围内的平台产物：{', '.join(sorted(set(extra)))} "
+            "—— 交付包必须与用户回复的平台一致"
+        )
+
+    for p in platforms:
+        z = dist / f"{p}.zip"
+        if z.exists() and z.stat().st_size == 0:
+            errs.append(f"{p}.zip 为空文件")
+
     sc = proj / "docs/08-ship/submit-checklist.md"
     if sc.exists():
         t = sc.read_text(encoding="utf-8", errors="ignore")
         if "MB" not in t:
             warns.append("submit-checklist.md 中未见实测体积数值（应附实测值）")
+        for p in platforms:
+            if p not in t:
+                warns.append(f"submit-checklist.md 未提及选定平台 {p}")
 
 
 CHECKERS = {

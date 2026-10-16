@@ -35,7 +35,7 @@ function getBridge(): BridgeLike | null {
 
 export function createPlaygamaPlatform(): PlatformBridge {
   return {
-    name: 'playgama',
+    name: 'i2g-platform:playgama',
 
     async init() {
       const bridge = getBridge();

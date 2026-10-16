@@ -16,7 +16,19 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _common import GATED_STAGES, STAGES, STATUSES, load_state, ok, project_dir, save_state  # noqa: E402
+from _common import (  # noqa: E402
+    GATED_STAGES,
+    PLATFORM_KEYS,
+    STAGES,
+    STATUSES,
+    load_state,
+    ok,
+    project_dir,
+    save_state,
+)
+
+# 平台确认是流程前的第 0 步（G0），不在 STAGES 里，但 show/next 要体现
+PLATFORM_STEP = "platforms"
 
 MARK = {
     "pending": "[ ]",
@@ -31,10 +43,22 @@ MARK = {
 def cmd_show(proj: Path) -> int:
     st = load_state(proj)
     p = st.get("project", {})
+    d = st.get("delivery", {})
+    platforms = d.get("platforms") or []
+    confirmed = bool(d.get("platform_confirmed"))
+
+    if platforms and confirmed:
+        pmark, pstatus = "[x]", f"done  ({', '.join(platforms)})"
+    elif platforms:
+        pmark, pstatus = "[~]", f"in_progress  ({', '.join(platforms)}，待用户确认)"
+    else:
+        pmark, pstatus = "[ ]", "pending  ← 必须先做：问用户发到哪些平台"
+
     print(f"项目: {p.get('name')}  |  品类: {p.get('genre') or '-'}")
     print(f"想法: {p.get('idea')}")
     print(f"参考图: {p.get('style_ref') or '-'}")
-    print("-" * 56)
+    print("-" * 64)
+    print(f"{pmark} {PLATFORM_STEP:<14} {pstatus}")
     for s in STAGES:
         info = st.get("stages", {}).get(s, {})
         status = info.get("status", "pending")
@@ -48,9 +72,43 @@ def cmd_show(proj: Path) -> int:
         if info.get("note"):
             extra.append(info["note"])
         print(f"{MARK.get(status, '[?]')} {s:<14} {status:<12} {' '.join(extra)}")
-    d = st.get("delivery", {})
-    print("-" * 56)
-    print(f"档位: {d.get('tier') or '未评估'}  |  平台: {', '.join(d.get('platforms') or []) or '-'}")
+    print("-" * 64)
+    print(f"档位: {d.get('tier') or '未评估'}")
+    if d.get("platform_notes"):
+        for k, v in d["platform_notes"].items():
+            print(f"  {k}: {v}")
+    return 0
+
+
+def cmd_set_platforms(args) -> int:
+    proj = project_dir(args.project)
+    st = load_state(proj)
+    d = st.setdefault("delivery", {})
+
+    if args.platforms:
+        plats = [p.strip().lower() for p in args.platforms.split(",") if p.strip()]
+        unknown = [p for p in plats if p not in PLATFORM_KEYS]
+        if unknown:
+            print(f"ERROR: 未知平台 {unknown}；可选：{', '.join(PLATFORM_KEYS)}", file=sys.stderr)
+            return 1
+        if not plats:
+            print("ERROR: 平台列表为空", file=sys.stderr)
+            return 1
+        d["platforms"] = plats
+        if args.note:
+            d.setdefault("platform_notes", {})[args.note.split("=", 1)[0]] = args.note.split("=", 1)[-1]
+        # 平台变更后需要重新确认
+        if not args.confirm:
+            d["platform_confirmed"] = False
+
+    if args.confirm:
+        if not d.get("platforms"):
+            print("ERROR: 尚未设置平台，无法确认", file=sys.stderr)
+            return 1
+        d["platform_confirmed"] = True
+
+    save_state(proj, st)
+    ok(f"平台: {', '.join(d.get('platforms') or [])} | 已确认: {d.get('platform_confirmed')}")
     return 0
 
 
@@ -87,6 +145,16 @@ def cmd_set(args) -> int:
 
 def cmd_next(proj: Path) -> int:
     st = load_state(proj)
+    d = st.get("delivery", {})
+    if not d.get("platforms"):
+        print("下一个动作：platforms —— 必须先问用户发到哪些平台（门禁 G0）")
+        print("读模块：modules/00-platforms.md")
+        return 0
+    if not d.get("platform_confirmed"):
+        print(f"下一个动作：platforms —— 等待用户确认平台（当前: {', '.join(d['platforms'])}）")
+        print("确认后执行：state.py set-platforms --confirm")
+        return 0
+
     stages = st.get("stages", {})
     for s in STAGES:
         status = stages.get(s, {}).get("status", "pending")
@@ -96,7 +164,8 @@ def cmd_next(proj: Path) -> int:
             print(f"下一个动作：{s} —— 完成后需要人工门禁 {GATED_STAGES[s]}")
             return 0
         print(f"下一个动作：{s}（当前 {status}）")
-        print(f"读模块：modules/{STAGES.index(s) + 1:02d}-*.md")
+        idx = STAGES.index(s) + 1
+        print(f"读模块：modules/{idx:02d}-*.md")
         return 0
     print("全部阶段已完成。可执行 ship 阶段产出最终交付包。")
     return 0
@@ -120,6 +189,12 @@ def main() -> int:
     sn = sub.add_parser("next", help="显示下一步动作")
     sn.add_argument("--project", default=None)
 
+    spf = sub.add_parser("set-platforms", help="设置/确认目标平台（门禁 G0）")
+    spf.add_argument("--project", default=None)
+    spf.add_argument("--platforms", default="", help=f"逗号分隔。可选：{', '.join(PLATFORM_KEYS)}")
+    spf.add_argument("--confirm", action="store_true", help="标记为用户已确认")
+    spf.add_argument("--note", default="", help="备注，格式 <平台key>=<说明>")
+
     args = ap.parse_args()
     if args.cmd == "show":
         return cmd_show(project_dir(args.project))
@@ -127,6 +202,8 @@ def main() -> int:
         return cmd_set(args)
     if args.cmd == "next":
         return cmd_next(project_dir(args.project))
+    if args.cmd == "set-platforms":
+        return cmd_set_platforms(args)
     return 1
 
 

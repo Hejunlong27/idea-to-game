@@ -6,9 +6,11 @@
 
 | 阶段 | 模块 | 串行前置 | 可并行 | 产出 | 通过标准 |
 |---|---|---|---|---|---|
-| P0 立项 | `modules/01-brief.md` | — | — | `docs/01-brief/` | GDD 含核心循环/操作/胜负/计分/难度/范围边界；`scope.json` 明确 MVP 功能与素材清单 |
+| **P-1 平台确认** | `modules/00-platforms.md` | — | — | `state.yaml` 的 `delivery.platforms`、`docs/00-platforms/platform-plan.md` | **用户明确回复了目标平台清单**（来自技能内置的支持列表） |
+| **G0 门禁** | — | P-1 | — | — | **收到用户平台回复后才允许进入 P0** |
+| P0 立项 | `modules/01-brief.md` | G0 | — | `docs/01-brief/` | GDD 含核心循环/操作/胜负/计分/难度/范围边界；`scope.json` 明确 MVP 功能与素材清单 |
 | **G1 门禁** | — | P0 | — | — | **用户明确确认方向** |
-| P1 地基 | `modules/02-scaffold.md` | G1 | ∥ `03-art-bible` | `src/`、`package.json` | `npm run dev` 零报错；三平台构建脚本可执行；适配层就位 |
+| P1 地基 | `modules/02-scaffold.md` | G1 | ∥ `03-art-bible` | `src/`、`package.json` | `npm run dev` 零报错；目标平台的构建脚本可执行；适配层就位 |
 | P1 美术策略 | `modules/03-art-bible.md` | G1 | ∥ `02-scaffold` | `docs/02-art/` | 主色板 5–8 色 HEX + 线条/着色/质感/氛围词 + 每类素材 prompt 模板 |
 | **G2 门禁** | — | P1 | — | — | **用户明确确认风格** |
 | P2 玩法 | `modules/04-core-loop.md` | G2 | ∥ 05→06 ∥ 07 | `src/game/` | **灰盒可玩**：闭环跑通、计分生效、用几何占位素材 |
@@ -16,9 +18,9 @@
 | P2 切图 | `modules/06-sprite-tools.md` | 05 | ∥ 04 ∥ 07 | `assets/processed/`、`assets/atlas/` | 切分正确、抠图干净、产出 Phaser 可用图集 JSON |
 | P2 配乐 | `modules/07-audio-forge.md` | G2 | ∥ 04 ∥ 05→06 | `assets/audio/` | BGM 可无缝循环；SFX <1s；音频总体积 ≤2MB |
 | P3 打磨 | `modules/08-polish.md` | P2 | — | 优化后 `src/` | juice 到位、UI 接线、难度曲线、存档可用 |
-| P3 性能 | `modules/09-perf-audit.md` | 08 | — | `docs/06-perf/report.md` | 首包 ≤20MB、文件数 ≤1500、60fps、无内存泄漏 |
+| P3 性能 | `modules/09-perf-audit.md` | 08 | — | `docs/06-perf/report.md` | **全部目标平台**的体积红线都达标；60fps；无内存泄漏 |
 | P4 测试 | `modules/10-qa.md` | 09 | — | `docs/07-qa/report.html` | 自动化走查通过、canvas 点击可模拟、零控制台报错、移动端视口正常 |
-| P4 交付 | `modules/11-ship.md` | 10 | — | `dist/*.zip`、`docs/08-ship/` | 过审自检全绿、每平台 zip 独立可跑、商店素材齐备 |
+| P4 交付 | `modules/11-ship.md` | 10 | — | `dist/<平台>.zip`、`docs/08-ship/` | 过审自检全绿、**产物平台与用户选定平台完全一致**、商店素材齐备 |
 
 ## 依赖图
 
@@ -32,19 +34,25 @@
                      └──► 07-audio-forge ─────────────────────┘
 ```
 
-**关键路径**：`01 → 02 → 04 → 08 → 09 → 10 → 11`
+**关键路径**：`00 → 01 → 02 → 04 → 08 → 09 → 10 → 11`
 **并行支线**：`03` 在 G1 后即可启动；`05→06` 与 `07` 可与 `04` 同时进行。
 
 ## 门禁规则
 
-只设两处门禁。两处都必须停下并向用户提问，**不得自行判定通过**。
+共设三处门禁。三处都必须停下并向用户提问，**不得自行判定通过**。
 
 | 门禁 | 位置 | 提问要点 | 为什么必须人工 |
 |---|---|---|---|
+| **G0** | **收到用户第一个指令后，立即**（`modules/00-platforms.md`） | **列出技能支持的平台，问用户准备发到哪些** | **交付包必须与用户选定的平台一致**。平台决定体积红线、SDK 接入、合规要求、商店素材规格 —— 定晚了会返工 |
 | **G1** | `01-brief` 产出后 | 核心玩法是否认可？范围边界是否同意？有无要加/要砍的功能？ | 方向错了后面全白干，此处纠错成本最低 |
 | **G2** | `03-art-bible` 产出后 | 色板与画风是否符合预期？是否需要换参考图重提？ | 风格定错，所有生图素材作废，返工成本最高 |
 
-门禁通过后，把结果写入 `state.yaml` 对应阶段的 `gate` 字段（`G1_passed` / `G2_passed`）。
+**G0 是第一个动作，不可跳过、不可替用户默认选择。** 用户未回复平台前不得开始 P0 立项。
+
+门禁通过后，把结果写入 `state.yaml`：
+- G0 → `delivery.platforms` + `delivery.platform_confirmed: true`
+- G1 → `stages.brief.gate: G1_passed`
+- G2 → `stages.art_bible.gate: G2_passed`
 
 ## 回退策略
 

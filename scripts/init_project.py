@@ -17,9 +17,10 @@ from datetime import datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _common import TEMPLATE_DIR, dump_json, ok, save_state, warn  # noqa: E402
+from _common import PLATFORM_KEYS, TEMPLATE_DIR, dump_json, ok, save_state, warn  # noqa: E402
 
 DOC_DIRS = [
+    "00-platforms",
     "01-brief",
     "02-art/prompts",
     "03-scaffold",
@@ -38,8 +39,26 @@ def main() -> int:
     ap.add_argument("--idea", required=True, help="游戏想法描述，或同款游戏名")
     ap.add_argument("--style-ref", default="", help="风格参考图路径（会被复制到 assets/ref/）")
     ap.add_argument("--genre", default="", help="品类，如 merge / idle / runner")
+    ap.add_argument(
+        "--platforms",
+        default="",
+        help=f"目标平台，逗号分隔。可选：{', '.join(PLATFORM_KEYS)}。"
+             "留空表示尚未与用户确认（后续必须用 state.py set-platforms 补上）",
+    )
     ap.add_argument("--out", default=".", help="输出父目录，默认当前目录")
     args = ap.parse_args()
+
+    # 平台校验
+    platforms = [p.strip().lower() for p in args.platforms.split(",") if p.strip()]
+    unknown = [p for p in platforms if p not in PLATFORM_KEYS]
+    if unknown:
+        print(
+            f"ERROR: 未知平台 {unknown}；可选：{', '.join(PLATFORM_KEYS)}",
+            file=sys.stderr,
+        )
+        return 1
+    if not platforms:
+        warn("未指定 --platforms —— 上线前必须按 modules/00-platforms.md 与用户确认后再补上")
 
     # 项目名只接受安全字符集，避免路径穿越
     import re
@@ -99,13 +118,22 @@ def main() -> int:
             "brief", "scaffold", "art_bible", "core_loop", "art_forge",
             "sprite_tools", "audio_forge", "polish", "perf_audit", "qa", "ship",
         ]},
-        "delivery": {"tier": None, "platforms": []},
+        "delivery": {
+            "tier": None,
+            "platform_confirmed": bool(platforms),
+            "platforms": platforms,
+            "platform_notes": {},
+        },
     }
     save_state(proj, state)
-    dump_json(proj / "docs" / "01-brief" / ".keep.json", {"note": "占位，可删除"})
+    dump_json(proj / "docs" / "00-platforms" / ".keep.json", {"note": "占位，可删除"})
 
     ok(f"项目已初始化：{proj}")
+    if platforms:
+        ok(f"目标平台：{', '.join(platforms)}")
     print("\n下一步：")
+    if not platforms:
+        print("  0. 读 modules/00-platforms.md，先向用户确认目标平台（门禁 G0）")
     print("  1. 读 modules/01-brief.md，产出 docs/01-brief/gdd.md 与 scope.json")
     print("  2. 运行 gate_check.py --stage brief 校验")
     print("  3. 向用户确认方向（门禁 G1）")

@@ -9,11 +9,15 @@ npm install
 npm run dev                 # 本地开发（mock 适配器）
 npm run build:cg            # → dist/crazygames
 npm run build:poki          # → dist/poki
-npm run build:pg            # → dist/playgama
 npm run build:gd            # → dist/gamedistribution
-npm run build:all           # 全部
+npm run build:pg            # → dist/playgama
+npm run build:taptap        # → dist/taptap
+npm run build:all           # 全部（仅在确实要全平台时才用）
 npm run zip:all             # 打成 dist/<platform>.zip
 ```
+
+> ⚠️ **只构建用户选定的平台**，不要默认 `build:all` —— 未选定的平台产物会被
+> `gate_check.py --stage ship` 判为「超出交付范围」。
 
 ## 目录职责
 
@@ -26,6 +30,19 @@ npm run zip:all             # 打成 dist/<platform>.zip
 | `src/game/scenes/` | 场景：Boot / Menu / Play / GameOver |
 | `src/game/util.ts` | 从 registry 取平台实例、存档读写、缩放工具 |
 | `scripts/zip-all.mjs` | 打包脚本 |
+
+## 平台适配器
+
+| 文件 | 平台 | SDK 来源 |
+|---|---|---|
+| `mock.ts` | 本地开发 | 无 |
+| `crazygames.ts` | CrazyGames | `sdk.crazygames.com`（script 注入） |
+| `poki.ts` | Poki | `game-cdn.poki.com`（script 注入） |
+| `gamedistribution.ts` | GameDistribution | `html5.api.gamedistribution.com`（script 注入） |
+| `playgama.ts` | Playgama | 读 `window.bridge`，需自行加 script 或装 npm 包 |
+| `taptap.ts` | TapTap | 读宿主注入的全局 `tap`；网页游戏形态无 SDK 时自动降级 |
+
+每个适配器的 `name` 形如 `i2g-platform:<key>` —— `precheck.py` 靠这个标识判定构建产物里注入的是哪个平台。
 
 ## 契约
 
@@ -62,6 +79,7 @@ npm run zip:all             # 打成 dist/<platform>.zip
 | `poki` | `https://game-cdn.poki.com/scripts/v2/poki-sdk.js` |
 | `gamedistribution` | `https://html5.api.gamedistribution.com/main.min.js` |
 | `playgama` | 留空 —— 需自行加入 Bridge SDK script，或改用 npm 包静态 import |
+| `taptap` | 留空 —— Tap 小游戏 SDK 由 TapTap 容器注入全局 `tap`，**自行引入会被判违规** |
 | 其他（dev） | 不注入 |
 
 ⚠️ **提交前必须对照平台官方文档核对这些 URL**，平台可能更换 CDN 地址。核对方式：
@@ -72,10 +90,11 @@ npm run build:cg && grep -o 'sdk.crazygames.com[^"]*' dist/crazygames/index.html
 
 ## 新增平台
 
-1. 新建 `src/platform/<name>.ts`，实现 `PlatformBridge`
-2. 在 `src/platform/index.ts` 的 switch 中注册
+1. 新建 `src/platform/<name>.ts`，实现 `PlatformBridge`，`name` 设为 `i2g-platform:<name>`
+2. 在 `src/platform/index.ts` 的 `PLATFORM_TARGETS` 与 switch 中注册
 3. 在 `package.json` 加 `build:<name>` 脚本
-4. 在 `vite.config.ts` 的 `SDK_SCRIPTS` 中加该平台的 SDK URL
-5. 在 `references/platform-requirements.md` 补充该平台红线
+4. 在 `vite.config.ts` 的 `SDK_SCRIPTS` 中加该平台的 SDK URL（宿主注入型留空）
+5. 在技能包的 `scripts/_common.py` 的 `PLATFORMS` 表登记红线参数
+6. 在 `references/platform-requirements.md` 补充该平台要求
 
 无需改动任何玩法代码。

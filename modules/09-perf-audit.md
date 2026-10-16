@@ -4,23 +4,29 @@
 
 ## 目标
 
-对照平台红线做量化审计。**首包 ≤20MB 与 60fps 是能否拿到移动端流量的生死线。**
+对照**用户选定平台**的红线做量化审计。首包体积与 60fps 是能否拿到移动端流量的生死线。
+
+**体积预算取最严**：多平台时按 `delivery.size_budget_mb`（最严的一条）做，不是各平台各算一份。
 
 ## 步骤
 
-### 1. 体积与文件数审计
+### 1. 体积与文件数审计（逐平台）
 
 ```bash
-python <skill>/scripts/measure_bundle.py --dir dist/crazygames
+# 对用户在 G0 选定的每个平台分别审计
+python <skill>/scripts/measure_bundle.py --dir dist/crazygames --platform crazygames
+python <skill>/scripts/measure_bundle.py --dir dist/taptap     --platform taptap
 ```
 
-对照 `references/platform-requirements.md` 的 CrazyGames 红线：
+平台红线参数表在 `scripts/_common.py` 的 `PLATFORMS` 中（单一真相源），包含：
 
-| 指标 | 红线 | 实测 |
-|---|---|---|
-| 总文件大小 | ≤250MB | |
-| 文件数 | ≤1500 | |
-| 首包 | ≤50MB（移动首页 ≤20MB） | |
+| 平台 | 总大小 | 文件数 | 首包 |
+|---|---|---|---|
+| crazygames | ≤250MB | ≤1500 | ≤50MB（移动端首页 ≤20MB） |
+| poki | ≤250MB | ≤1500 | ≤50MB（移动端首页 ≤20MB） |
+| gamedistribution | ≤250MB | ≤1500 | ≤50MB |
+| playgama | ≤250MB | ≤1500 | ≤50MB |
+| taptap | ≤250MB | ≤1500 | **≤60MB**（优秀 ≤20MB） |
 
 ### 2. 帧率与内存测量
 
@@ -48,7 +54,7 @@ python <skill>/scripts/measure_bundle.py --dir dist/crazygames
 
 ### 5. 回退机制
 
-- 首包超 20MB → 自动执行：纹理压缩 → 降分辨率 → 音频降码率 → 砍非必要素材，**最多 3 次**
+- 首包超**最严红线** → 自动执行：纹理压缩 → 降分辨率 → 音频降码率 → 砍非必要素材，**最多 3 次**
 - 帧率不达标 → 回退 `08-polish` 降级渲染（减粒子/阴影/后处理，降 DPR），**最多 3 次**
 - 每次回退在 `state.yaml` 的 `perf_audit.retries` 递增
 - 连续 3 次仍不达标 → 停止并上报
@@ -61,13 +67,16 @@ python <skill>/scripts/gate_check.py --project <project> --stage perf_audit
 
 ## 自检
 
-- [ ] 首包 ≤20MB（移动端首页资格）
+- [ ] **用户在 G0 选定的每个平台**都已跑过 `measure_bundle.py`
+- [ ] 首包满足所有选定平台中最严的红线（`delivery.size_budget_mb`）
+- [ ] TapTap 产物 ≤60MB（若选了 taptap）
+- [ ] CrazyGames 产物 ≤20MB（若选了 crazygames，移动端首页资格）
 - [ ] 总文件数 ≤1500
 - [ ] 总文件大小 ≤250MB
 - [ ] 平均帧率 ≥58fps，最低 ≥50fps（4GB 基准）
 - [ ] 60 秒运行内存无持续增长
 - [ ] 启动到可玩 ≤3 秒（本地）/ ≤20 秒（外部托管）
-- [ ] 报告已产出，含实测数值
+- [ ] 报告已产出，含**逐平台**实测数值
 
 ## 常见错误
 
