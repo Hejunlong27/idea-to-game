@@ -45,6 +45,14 @@ REQUIRED_FILES = {
     "polish": ["docs/05-polish/juice-log.md"],
     "perf_audit": ["docs/06-perf/report.md"],
     "qa": ["docs/07-qa/report.html"],
+    "review_plan": ["docs/09-review/r0-plan-review.md", "docs/09-review/verdict-r0.json"],
+    "review_graybox": ["docs/09-review/r1-graybox-review.md", "docs/09-review/verdict-r1.json"],
+    "review_final": [
+        "docs/09-review/r2-final-review.md",
+        "docs/09-review/verdict-r2.json",
+        "docs/09-review/checklist.md",
+        "docs/09-review/issues.json",
+    ],
     "ship": ["docs/08-ship/submit-checklist.md", "docs/08-ship/store-copy.md"],
 }
 
@@ -183,17 +191,78 @@ def check_sprite_tools(proj: Path, errs: list, warns: list):
             errs.append(f"{j.name} 引用的图集图不存在：{meta_img}")
 
 
+def check_review(proj: Path, errs: list, warns: list, phase: str):
+    """校验审核结论（R0/R1/R2）。REJECTED / INCOMPLETE 一律视为未通过。"""
+    from _common import PASSING_VERDICTS
+
+    # 按阶段分文件存放（单文件会被后一轮覆盖）
+    candidates = [proj / f"docs/09-review/verdict-{phase}.json", proj / "docs/09-review/verdict.json"]
+    vj = next((c for c in candidates if c.exists()), None)
+    if vj is None:
+        errs.append(
+            f"缺少 docs/09-review/verdict-{phase}.json —— 本阶段必须先跑 "
+            f"`review_gate.py --phase {phase}` 并由审核官给出结论"
+        )
+        return
+    try:
+        v = json.loads(vj.read_text(encoding="utf-8"))
+    except Exception as e:
+        errs.append(f"{vj.name} 解析失败：{e}")
+        return
+
+    if v.get("phase") != phase and vj.name == "verdict.json":
+        errs.append(
+            f"verdict.json 记录的是 {v.get('phase')} 轮结论，本阶段需要 {phase} 轮的结论 —— "
+            f"请重跑 review_gate.py --phase {phase}"
+        )
+    verdict = v.get("verdict")
+    if verdict not in PASSING_VERDICTS:
+        blockers = v.get("blockers") or []
+        detail = "; ".join(f"{b.get('item')} {b.get('desc')}" for b in blockers[:4])
+        errs.append(
+            f"审核结论为 {verdict}，不得通过 —— "
+            + (f"阻塞项：{detail}" if detail else "人工条目未判定完（INCOMPLETE）")
+        )
+    if verdict == "PASS_WITH_DEVIATIONS":
+        devs = v.get("deviations") or []
+        warns.append(
+            f"存在 {len(devs)} 条建议项偏离，交付报告只能写「达到必需标准」，"
+            f"并须列出偏离清单：{', '.join(d.get('item', '') for d in devs)}"
+        )
+
+    mj = proj / "docs/09-review/manual-checks.json"
+    if mj.exists():
+        try:
+            m = json.loads(mj.read_text(encoding="utf-8"))
+            unfilled = [k for k, v2 in m.items() if not (v2 or {}).get("result")]
+            if unfilled:
+                warns.append(f"manual-checks.json 尚有 {len(unfilled)} 条未判定：{', '.join(unfilled[:8])}")
+        except Exception:
+            warns.append("manual-checks.json 解析失败")
+
+
 def check_ship(proj: Path, errs: list, warns: list):
     from _common import PLATFORM_KEYS, load_state
 
+    # ★ 审核官一票否决：R2 终审未通过则不得交付
+    check_review(proj, errs, warns, "r2")
+
     state_file = proj / ".gamedev" / "state.yaml"
     platforms = []
+    stages = {}
     if state_file.exists():
         try:
             st = load_state(proj)
             platforms = ((st or {}).get("delivery", {}) or {}).get("platforms") or []
+            stages = (st or {}).get("stages", {}) or {}
         except SystemExit:
             pass
+
+    # R0 / R1 也必须已完成（审核环节不可跳过）
+    for key, rnd in (("review_plan", "R0"), ("review_graybox", "R1")):
+        node = stages.get(key) or {}
+        if node.get("status") != "done":
+            errs.append(f"{rnd} 审核阶段未完成（{key}.status={node.get('status', 'pending')}）—— 审核环节不可跳过")
 
     dist = proj / "dist"
     if not platforms:
@@ -247,6 +316,9 @@ CHECKERS = {
     "art_bible": check_art_bible,
     "sprite_tools": check_sprite_tools,
     "audio_forge": check_audio,
+    "review_plan": lambda p, e, w: check_review(p, e, w, "r0"),
+    "review_graybox": lambda p, e, w: check_review(p, e, w, "r1"),
+    "review_final": lambda p, e, w: check_review(p, e, w, "r2"),
     "ship": check_ship,
 }
 

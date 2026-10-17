@@ -18,7 +18,12 @@
 │  ├─ 05-polish/  juice-log.md
 │  ├─ 06-perf/    report.md
 │  ├─ 07-qa/      report.html  screenshots/
-│  └─ 08-ship/    submit-checklist.md  store-copy.md
+│  ├─ 08-ship/    submit-checklist.md  store-copy.md
+│  └─ 09-review/  checklist.md  manual-checks.json  issues.json
+│                 improvement-plan.md  rounds.md  verdict.json（最新副本）
+│                 verdict-r0.json  verdict-r1.json  verdict-r2.json
+│                 r0-plan-review.md  r1-graybox-review.md  r2-final-review.md
+│                 evidence/
 ├─ src/
 │  ├─ types.ts    共享类型（PlatformBridge 接口定义在此）
 │  ├─ game/       纯玩法逻辑，禁止 import src/platform/
@@ -45,15 +50,18 @@ project:
 
 stages:
   brief:        { status: done,        output: docs/01-brief/,  gate: G1_passed }
+  review_plan:  { status: done,        verdict: PASS, round: 1, req_passed: "18/18", guide_passed: "9/10" }
   scaffold:     { status: done,        output: src/ }
   art_bible:    { status: done,        output: docs/02-art/,   gate: G2_passed }
   core_loop:    { status: done,        self_test: playable }
+  review_graybox: { status: done,      verdict: PASS_WITH_DEVIATIONS, round: 2, req_passed: "15/15", guide_passed: "12/14" }
   art_forge:    { status: done,        progress: "sprites 12/12" }
   sprite_tools: { status: done,        output: assets/atlas/ }
   audio_forge:  { status: degraded,    note: "配乐不可用，已用合成音降级" }
-  polish:       { status: in_progress }
-  perf_audit:   { status: pending,     retries: 0 }
-  qa:           { status: pending }
+  polish:       { status: done }
+  perf_audit:   { status: done,        retries: 1 }
+  qa:           { status: done,        output: docs/07-qa/report.html }
+  review_final: { status: done,        verdict: PASS_WITH_DEVIATIONS, round: 3, req_passed: "59/59", guide_passed: "32/35" }
   ship:         { status: pending }
 
 delivery:
@@ -71,6 +79,8 @@ delivery:
 - `status`：`pending` / `in_progress` / `done` / `failed` / `degraded` / `skipped`
 - `gate`：仅 `brief` 与 `art_bible` 阶段有，取值 `G1_passed` / `G2_passed`
 - `retries`：仅 `perf_audit` 使用，回退计数
+- `verdict`（仅审核阶段 `review_plan` / `review_graybox` / `review_final`）：`PASS` / `PASS_WITH_DEVIATIONS` / `REJECTED` / `INCOMPLETE`
+- `round`：审核轮次（不设上限）
 - `delivery.platforms`：**交付契约的核心字段**。合法值只有 `crazygames` / `poki` / `gamedistribution` / `playgama` / `taptap`
 - `delivery.platform_confirmed`：用户是否已明确回复平台（G0 门禁）。`false` 时禁止进入 P0
 - `delivery.size_budget_mb`：全程体积预算，取所有选定平台中**最严**的一条
@@ -158,6 +168,63 @@ Phaser 标准纹理图集格式（TexturePacker JSON Hash）：
 - 选定但缺产物 → 校验失败
 - 未选却出现产物 → 校验失败
 
+## 审核契约（`docs/09-review/`）
+
+审核官与生产环节之间只通过以下文件交接。**口头说"改好了"不算，必须回填问题单。**
+
+### `verdict-<phase>.json`（门禁依赖它；`verdict.json` 是最新副本）
+
+```json
+{
+  "phase": "r2",
+  "round": 3,
+  "verdict": "PASS_WITH_DEVIATIONS",
+  "standard": "crazygames",
+  "standard_file": "references/crazygames-standard.md",
+  "generated_at": "2026-10-17T22:00:00+08:00",
+  "platforms": ["crazygames", "taptap"],
+  "req_total": 59, "req_passed": 59,
+  "guide_total": 35, "guide_passed": 32,
+  "blockers": [],
+  "deviations": [{ "item": "E6", "desc": "加载到可玩 ≤10 秒", "evidence": "实测 11.2s" }],
+  "pending_manual": []
+}
+```
+
+`verdict` 取值：`PASS` / `PASS_WITH_DEVIATIONS` / `REJECTED` / `INCOMPLETE`。
+**只有 `PASS` 与 `PASS_WITH_DEVIATIONS` 允许进入 `ship`。**
+
+### `issues.json`（问题单，交接凭证）
+
+```json
+[
+  {
+    "id": "ISSUE-001",
+    "item": "G3",
+    "dimension": "G",
+    "severity": "blocker",
+    "desc": "禁止在导航按钮上触发中插广告",
+    "evidence": "MenuScene.ts:120 主菜单按钮 pointerdown 里调用了 showMidroll()",
+    "owner": "08-polish + 02-scaffold",
+    "suggestion": "把广告调用移到 GameOverScene 的重开流程；主菜单按钮不得触发广告",
+    "status": "open",
+    "fix_note": "",
+    "round": 1,
+    "found_at": "2026-10-17T21:40:00+08:00"
+  }
+]
+```
+
+- `severity`：`blocker`（REQ 条目，必须修）/ `major`（GUIDE 条目）
+- `owner`：应退回哪个生产环节（**审核官不自己改**）
+- `status`：`open` → `fixed`；环节修复后必须回填 `fix_note` 与修复证据
+- 审核官复审时按 `(item, round)` 去重，不重复开单
+
+### `manual-checks.json`（人工条目填写表）
+
+由 `review_gate.py` 首次运行生成；审核官逐条填 `result`（`pass`/`fail`/`na`）与 `evidence`。
+**存在未填条目时结论为 `INCOMPLETE`，不得放行。**
+
 ## 硬性约束（违反即视为契约破坏）
 
 1. `src/game/` 内**禁止**出现任何平台 SDK 或 `src/platform/` 的引用；平台能力一律通过 `src/game/util.ts` 的 `bridge(scene)` 读取注入的实例。
@@ -165,3 +232,6 @@ Phaser 标准纹理图集格式（TexturePacker JSON Hash）：
 3. `state.yaml` 必须与磁盘实际产物一致；不一致时以磁盘为准并修正状态。
 4. **未完成 G0（`delivery.platform_confirmed: true`）不得进入任何后续阶段。**
 5. 每个平台适配器必须保留 `name: 'i2g-platform:<key>'` 标识（构建产物中需可检索），`precheck.py` 依赖它判定适配层是否被正确注入。
+6. **审核官不得修改 `src/`、`assets/`、`docs/00`–`08`**（职责分离）。它只写 `docs/09-review/`。
+7. **`review_final.verdict` 非 `PASS` / `PASS_WITH_DEVIATIONS` 时，`ship` 阶段必须失败** —— 此约束由 `gate_check.py` 强制执行，不得绕过。
+8. **`docs/09-review/` 只由审核官写入**；问题单的 `fix_note` 与 `status` 由被指派的环节回填。

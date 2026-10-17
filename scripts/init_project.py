@@ -17,7 +17,7 @@ from datetime import datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _common import PLATFORM_KEYS, TEMPLATE_DIR, dump_json, ok, save_state, warn  # noqa: E402
+from _common import PLATFORM_KEYS, STAGES, TEMPLATE_DIR, dump_json, ok, save_state, warn  # noqa: E402
 
 DOC_DIRS = [
     "00-platforms",
@@ -29,6 +29,7 @@ DOC_DIRS = [
     "06-perf",
     "07-qa/screenshots",
     "08-ship",
+    "09-review/evidence",
 ]
 ASSET_DIRS = ["raw", "processed", "atlas", "audio/bgm", "audio/sfx", "ref"]
 
@@ -114,10 +115,7 @@ def main() -> int:
             "genre": args.genre,
             "created": datetime.now().astimezone().isoformat(timespec="seconds"),
         },
-        "stages": {s: {"status": "pending"} for s in [
-            "brief", "scaffold", "art_bible", "core_loop", "art_forge",
-            "sprite_tools", "audio_forge", "polish", "perf_audit", "qa", "ship",
-        ]},
+        "stages": {s: {"status": "pending"} for s in STAGES},
         "delivery": {
             "tier": None,
             "platform_confirmed": bool(platforms),

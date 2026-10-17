@@ -1,6 +1,6 @@
 # 模块 11 · 打包与交付（ship）
 
-**阶段**：P4 ｜ **前置**：`10-qa` 通过 ｜ **产出**：`dist/<选定平台>.zip`、`docs/08-ship/`
+**阶段**：P4 ｜ **前置**：`10-qa` 通过 **+ 审核官 R2 终审通过** ｜ **产出**：`dist/<选定平台>.zip`、`docs/08-ship/`
 
 ## 目标
 
@@ -9,8 +9,26 @@
 **注意**：
 - 本环节**只产出文件，不执行提交**。实际提交动作永远由用户执行。
 - **交付包的平台范围必须与 `delivery.platforms` 完全一致，不多不少。**
+- **审核官一票否决**：`docs/09-review/verdict-r2.json` 的 `verdict` 非 `PASS` / `PASS_WITH_DEVIATIONS` 时，本环节不得开始。这一条由 `gate_check.py` 强制拦截，无法绕过。
 
 ## 步骤
+
+### 0. 确认审核已通过（先做，不通过不许往下）
+
+```bash
+python <skill>/scripts/gate_check.py --project <project> --stage review_final
+```
+
+必须看到：
+- `verdict` ∈ {`PASS`, `PASS_WITH_DEVIATIONS`}
+- `rounds.md` 记录了全部轮次
+- 所有 `blocker` 问题单状态为 `fixed`
+
+```bash
+python <skill>/scripts/state.py show --project <project>
+```
+
+确认 `review_plan` / `review_graybox` / `review_final` 三者均为 `done`（**审核环节一个都不能跳**）。
 
 ### 1. 读取交付范围
 
@@ -102,17 +120,29 @@ python <skill>/scripts/gate_check.py --project <project> --stage ship
 
 ### 8. 输出最终交付报告
 
-至少包含：
+**必须包含一行明确的 CrazyGames 标准结论**（三选一，措辞不得模糊，模板见 `modules/12-review.md` 第八节）：
+
+```
+CrazyGames 标准：⚠️ 达到必需标准（存在建议项偏离）
+结论：PASS_WITH_DEVIATIONS（第 3 轮通过）
+REQ 条目 60/60 通过；GUIDE 偏离 3 条，用户已确认接受
+偏离清单：E6 / D6 / A9
+```
+
+报告其余内容至少包含：
 
 1. 项目名与一句话玩法
 2. **用户在 G0 选定的平台清单**
 3. 达到的档位（L1/L2/L3）
 4. **每个选定平台**的 zip 路径
 5. 逐平台实测数据：首包体积、文件数、帧率
-6. **降级项清单**（`status: degraded` 的阶段及影响）
-7. **需要用户自己完成的前置事项**（实名认证 / 前置备案 / 广告位创建 / 提报）
-8. 未通过项与原因
-9. 建议的下一步
+6. **审核结论摘要**：R0/R1/R2 各轮 verdict、总轮次、REQ 通过率
+7. **降级项清单**（`status: degraded` 的阶段及影响）
+8. **需要用户自己完成的前置事项**（实名认证 / 前置备案 / 广告位创建 / 提报）
+9. 未通过项与原因
+10. 建议的下一步
+
+**禁止的表述**：「基本达标」「接近标准」「小问题不影响提交」「后续版本会改」。
 
 ## 投递顺序建议
 
@@ -143,12 +173,14 @@ CLI 的写操作需先 `--dry-run` 预览、用户确认后加 `--yes`；提审�
 
 ## 自检
 
+- [ ] **审核官 R2 终审已通过**（`verdict` ∈ {`PASS`, `PASS_WITH_DEVIATIONS`}），R0/R1 均 `done`
 - [ ] `delivery.platforms` 已由用户确认（G0）
 - [ ] **选定平台的 zip 均已产出，且仅包含选定平台**
 - [ ] 每个 zip 解压后可独立运行
 - [ ] `precheck.py` 对每个选定平台全绿
-- [ ] `gate_check.py --stage ship` 通过（范围一致性）
+- [ ] `gate_check.py --stage ship` 通过（含审核结论与范围一致性）
 - [ ] 商店素材齐备且符合字数约束
 - [ ] 隐私政策已准备（如需要）
 - [ ] 自检清单含**逐平台**实测数值
-- [ ] 最终交付报告已输出，含用户在需自行完成的前置事项
+- [ ] 交付报告含**明确的 CrazyGames 标准结论行**
+- [ ] 最终交付报告已输出，含用户需自行完成的前置事项

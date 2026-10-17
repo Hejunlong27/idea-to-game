@@ -58,6 +58,16 @@
 
 > 目标：能直接提交**用户选定的那些平台**。
 
+### 前置：审核官终审通过（不可跳过）
+
+- [ ] `docs/09-review/verdict-r2.json` 存在，且 `verdict` ∈ {`PASS`, `PASS_WITH_DEVIATIONS`}
+- [ ] R0（`review_plan`）与 R1（`review_graybox`）阶段状态均为 `done` —— **审核环节一个都不能跳**
+- [ ] `manual-checks.json` 无未填条目
+- [ ] 所有 `blocker` 级问题单状态为 `fixed`
+- [ ] `rounds.md` 已记录全部轮次
+- [ ] 交付报告含明确的 CrazyGames 标准结论行（三选一，措辞不得模糊）
+
+### 平台交付
 - [ ] `scripts/precheck.py` 对**每个选定平台**分别自检、全部全绿
 - [ ] **交付包平台范围与 `delivery.platforms` 完全一致**（不多不少）
 - [ ] 每平台独立 zip，解压后本地可直接运行

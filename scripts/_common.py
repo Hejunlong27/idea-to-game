@@ -16,17 +16,30 @@ TEMPLATE_DIR = SKILL_DIR / "assets" / "template"
 
 STAGES = [
     "brief",
+    "review_plan",      # R0 审核官介入：规划预审
     "scaffold",
     "art_bible",
     "core_loop",
+    "review_graybox",   # R1 审核官介入：灰盒预审（生图之前）
     "art_forge",
     "sprite_tools",
     "audio_forge",
     "polish",
     "perf_audit",
     "qa",
+    "review_final",     # R2 审核官介入：终审（交付之前）
     "ship",
 ]
+
+# 审核官介入的三处，映射到 state.yaml 的阶段键
+REVIEW_STAGES = {
+    "r0": "review_plan",
+    "r1": "review_graybox",
+    "r2": "review_final",
+}
+
+# 允许进入后续阶段的审核结论（REJECTED / INCOMPLETE 均阻断）
+PASSING_VERDICTS = {"PASS", "PASS_WITH_DEVIATIONS"}
 
 STATUSES = {"pending", "in_progress", "done", "failed", "degraded", "skipped"}
 
