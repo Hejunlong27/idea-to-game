@@ -10,6 +10,28 @@
 
 ## 步骤
 
+### 0. 先选画风预设（有参考图也建议先看一眼）
+
+技能包内置 5 档画风预设（`assets/styles/`），已把 RHSTORY 画风库里的长提示词蒸馏成游戏资产向的
+`style_tokens`，并配好色板、后处理要求与风险说明：
+
+```bash
+python <skill>/scripts/style_lib.py list                    # 5 档一览：适合品类 / 风险
+python <skill>/scripts/style_lib.py show pixel-game         # 单档完整配置
+python <skill>/scripts/style_lib.py apply chibi-2d --project .   # 写入 palette.json + style.json
+```
+
+| key | 名称 | 适合 |
+|---|---|---|
+| `pixel-game` | 像素游戏风 | 平台跳跃 / 街机 / roguelike / 塔防（**素材最轻**） |
+| `flat-vector` | 扁平矢量插画 | 超休闲 / 解谜 / 点击放置（**与程序化 UI 最同源**） |
+| `lowpoly-3d` | 低多边形游戏风 | 经营建造 / 物理益智（3D 观感、2D 渲染成本） |
+| `chibi-2d` | 2D Q版卡通 | 合成消除 / 养成 / 儿童向（**受众最广**） |
+| `ghibli` | 吉卜力手绘 | 治愈经营 / 叙事冒险（质感最好但最重） |
+
+**有用户参考图时，参考图优先** —— 预设只用来快速起步或用户没给参考图时兜底。
+用了预设就在 `art-bible.md` 里写明 `style_key`，并复述该档的 `sprite_hint` 与 `risk`。
+
 ### 1. 提取主色板
 
 ```bash
@@ -32,6 +54,9 @@ python <skill>/scripts/palette_extract.py --input <参考图> --out docs/02-art/
 | 氛围词 | playful / warm / clean / moody / retro |
 
 ### 3. 生成 style_tokens
+
+> 已 `apply` 过画风预设时，`palette.json` 里的 `style_tokens` 已经有了 —— 直接跳到第 4 步，
+> 但**必须核对**它是否贴合本次题材（预设给的是通用串，题材特殊时补 2–3 个专属词）。
 
 把上述维度压缩成**一行**可注入提示词的风格串，写入 `palette.json` 的 `style_tokens` 字段。
 

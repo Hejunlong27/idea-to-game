@@ -1,0 +1,25 @@
+{
+  "key": "chibi-2d",
+  "name": "2D Q版卡通",
+  "name_en": "2D Chibi / Kawaii",
+  "source": {
+    "library": "RHSTORY 画风库（服务端全量）",
+    "group": "2d",
+    "index": 4,
+    "style_id": 108,
+    "style_key": "2d-chibi",
+    "original_name": "2D Q版卡通 ｜ 2D Chibi/Kawaii"
+  },
+  "style_tokens": "2d chibi kawaii game character, big head small body, bold crisp dark closed outline, macaron pastel palette, flat color blocks, minimal soft shading, sweet healing mood, clean simple background",
+  "palette": {
+    "primary": ["#FFB3C6", "#FFD6A5", "#FDFFB6", "#CAFFBF", "#9BF6FF", "#BDB2FF"],
+    "accent": ["#3D3B4F"],
+    "background": "#FFF7FB"
+  },
+  "negative_extra": "realistic proportions, photorealistic, harsh shadows, muddy colors, complex detail, text, watermark, creepy",
+  "sprite_hint": "Q 版靠「大头 + 闭合描边」；同角色多表情/多动作时以首帧做 img2img 保一致性（sidecar 里写 ref）",
+  "gen": { "size": 1024, "steps": 28, "cfg": 7.5 },
+  "best_for": ["合成消除", "养成", "儿童向", "换装", "休闲解谜"],
+  "risk": "容易画得过甜而缺乏辨识度 → 给每个角色一个专属主色 + 一个标志道具",
+  "notes": "受众最广、审核最安全的一档；与圆角 UI、弹性动画（juice）天然契合。"
+}

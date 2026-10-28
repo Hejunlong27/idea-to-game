@@ -181,6 +181,7 @@ python <skill>/scripts/init_project.py \
   --idea "做一个合成水果的游戏" \
   --platforms crazygames,taptap \
   --style-ref /path/to/style.png \
+  --style chibi-2d \
   --out /path/to/workspace
 ```
 
@@ -358,6 +359,7 @@ python <skill>/scripts/gate_check.py --project <project> --stage ship
 | `references/delivery-standards.md` | L1/L2/L3 完整验收清单（含审核门禁） | 验收与交付时 |
 | `references/platform-requirements.md` | 5 个平台的硬红线（已核实官方文档） | 平台确认、构建、审计、打包时 |
 | `references/genre-playbook.md` | 超休闲品类拆解与选型建议 | P0 立项时 |
+| **`assets/styles/`** | **画风预设库（5 档，已蒸馏成游戏资产向 style_tokens + 配色板 + 风险标注）** | P1 定风格时 |
 | **`references/artgen-integration.md`** | **ComfyUI / RunningHub 接口细节、节点探测规则、故障排查** | 接生图通道、出图失败时 |
 | `assets/workflows/` | ComfyUI API 格式工作流模板 + 导出/node_map 说明 | P1/P2 配 provider 时 |
 | `modules/00-…-11-*.md` | 各环节详细执行步骤 | 执行到该环节时 |
@@ -366,5 +368,6 @@ python <skill>/scripts/gate_check.py --project <project> --stage ship
 | **`scripts/review_gate.py`** | **审核执行与结论判定（自动 + 人工条目合并出 verdict）** | 每轮审核时 |
 | **`scripts/gen_assets.py`** | **资产生成：ComfyUI / RunningHub / 占位，含台账与断点续跑** | P2 生图时 |
 | `scripts/gen_prompts.py` | 从 scope.json 批量生成提示词（自带 style_tokens） | P1 收尾、P2 之前 |
+| **`scripts/style_lib.py`** | **画风预设：list / show / apply（写入 palette.json）** | P1 定风格时 |
 | **`scripts/ship_pack.py`** | **一键构建 + 审计 + 自检 + 打 zip + 商店素材 + 自检清单** | P4 交付时 |
 | `assets/template/` | Phaser 3.90 + Vite + 5 平台适配层模板 | P1 建项目时复制 |

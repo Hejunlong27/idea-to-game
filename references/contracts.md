@@ -128,7 +128,27 @@ delivery:
   "shading": "flat",
   "texture": "smooth",
   "mood": ["playful", "warm", "clean"],
-  "style_tokens": "flat vector, thick dark outline, warm saturated palette, soft rounded shapes, no gradient"
+  "negative": "realistic proportions, photorealistic, harsh shadows, text, watermark",
+  "style_tokens": "flat vector, thick dark outline, warm saturated palette, soft rounded shapes, no gradient",
+  "style_key": "chibi-2d",
+  "source": { "library": "RHSTORY 画风库（服务端全量）", "group": "2d", "index": 4, "style_id": 108 }
+}
+```
+
+`style_key` 存在时说明用了画风预设（`assets/styles/<key>.json`），`source` 记录出处便于追溯。
+`negative` 会被 `gen_prompts.py` 写进每条素材的 sidecar，`gen_assets.py` 直接使用。
+
+## `docs/02-art/style.json`（用预设时才有）
+
+```json
+{
+  "key": "pixel-game", "name": "像素游戏风", "name_en": "Pixel Game Style",
+  "source": { "library": "RHSTORY 画风库（服务端全量）", "group": "2d", "index": 71, "style_id": 199 },
+  "sprite_hint": "出图后用最近邻缩到 64/128 网格；严禁 LANCZOS",
+  "risk": "AI 出的像素带半像素与渐变 → 必须量化调色板",
+  "best_for": ["平台跳跃", "塔防"],
+  "gen": { "size": 1024, "steps": 28, "cfg": 7.5 },
+  "applied_at": "2026-10-28T18:31:33+08:00"
 }
 ```
 

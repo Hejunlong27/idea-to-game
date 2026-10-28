@@ -78,6 +78,7 @@ idea-to-game/
 │  ├─ review_gate.py               # ★ 审核执行与结论判定（自动 + 人工条目 → verdict）
 │  ├─ palette_extract.py           # 从参考图提取主色板（K-means）
 │  ├─ gen_prompts.py               # 从 scope.json 批量生成提示词（自带 style_tokens）
+│  ├─ style_lib.py                 # ★ 画风预设：list / show / apply（写入 palette.json）
 │  ├─ gen_assets.py                # ★ 资产生成：ComfyUI / RunningHub / 占位 + 台账 + 续跑
 │  ├─ sprite_tools.py              # 网格切分 / 泛洪抠图 / 裁边 / 统一画布
 │  ├─ pack_atlas.py                # 打包 Phaser 纹理图集（多页支持）
@@ -86,6 +87,7 @@ idea-to-game/
 │  └─ ship_pack.py                 # ★ 一键：构建 + 审计 + 自检 + 打 zip + 商店素材 + 清单
 │
 └─ assets/
+   ├─ styles/                      # ★ 画风预设库（5 档，含 style_tokens / 色板 / 风险标注）
    ├─ workflows/                   # ComfyUI API 格式工作流模板 + 导出/node_map 说明
    └─ template/                    # Phaser 3 + Vite 项目模板（P1 复制到项目根目录）
       ├─ package.json              # 含 build:cg / build:poki / build:pg / build:gd
@@ -365,6 +367,17 @@ this.load.atlas('atlas', 'assets/atlas/atlas.png', 'assets/atlas/atlas.json');
 ---
 
 ## 六、更新日志
+
+### v1.4 · 画风预设库
+
+- **新增 `assets/styles/`**：从 RHSTORY 画风库（服务端全量 306 条）里筛出 5 档适合小游戏的画风 ——
+  `pixel-game` / `flat-vector` / `lowpoly-3d` / `chibi-2d` / `ghibli`。
+  每条都**蒸馏成游戏资产向的短 `style_tokens`**（原库是视频向长模板），并配好主色板、后处理要求、风险说明。
+- **新增 `scripts/style_lib.py`**：`list` / `show <key>` / `apply <key> --project .`，
+  写入 `docs/02-art/palette.json`（含 `negative`）与 `docs/02-art/style.json`（来源与风险）。
+- **`init_project.py --style <key>`**：建项目时直接套用预设。
+- **`gen_prompts.py`**：优先使用 `palette.json` 的 `negative`（预设带来的风格化反向词会自动生效）。
+- `modules/03-art-bible.md` 新增「步骤 0：先选画风预设」；有用户参考图时参考图优先。
 
 ### v1.3 · 生图通道接入 + 一键交付
 

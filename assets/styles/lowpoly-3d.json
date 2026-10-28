@@ -1,0 +1,25 @@
+{
+  "key": "lowpoly-3d",
+  "name": "低多边形游戏风",
+  "name_en": "Low Poly Game Style",
+  "source": {
+    "library": "RHSTORY 画风库（服务端全量）",
+    "group": "3d-special",
+    "index": 19,
+    "style_id": 198,
+    "style_key": "lowpoly-game",
+    "original_name": "低多边形游戏风 ｜ Low Poly Game Style"
+  },
+  "style_tokens": "low poly 3d game asset, faceted flat-shaded polygons, visible triangular planes, soft ambient occlusion, clear key light with rim light, unified color scheme, simple clean background, isometric-friendly",
+  "palette": {
+    "primary": ["#E76F51", "#F4A261", "#2A9D8F", "#264653", "#E9C46A", "#F1FAEE"],
+    "accent": ["#1D3557"],
+    "background": "#EAF4F4"
+  },
+  "negative_extra": "photorealistic, high-poly detail, fur, hair strands, text, watermark, noisy texture, painterly brush strokes",
+  "sprite_hint": "要「3D 感但零渲染成本」：出图后不要加真实阴影层，明暗已烘进贴图；同一物件保持固定 45° 视角",
+  "gen": { "size": 1024, "steps": 30, "cfg": 7.0 },
+  "best_for": ["经营建造", "塔防", "物理益智", "3D 感休闲", "合成升级"],
+  "risk": "视角容易乱（同一批素材有的俯视有的平视）→ 提示词必须锁死视角与光位",
+  "notes": "想要「像 3D 游戏」但不想付 WebGL 代价时的首选：静态贴图 + Phaser 2D 呈现。"
+}

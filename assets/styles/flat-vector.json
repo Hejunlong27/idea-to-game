@@ -1,0 +1,25 @@
+{
+  "key": "flat-vector",
+  "name": "扁平矢量插画",
+  "name_en": "Flat Vector Illustration",
+  "source": {
+    "library": "RHSTORY 画风库（服务端全量）",
+    "group": "2d",
+    "index": 70,
+    "style_id": 197,
+    "style_key": "flat-vector-illust",
+    "original_name": "扁平矢量插画风 ｜ Flat Vector Illustration Style"
+  },
+  "style_tokens": "flat vector illustration, clean geometric shapes, bold simple silhouettes, solid color blocks, no gradient, minimal flat shading, thick uniform outline, icon-like readability, game asset, centered",
+  "palette": {
+    "primary": ["#FF6B6B", "#FFD93D", "#6BCB77", "#4D96FF", "#B983FF", "#FFF6E5"],
+    "accent": ["#22223B"],
+    "background": "#FFF9F0"
+  },
+  "negative_extra": "gradient, photorealistic, 3d render, texture noise, sketchy lines, muddy colors, complex background, watermark",
+  "sprite_hint": "矢量感靠「纯色块 + 统一描边」；出图后可用 sprite_tools 的 --pad-to 统一画布，保证图标与精灵比例一致",
+  "gen": { "size": 1024, "steps": 26, "cfg": 7.0 },
+  "best_for": ["超休闲（hyper-casual）", "解谜", "点击放置", "答题", "工具类小游戏"],
+  "risk": "容易画成「企业风 PPT 插画」，人物缺情绪 → 提示词里要指定 playful / 夸张姿态",
+  "notes": "CrazyGames / Poki 首页最常见的观感，与程序化 UI 同源，做多语言版本最省事。"
+}

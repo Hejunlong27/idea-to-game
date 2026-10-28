@@ -1,0 +1,25 @@
+{
+  "key": "pixel-game",
+  "name": "像素游戏风",
+  "name_en": "Pixel Game Style",
+  "source": {
+    "library": "RHSTORY 画风库（服务端全量）",
+    "group": "2d",
+    "index": 71,
+    "style_id": 199,
+    "style_key": "pixel-game-style",
+    "original_name": "像素游戏风 ｜ Pixel Game Style"
+  },
+  "style_tokens": "16-bit pixel art game sprite, crisp square pixels, limited 24-color palette, hard edges, no anti-aliasing, thick 1px dark outline, flat shading, readable silhouette at small size, retro arcade look",
+  "palette": {
+    "primary": ["#E94F37", "#F6C453", "#3B8EA5", "#2E4057", "#7FB069", "#F4EDE4"],
+    "accent": ["#1A1A24"],
+    "background": "#14161F"
+  },
+  "negative_extra": "anti-aliasing, smooth gradient, blurry edges, high resolution photo, 3d render, vector, soft shadow, painterly",
+  "sprite_hint": "生成 512 或 1024 方图后，用最近邻（NEAREST）缩到 64/128 网格；严禁 LANCZOS 缩放，会把像素糊成半透明边",
+  "gen": { "size": 1024, "steps": 28, "cfg": 7.5 },
+  "best_for": ["平台跳跃", "复古街机", "roguelike", "塔防", "横版闯关"],
+  "risk": "AI 出的「像素」常带半像素与渐变 → 必须后处理量化到有限调色板；主体太小会糊",
+  "notes": "小游戏里最稳的一档：体积小、识别度高、程序化 UI 极易统一。适合先用灰盒验证再上素材。"
+}

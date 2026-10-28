@@ -85,6 +85,7 @@ def main() -> int:
         help=f"目标平台，逗号分隔。可选：{', '.join(PLATFORM_KEYS)}。"
              "留空表示尚未与用户确认（后续必须用 state.py set-platforms 补上）",
     )
+    ap.add_argument("--style", default="", help="画风预设 key（见 assets/styles/，如 pixel-game / flat-vector）")
     ap.add_argument("--out", default=".", help="输出父目录，默认当前目录")
     args = ap.parse_args()
 
@@ -176,6 +177,14 @@ def main() -> int:
     }
     save_state(proj, state)
     dump_json(proj / "docs" / "00-platforms" / ".keep.json", {"note": "占位，可删除"})
+
+    # 画风预设（可选）
+    if args.style:
+        import style_lib
+
+        rc = style_lib.apply_preset(proj, args.style.strip(), force=True)
+        if rc != 0:
+            warn("画风预设应用失败，可稍后用 style_lib.py apply 重试")
 
     ok(f"项目已初始化：{proj}")
     if platforms:

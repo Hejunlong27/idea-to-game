@@ -1,0 +1,25 @@
+{
+  "key": "ghibli",
+  "name": "吉卜力手绘",
+  "name_en": "Studio Ghibli Style",
+  "source": {
+    "library": "RHSTORY 画风库（服务端全量）",
+    "group": "2d",
+    "index": 13,
+    "style_id": 113,
+    "style_key": "ghibli",
+    "original_name": "吉卜力风格 ｜ Studio Ghibli Style"
+  },
+  "style_tokens": "studio ghibli hand-painted 2d animation, soft gouache watercolor texture, natural daylight, fresh gentle greens and sky blues, delicate hand-drawn line, warm nostalgic atmosphere, clean readable shapes, no harsh contrast",
+  "palette": {
+    "primary": ["#7FB069", "#A8D5BA", "#8ECAE6", "#F2E8CF", "#DDA15E", "#BC6C25"],
+    "accent": ["#3A5A40"],
+    "background": "#F4F1E8"
+  },
+  "negative_extra": "photorealistic, 3d render, neon, harsh saturation, heavy black outline, cyberpunk, text, watermark, plastic skin",
+  "sprite_hint": "水彩肌理在小尺寸会糊 → 精灵出图后用 --pad-to 统一画布，主体占画布 70% 以上；背景单独出整张不抠图",
+  "gen": { "size": 1024, "steps": 32, "cfg": 7.0 },
+  "best_for": ["治愈经营", "叙事冒险", "农场/小镇", "音乐节奏", "亲子向"],
+  "risk": "风格版权敏感（不要在商店文案里直接写 Ghibli 品牌名，用「手绘水彩动画风」描述）；细节多、抠图成本高",
+  "notes": "质感最好但最「重」的一档：适合当卖点，不适合 20MB 首包红线的重度素材量。素材数控制在 15 个以内。"
+}

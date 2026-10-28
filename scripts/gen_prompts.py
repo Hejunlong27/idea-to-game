@@ -94,6 +94,9 @@ def main() -> int:
         print("ERROR: palette.json 缺少 style_tokens —— 它是风格一致性的唯一锚点", file=sys.stderr)
         return 1
 
+    # 风格预设带来的 negative 优先（style_lib.py apply 会写入）
+    negative = (palette.get("negative") or "").strip() or NEGATIVE
+
     subjects_p = proj / "docs" / "02-art" / "subjects.json"
     subjects = {}
     if subjects_p.exists():
@@ -138,7 +141,7 @@ def main() -> int:
             dst.write_text(prompt + "\n", encoding="utf-8")
             side = pdir / f"{name}.json"
             if not side.exists():
-                dump_json(side, {"width": size, "height": size, "negative": NEGATIVE})
+                dump_json(side, {"width": size, "height": size, "negative": negative})
             written += 1
 
     if args.dry_run:
