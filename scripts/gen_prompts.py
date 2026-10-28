@@ -95,8 +95,14 @@ def write_grid_prompt(
         if len(names) != cells:
             warn(f"items {len(names)} 个 vs 网格 {cells} 格 —— 建议改成 {len(names)} 格布局，否则会有空格/串格")
         subject = args.subject.strip() or "game items"
+        # 素材名如果是 ID 形态（slime_1 / ui_btn_2），不要塞进提示词 ——
+        # 模型会把它当文字画出来。只有描述性名字（apple / pear）才作为内容清单。
+        import re as _re
+
+        id_like = all(_re.search(r"[_\-]\d+$", n) for n in names)
+        head = subject if id_like else f"{subject}: {', '.join(names)}"
         prompt = join_unique(
-            f"{subject}: {', '.join(names)}",
+            head,
             f"sprite sheet in a {rows}x{cols} grid layout, {cells} separate items, one item per cell, "
             "evenly spaced, each item centered in its own cell, equal size, no overlap, no grid lines, no text",
             bg_clause,

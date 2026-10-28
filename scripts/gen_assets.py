@@ -572,14 +572,23 @@ class ComfyUI:
         self.client_id = uuid.uuid4().hex
         self._cache: dict[str, tuple[dict, dict]] = {}
 
-    def probe(self) -> tuple[bool, str]:
+    def probe(self, full: bool = True) -> tuple[bool, str]:
+        """full=True 时额外核对工作流引用的模型是否本机存在。
+
+        ⚠️ `pick_provider` 只能用 full=False：模型核对要打 4~8 次 /object_info，
+        而 ComfyUI 在跑重任务（视频生成）时这些请求会**长时间挂住**且 urllib 的
+        timeout 管不住（服务端持续缓慢吐字节，读超时不断被重置）。
+        实测因此卡死过 12 分钟，一次都没提交上去。
+        """
         try:
-            st = http_json(f"{self.host}/system_stats", timeout=8, no_proxy=True)
+            st = http_json(f"{self.host}/system_stats", timeout=5, no_proxy=True)
         except Exception as e:  # noqa: BLE001
             return False, f"不可达（{self.host}）：{e}"
         dev = (st.get("devices") or [{}])[0]
         v = st.get("system", {}).get("comfyui_version", "?")
         base = f"可达 · ComfyUI {v} · {dev.get('name', 'unknown')}"
+        if not full:
+            return True, base
 
         # 校验工作流引用的模型本机是否存在 —— 共享工作流最常见的失败原因
         missing = self.check_models()
@@ -593,10 +602,15 @@ class ComfyUI:
         )
 
     def _loader_options(self, node_type: str, field: str) -> list[str]:
+        cache = self.__dict__.setdefault("_opt_cache", {})
+        if node_type in cache:
+            return cache[node_type]
         try:
-            info = http_json(f"{self.host}/object_info/{node_type}", timeout=20, no_proxy=True)
+            info = http_json(f"{self.host}/object_info/{node_type}", timeout=8, no_proxy=True)
             opts = info[node_type]["input"]["required"][field][0]
-            return list(opts) if isinstance(opts, list) else []
+            out = list(opts) if isinstance(opts, list) else []
+            cache[node_type] = out
+            return out
         except Exception:  # noqa: BLE001
             return []
 
@@ -1069,7 +1083,7 @@ def pick_provider(cfg: dict, proj: Path, forced: str) -> tuple[str, str]:
     if cfg["provider"] and cfg["provider"] != "auto":
         return cfg["provider"], "配置文件指定"
     comfy = ComfyUI(cfg, proj)
-    good, msg = comfy.probe()
+    good, msg = comfy.probe(full=False)   # 只探可达性，不做模型核对（会挂住）
     if good:
         return "comfyui", msg
     rh = RunningHub(cfg, proj)

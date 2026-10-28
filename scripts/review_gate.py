@@ -506,9 +506,13 @@ def main() -> int:
             if r in ("pass", "fail", "na"):
                 entry["result"] = r.upper()
                 entry["evidence"] = m.get("evidence", "")
+                # ★ 人工明确判为 na（不适用）也算「已判定」。
+                #   之前把它当成未填写，导致「全是 na」的项目永远 INCOMPLETE。
+                entry["filled"] = True
             else:
                 entry["result"] = "NA"
                 entry["evidence"] = "未填写（请在 manual-checks.json 中判定）"
+                entry["filled"] = False
         results[iid] = entry
 
     # 3. 统计与结论
@@ -517,7 +521,7 @@ def main() -> int:
     req_fail = [e for e in req if e["result"] == "FAIL"]
     gd_fail = [e for e in gd if e["result"] == "FAIL"]
     unresolved = [e for e in results.values() if e["result"] == "NA"]
-    manual_unfilled = [e for e in unresolved if not e["auto"]]
+    manual_unfilled = [e for e in results.values() if not e["auto"] and not e.get("filled", False)]
 
     if req_fail:
         verdict = "REJECTED"
@@ -603,6 +607,37 @@ def main() -> int:
     (outdir / "verdict.json").write_text(
         json.dumps(verdict_data, ensure_ascii=False, indent=2), encoding="utf-8"
     )
+
+    # 6.5 写本轮审核报告（r{phase}-*-review.md）
+    # gate_check 要求该文件存在；过去只写 checklist/verdict，导致「审核通过了但 gate 报缺文件」。
+    slug = {"r0": "plan", "r1": "graybox", "r2": "final"}[args.phase]
+    title = {"r0": "规划预审", "r1": "灰盒预审", "r2": "终审"}[args.phase]
+    md = [
+        f"# {args.phase.upper()} {title}报告（第 {args.round} 轮）",
+        "",
+        f"- 项目：{proj.name}　时间：{now}",
+        f"- 目标平台：{', '.join(ctx.platforms) or '（未记录）'}",
+        f"- 判据：references/crazygames-standard.md",
+        f"- 结论：**{verdict}**",
+        f"- REQ {len(req) - len(req_fail)}/{len(req)}　GUIDE {len(gd) - len(gd_fail)}/{len(gd)}",
+        "",
+    ]
+    if req_fail:
+        md += ["## 阻塞项（REQ FAIL，必须修复）", ""]
+        for e in req_fail:
+            md.append(f"- **[{e['id']}]** {e['desc']}　证据：{e['evidence']}　退回：{OWNER.get(e['dim'], '-')}")
+        md.append("")
+    if gd_fail:
+        md += ["## 偏离项（GUIDE FAIL，不阻塞但需记录）", ""]
+        for e in gd_fail:
+            md.append(f"- **[{e['id']}]** {e['desc']}　证据：{e['evidence']}")
+        md += ["", "## 改进计划", "", "（由审核官补充：每项偏离的修复方案与排期）", ""]
+    md += ["## 逐条结果", "", "| 条目 | 维度 | 级别 | 结果 | 判据 | 证据 |", "|---|---|---|---|---|---|"]
+    for e in results.values():
+        ev = (e["evidence"] or "").replace("|", "/")[:120]
+        md.append(f"| {e['id']} | {e['dim']} | {e['level']} | {e['result']} | {e['desc'][:60]} | {ev} |")
+    md += ["", "> 本文件由 `review_gate.py` 自动生成初稿，审核官可在其后补充叙述性结论。", ""]
+    (outdir / f"{args.phase}-{slug}-review.md").write_text("\n".join(md), encoding="utf-8")
 
     # 7. 写 rounds.md（追加）
     rounds_path = outdir / "rounds.md"

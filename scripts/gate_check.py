@@ -222,7 +222,33 @@ def check_art_forge(proj: Path, errs: list, warns: list):
     ph = [k for k, v in assets.items() if (v or {}).get("provider") == "placeholder"]
     if ph and len(ph) == len(assets):
         warns.append("全部素材都是程序化占位 —— 只有 L1 可玩档位，不能作为 L2/L3 交付")
-    missing = [n for n in prompts if n not in assets]
+    # 网格模式（kind=sheet/frames）的提示词文件名（如 slimes）不会出现在 manifest 里，
+    # 要按 sidecar 声明的格子名核对，否则永远误报「有提示词没出图」。
+    expected: list[str] = []
+    for stem in prompts:
+        side = pdir / f"{stem}.json"
+        kind = ""
+        if side.exists():
+            try:
+                kind = str((json.loads(side.read_text(encoding="utf-8")) or {}).get("kind") or "")
+            except Exception:  # noqa: BLE001
+                kind = ""
+        if kind in ("sheet", "frames"):
+            try:
+                spec = json.loads(side.read_text(encoding="utf-8"))
+                grid = str(spec.get("grid") or "1x1").lower()
+                rows, cols = (int(x) for x in grid.split("x"))
+                items = [str(x) for x in (spec.get("items") or [])]
+                if kind == "sheet" and items:
+                    expected += items[: rows * cols]
+                else:
+                    n = int(spec.get("frames") or rows * cols)
+                    expected += [f"{stem}_{i}" for i in range(n)]
+            except Exception:  # noqa: BLE001
+                expected.append(stem)
+        else:
+            expected.append(stem)
+    missing = [n for n in expected if n not in assets]
     if missing:
         errs.append(
             f"以下素材有提示词但没有出图：{', '.join(missing[:8])}"
