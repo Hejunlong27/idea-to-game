@@ -80,7 +80,8 @@ DEFAULTS = {
     "cfg": None,
     "negative": DEFAULT_NEGATIVE,
     "fallback_placeholder": True,
-    "remove_bg": "",          # 设成 #RRGGBB 则出图后把该背景色抠成透明（SDXL 不出 alpha）
+    "remove_bg": "",          # "auto" / #RRGGBB；SDXL 不出 alpha，出图后泛洪抠色
+    "remove_bg_tolerance": 60,
     "trim": False,            # 出图后按 alpha 裁边
     "comfyui": {
         "host": "http://127.0.0.1:8188",
@@ -719,12 +720,44 @@ def hex_to_rgb(s: str) -> tuple[int, int, int]:
     return tuple(int(s[i : i + 2], 16) for i in (0, 2, 4))  # type: ignore
 
 
-def remove_bg_color(im: Image.Image, color: str, tol: int = 40) -> Image.Image:
-    """把指定背景色抠成透明（从四边泛洪，避免误伤主体同色区域）。"""
+def detect_border_color(im: Image.Image) -> tuple[int, int, int]:
+    """取四边像素的逐通道中位数，作为实际背景色。
+
+    为什么需要它：模型**不会**精确画出提示词里的 #FF00FF ——
+    实测 SD1.5 把 "pure magenta" 画成 (248,15,187)，与目标色差 68，
+    按固定色值抠图会整张失败。所以默认从图里取样。
+    """
     im = im.convert("RGBA")
     w, h = im.size
     px = im.load()
-    target = hex_to_rgb(color)
+    samples = []
+    step = max(1, w // 64)
+    for x in range(0, w, step):
+        samples.append(px[x, 0][:3])
+        samples.append(px[x, h - 1][:3])
+    for y in range(0, h, step):
+        samples.append(px[0, y][:3])
+        samples.append(px[w - 1, y][:3])
+    if not samples:
+        return (255, 255, 255)
+    chans = list(zip(*samples))
+    return tuple(sorted(c)[len(c) // 2] for c in chans)  # type: ignore
+
+
+def remove_bg_color(im: Image.Image, color: "str | tuple[int, int, int] | None", tol: int = 40) -> Image.Image:
+    """把背景色抠成透明（从四边泛洪，避免误伤主体同色区域）。
+
+    color 传 None 或 "auto" 时自动从图像四边取样。
+    """
+    im = im.convert("RGBA")
+    w, h = im.size
+    px = im.load()
+    if color is None or (isinstance(color, str) and color.strip().lower() in ("auto", "true", "")):
+        target = detect_border_color(im)
+    elif isinstance(color, str):
+        target = hex_to_rgb(color)
+    else:
+        target = tuple(color)  # type: ignore
 
     def close(c) -> bool:
         return all(abs(c[i] - target[i]) <= tol for i in range(3))
@@ -792,6 +825,7 @@ def main() -> int:
     )
     ap.add_argument("--seed", type=int, default=None)
     ap.add_argument("--size", default="", help="覆盖尺寸，如 1024x1024")
+    ap.add_argument("--timeout", type=int, default=0, help="单张超时秒数（覆盖配置里的 timeout）")
     ap.add_argument("--no-fallback", action="store_true", help="失败时不用占位素材兜底")
     ap.add_argument("--no-update-state", action="store_true", help="不改写 state.yaml")
     args = ap.parse_args()
@@ -809,6 +843,9 @@ def main() -> int:
         except Exception:
             print(f"ERROR: --size 格式应为 WxH（收到 {args.size}）", file=sys.stderr)
             return 1
+    if args.timeout:
+        cfg["comfyui"]["timeout"] = args.timeout
+        cfg["runninghub"]["timeout"] = args.timeout
     if args.no_fallback:
         cfg["fallback_placeholder"] = False
 
@@ -915,7 +952,7 @@ def main() -> int:
             if cfg.get("remove_bg") or cfg.get("trim"):
                 im2 = Image.open(out)
                 if cfg.get("remove_bg"):
-                    im2 = remove_bg_color(im2, cfg["remove_bg"])
+                    im2 = remove_bg_color(im2, cfg["remove_bg"], int(cfg.get("remove_bg_tolerance") or 60))
                 if cfg.get("trim"):
                     im2 = trim_alpha(im2)
                 im2.save(out, "PNG")

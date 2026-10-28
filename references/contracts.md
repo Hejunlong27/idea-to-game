@@ -143,7 +143,8 @@ provider: auto                 # auto | comfyui | runninghub | placeholder
 size: { width: 1024, height: 1024 }
 seed: 20261016
 negative: "low quality, blurry, watermark, text, extra limbs, photorealistic"
-remove_bg: "#FF00FF"           # 出图后把该背景色泛洪抠成透明；留空不抠
+remove_bg: "auto"              # 泛洪抠背景：auto=四边取样（推荐）/ #RRGGBB / 留空不抠
+remove_bg_tolerance: 60        # 取样色容差
 trim: false
 fallback_placeholder: true     # 失败时用占位素材兜底（不得让流程卡死）
 comfyui:

@@ -175,7 +175,7 @@ python <skill>/scripts/gen_assets.py                # 全量（未变化的自�
 - **台账 + 断点续跑**：`assets/raw/manifest.json` 记 `signature = hash(prompt|negative|size|seed|provider|workflow)`，签名不变就跳过 → 改一条提示词只重出那一张。
 - **失败必须降级**：单张重试 3 次（指数退避）→ 仍失败用占位顶上并记 `degraded`，**不让"没显卡"卡死整条流水线**。
 - **本地地址绕过系统代理**：`http_proxy` 会劫持 `127.0.0.1`，导致 ComfyUI 明明在跑却返回 502。脚本对 ComfyUI 请求一律 `ProxyHandler({})`。
-- **透明背景**：SDXL 不出 alpha。提示词加 `on a flat pure magenta background` + `remove_bg: "#FF00FF"`，出图后**从四边泛洪**抠色（不会误伤主体内部同色像素）。
+- **透明背景**：SDXL 不出 alpha。提示词加 `on a flat pure magenta background` + `remove_bg: "auto"`，出图后**从四边泛洪**抠色（不会误伤主体内部同色像素）。用 `auto` 而不是写死 `#FF00FF`：实测 SD1.5 把洋红画成 `(248,15,187)`，固定色值一个像素都抠不掉。
 
 细节：`references/artgen-integration.md`、`assets/workflows/README.md`。
 
@@ -383,6 +383,9 @@ this.load.atlas('atlas', 'assets/atlas/atlas.png', 'assets/atlas/atlas.json');
 - **`gate_check.py`**：`art_forge` 校验生图台账（有提示词没出图 → 失败；降级项 → 告警）；
   `qa` 校验实机截图 ≥3 张。
 - **`init_project.py`**：自动写入 `.gamedev/artgen.yaml` 并复制工作流模板。
+- **已用真实 ComfyUI 跑通**（0.42.1 + RTX 4060 + SD1.5）：节点自动探测、`/prompt`→`/history`→`/view`
+  全链路实测通过，单张 512×512 约 15–18s。据此补了两个默认值：`remove_bg: "auto"`（模型画不准指定色）
+  与 `--timeout`（长工作流按需放宽）。
 
 ### v1.2 · 质量与玩法审核官
 

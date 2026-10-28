@@ -47,6 +47,23 @@ def humanize(name: str) -> str:
     return name.replace("_", " ").replace("-", " ").strip()
 
 
+def join_unique(*parts: str) -> str:
+    """按逗号拼接并去重（大小写不敏感），避免 "front view" 之类的重复段。"""
+    seen: set[str] = set()
+    out: list[str] = []
+    for part in parts:
+        for seg in part.split(","):
+            seg = seg.strip().strip(".")
+            if not seg:
+                continue
+            key = seg.lower()
+            if key in seen:
+                continue
+            seen.add(key)
+            out.append(seg)
+    return ", ".join(out)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="批量生成生图提示词")
     ap.add_argument("--project", default=None)
@@ -112,11 +129,9 @@ def main() -> int:
             if not subject:
                 missing_subject.append(name)
                 subject = humanize(name)
-            parts = [subject, suffix]
-            if bg_clause:
-                parts.append(bg_clause)
-            parts.append(tokens)
-            prompt = ", ".join(p.strip().strip(",") for p in parts if p.strip())
+            # style_tokens 原样追加在最后，不参与去重（它是整体风格串）
+            head = join_unique(subject, suffix, bg_clause)
+            prompt = f"{head}, {tokens}" if head else tokens
             if args.dry_run:
                 print(f"{name}.txt → {prompt}")
                 continue

@@ -112,11 +112,33 @@ def do_pad_to(im: Image.Image, size: tuple[int, int]) -> Image.Image:
     return canvas
 
 
-def do_remove_bg(im: Image.Image, bg: tuple[int, int, int], tol: int = 40) -> Image.Image:
-    """从四边泛洪抠背景色。比 --matte 的全局替换更安全（不会误伤主体内部同色像素）。"""
+def detect_border_color(im: Image.Image) -> tuple[int, int, int]:
+    """取四边像素逐通道中位数作为实际背景色（模型不会精确画出指定色）。"""
     im = im.convert("RGBA")
     w, h = im.size
     px = im.load()
+    step = max(1, w // 64)
+    samples = []
+    for x in range(0, w, step):
+        samples.append(px[x, 0][:3])
+        samples.append(px[x, h - 1][:3])
+    for y in range(0, h, step):
+        samples.append(px[0, y][:3])
+        samples.append(px[w - 1, y][:3])
+    chans = list(zip(*samples)) if samples else [(255,), (255,), (255,)]
+    return tuple(sorted(c)[len(c) // 2] for c in chans)  # type: ignore
+
+
+def do_remove_bg(im: Image.Image, bg: "tuple[int, int, int] | None", tol: int = 40) -> Image.Image:
+    """从四边泛洪抠背景色。比 --matte 的全局替换更安全（不会误伤主体内部同色像素）。
+
+    bg 为 None 时自动从四边取样。
+    """
+    im = im.convert("RGBA")
+    w, h = im.size
+    px = im.load()
+    if bg is None:
+        bg = detect_border_color(im)
 
     def close(c) -> bool:
         return all(abs(c[i] - bg[i]) <= tol for i in range(3))
@@ -149,7 +171,8 @@ def process_one(im: Image.Image, args) -> list[Image.Image]:
         parts = [im]
     for p in parts:
         if args.remove_bg:
-            p = do_remove_bg(p, parse_color(args.bg_color), args.bg_tolerance)
+            auto = args.bg_color.strip().lower() in ("auto", "")
+            p = do_remove_bg(p, None if auto else parse_color(args.bg_color), args.bg_tolerance)
         if args.matte:
             p = do_matte(p, parse_color(args.bg_color), args.tolerance)
         if args.trim:
@@ -169,7 +192,7 @@ def main() -> int:
     ap.add_argument("--grid", default="", help="网格切分，如 3x3")
     ap.add_argument("--matte", action="store_true", help="全局抠图（背景色转透明，可能误伤主体内同色像素）")
     ap.add_argument("--remove-bg", action="store_true", help="从四边泛洪抠背景色（AI 出图首选）")
-    ap.add_argument("--bg-color", default="#FFFFFF", help="抠图背景色，默认 #FFFFFF")
+    ap.add_argument("--bg-color", default="#FFFFFF", help="抠图背景色；--remove-bg 时可传 auto 自动取样")
     ap.add_argument("--tolerance", type=int, default=24, help="--matte 容差，默认 24")
     ap.add_argument("--bg-tolerance", type=int, default=40, help="--remove-bg 容差，默认 40")
     ap.add_argument("--trim", action="store_true", help="按 alpha 裁掉透明边距")

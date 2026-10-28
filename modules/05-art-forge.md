@@ -100,9 +100,14 @@ python <skill>/scripts/gen_assets.py
 
 | 做法 | 配置 | 适用 |
 |---|---|---|
-| 出图后自动泛洪抠色 | `artgen.yaml` 的 `remove_bg: "#FF00FF"` + 提示词含 `on a flat pure magenta background` | 最省事，默认推荐 |
-| 工作流里接抠图节点（rembg / BRIA / LayerDiffuse） | 自己导出的 API 工作流 | 质量最好 |
-| 交给 06 环节批量处理 | `sprite_tools.py --remove-bg --bg-color "#FF00FF"` | 想统一控制容差 |
+| 出图后自动泛洪抠色 | `artgen.yaml` 的 `remove_bg: "auto"` + 提示词含 `on a flat pure magenta background` | **默认推荐**：auto 从图像四边取样，不要求模型画出精确色值 |
+| 指定色值抠 | `remove_bg: "#FF00FF"` | 背景色稳定、想严格控制时 |
+| 工作流里接抠图节点（rembg / BRIA / LayerDiffuse） | 自己导出的 API 工作流 + `remove_bg: ""` | 质量最好 |
+| 交给 06 环节批量处理 | `sprite_tools.py --remove-bg --bg-color auto` | 想统一控制容差 |
+
+> **为什么默认 `auto`**：模型不会精确画出你写的色值。实测 SD1.5 把 "pure magenta" 画成 `(248,15,187)`，
+> 与 `#FF00FF` 的蓝通道差 68 —— 按固定色值抠会整张失败（alpha 全 255，看起来像"没抠"）。
+> `auto` 取四边像素中位数作背景色，再配 `remove_bg_tolerance`（默认 60）才可靠。
 
 ### 6. 校验
 

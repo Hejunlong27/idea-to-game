@@ -50,7 +50,8 @@ provider: auto                 # auto | comfyui | runninghub | placeholder
 size: { width: 1024, height: 1024 }
 seed: 20261016                 # 固定种子，保证同批素材风格一致；换风格才改
 negative: "low quality, blurry, jpeg artifacts, watermark, text, extra limbs, photorealistic, 3d render"
-remove_bg: "#FF00FF"           # 出图后把该背景色泛洪抠成透明（SDXL 不出 alpha）
+remove_bg: "auto"              # 出图后泛洪抠背景：auto=从四边取样（推荐）；也可写 #RRGGBB；留空不抠
+remove_bg_tolerance: 60        # 取样色容差。模型不会精确画出指定色，auto + 容差才可靠
 trim: false                    # 出图后按 alpha 裁边（裁边交给 sprite_tools 更可控）
 fallback_placeholder: true     # 生图不可用时用占位素材兜底，保证流程不断
 
