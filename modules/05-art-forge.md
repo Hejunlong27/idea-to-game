@@ -38,14 +38,23 @@ python <skill>/scripts/gen_assets.py --probe
 [FAIL] RunningHub: 缺少 workflowId（在 RunningHub 工作流页面取数字 ID）
 ```
 
-配置在 `.gamedev/artgen.yaml`（`init_project.py` 已生成）。**ComfyUI 必须改 `checkpoint`**：
+配置在 `.gamedev/artgen.yaml`（`init_project.py` 已生成）。默认用 **Qwen-Image 2.1 turbo** 的文生图 + 图生图工作流：
 
 ```yaml
 comfyui:
   host: http://127.0.0.1:8188
-  workflow: assets/workflows/comfyui_txt2img.json
-  checkpoint: sd_xl_base_1.0.safetensors   # ← models/checkpoints 下实际的文件名
+  workflow: assets/workflows/qwen_image_21_turbo_t2i.json        # 文生图
+  workflow_i2i: assets/workflows/qwen_image_21_turbo_i2i.json    # 图生图（sidecar 给 ref 时自动用）
+  unet_name: ""      # 留空=用工作流里的值；换量化版本/换机器时在这里覆盖，别改 JSON
+  clip_name: ""
+  vae_name: ""
+  size_mode: auto
+  timeout: 600
 ```
+
+`--probe` 会顺带核对工作流引用的模型本机有没有，缺了会列出本机可用清单。
+工作流特殊结构（提示词在 PrimitiveString 上、尺寸走 ResolutionSelector、双图槽位）已在
+`assets/workflows/README.md` 说明，脚本自动处理，**不需要手改 JSON**。
 
 RunningHub 填 `workflow_id`，`api_key` 建议走环境变量：
 
@@ -122,7 +131,7 @@ python <skill>/scripts/gate_check.py --project <project> --stage art_forge
 | 问题 | 手段 |
 |---|---|
 | 多个精灵风格跳脱 | 同一批固定 `seed` + 同一 `style_tokens`；改风格才改 seed |
-| 同一角色多帧不一致 | 以首帧为参考图做 img2img（sidecar 里写 `ref`，工作流需有 `LoadImage` 节点） |
+| 同一角色多帧不一致 | 以首帧为参考图做 img2img：sidecar 里写 `ref`，脚本会自动切到 `workflow_i2i` |
 | 色板偏离参考图 | 出图后用 `palette_extract.py` 比对主色，偏差大则重出 |
 | 尺寸不统一 | 生成后 `sprite_tools.py --pad-to 256x256` 统一画布 |
 

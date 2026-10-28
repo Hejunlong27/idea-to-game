@@ -169,10 +169,15 @@ trim: false
 fallback_placeholder: true     # 失败时用占位素材兜底（不得让流程卡死）
 comfyui:
   host: http://127.0.0.1:8188
-  workflow: assets/workflows/comfyui_txt2img.json
-  checkpoint: sd_xl_base_1.0.safetensors
-  timeout: 300
-  node_map: {}                 # 留空自动探测；{prompt: {nodeId: "6", fieldName: "text"}}
+  workflow: assets/workflows/qwen_image_21_turbo_t2i.json
+  workflow_i2i: assets/workflows/qwen_image_21_turbo_i2i.json  # sidecar 给了 ref 时自动切换
+  unet_name: ""                # 覆盖工作流里的模型名（换机器/换量化版本用）
+  clip_name: ""
+  vae_name: ""
+  checkpoint: ""               # 仅 SDXL / 传统 checkpoint 工作流
+  size_mode: auto              # auto | latent | selector
+  timeout: 600
+  node_map: {}                 # 留空自动探测；{prompt: {nodeId: "488", fieldName: "value"}}
 runninghub:
   base_url: https://www.runninghub.cn
   api_key: ""                  # 建议用 RUNNINGHUB_API_KEY 环境变量

@@ -86,7 +86,12 @@ DEFAULTS = {
     "comfyui": {
         "host": "http://127.0.0.1:8188",
         "workflow": str(DEFAULT_WORKFLOW),
+        "workflow_i2i": "",       # 素材 sidecar 里给了 ref 时自动改用它
         "checkpoint": "",
+        "unet_name": "",
+        "clip_name": "",
+        "vae_name": "",
+        "size_mode": "auto",      # auto | latent | selector
         "timeout": 300,
         "node_map": {},
     },
@@ -300,17 +305,103 @@ def retry(fn, attempts: int = 3, base_delay: float = 2.0, label: str = ""):
 
 
 # ------------------------------------------------------------------ 工作流节点探测
+# 文本字段优先级：不同工作流的编码节点字段名不一样
+#   CLIPTextEncode → text ｜ Qwen TextEncode → prompt/negative_prompt ｜ PrimitiveString → value
+TEXT_FIELDS = ("text", "prompt", "value", "string")
+
+# ComfyUI 核心 ResolutionSelector 的固定档位（输出尺寸由 比例 + 百万像素 决定）
+RATIO_OPTIONS = [
+    (1, 1, "1:1 (Square)"),
+    (2, 3, "2:3 (Portrait Photo)"),
+    (3, 2, "3:2 (Photo)"),
+    (3, 4, "3:4 (Portrait Standard)"),
+    (4, 3, "4:3 (Standard)"),
+    (9, 16, "9:16 (Portrait Widescreen)"),
+    (16, 9, "16:9 (Widescreen)"),
+    (21, 9, "21:9 (Ultrawide)"),
+]
+
+
+def _is_link(v) -> bool:
+    return isinstance(v, list) and len(v) == 2 and isinstance(v[0], (str, int))
+
+
+def _str_field(node: dict) -> str | None:
+    """返回该节点里「字面量字符串」的字段名；全是链接时返回链接字段名。"""
+    ins = node.get("inputs") or {}
+    for f in TEXT_FIELDS:
+        if f in ins and not _is_link(ins[f]):
+            return f
+    for f in TEXT_FIELDS:
+        if f in ins:
+            return f
+    return None
+
+
+def _resolve_text(nodes: dict, ref, prefer: str | None = None) -> tuple[str, str] | None:
+    """把「编码节点输出」解析到真正持有字符串的节点字段。
+
+    常见两种结构都要吃：
+      A. 采样器 positive → CLIPTextEncode.text（直接是字符串）
+      B. 采样器 positive → TextEncodeQwenImage21.prompt → PrimitiveStringMultiline.value（一层链接）
+    """
+    if not _is_link(ref):
+        return None
+    nid = str(ref[0])
+    node = nodes.get(nid)
+    if not node:
+        return None
+    ins = node.get("inputs") or {}
+    field = prefer if (prefer and prefer in ins) else _str_field(node)
+    if not field:
+        return None
+    val = ins.get(field)
+    if _is_link(val):
+        src = nodes.get(str(val[0])) or {}
+        sf = _str_field(src)
+        if sf:
+            return (str(val[0]), sf)
+    return (nid, field)
+
+
+def _detect_size(nodes: dict, sampler_ins: dict) -> dict:
+    """尺寸注入点。返回 {width,height,size_mode[,selector,ratio_field,mp_field]}。"""
+    cands = []
+    latent = sampler_ins.get("latent_image")
+    if _is_link(latent):
+        cands.append(str(latent[0]))
+    cands += [nid for nid, n in nodes.items() if str(n.get("class_type", "")).startswith("Empty")]
+    for nid in cands:
+        ins = (nodes.get(nid) or {}).get("inputs") or {}
+        if "width" in ins and "height" in ins:
+            w, h = ins["width"], ins["height"]
+            if isinstance(w, (int, float)) and isinstance(h, (int, float)):
+                return {"width": (nid, "width"), "height": (nid, "height"), "size_mode": "latent"}
+            # 宽高是链接：找上游的 ResolutionSelector（Qwen 工作流就是这种）
+            for ref in (w, h):
+                if _is_link(ref):
+                    src = nodes.get(str(ref[0])) or {}
+                    sins = src.get("inputs") or {}
+                    if "aspect_ratio" in sins and "megapixels" in sins:
+                        return {
+                            "size_mode": "selector",
+                            "selector": str(ref[0]),
+                            "ratio_field": "aspect_ratio",
+                            "mp_field": "megapixels",
+                        }
+    return {}
+
+
 def detect_nodes(wf: dict) -> dict:
     """从 API 格式工作流里推断需要注入的节点。
 
-    返回 {positive: (node_id, field), negative: (...), seed: (...),
-          width: (...), height: (...), checkpoint: (...), sampler: node_id}
-    识别不到则为 None —— 此时必须在配置里显式给 node_map。
+    返回 {positive:(node_id,field), negative, seed, width/height 或 selector,
+          unet/clip/vae/checkpoint, sampler}
+    探测不到的项为缺失 —— 此时必须在配置里显式给 node_map。
     """
     nodes = {str(k): v for k, v in wf.items() if isinstance(v, dict) and "class_type" in v}
     out: dict = {}
 
-    # 采样器：优先取带 positive/negative 输入的 KSampler 家族
     sampler_id = None
     for nid, n in nodes.items():
         ins = n.get("inputs") or {}
@@ -322,82 +413,119 @@ def detect_nodes(wf: dict) -> dict:
             if "KSampler" in str(n.get("class_type", "")):
                 sampler_id = nid
                 break
+
     if sampler_id:
         out["sampler"] = sampler_id
         ins = nodes[sampler_id].get("inputs") or {}
-        for key in ("positive", "negative"):
-            ref = ins.get(key)
-            if isinstance(ref, list) and ref:
-                ref_id = str(ref[0])
-                tnode = nodes.get(ref_id) or {}
-                tins = tnode.get("inputs") or {}
-                field = "text" if "text" in tins else ("value" if "value" in tins else None)
-                if field:
-                    out[key] = (ref_id, field)
+        pos_ref, neg_ref = ins.get("positive"), ins.get("negative")
+
+        # 同一节点双输出（Qwen：positive=output0 / negative=output1）
+        if _is_link(pos_ref) and _is_link(neg_ref) and str(pos_ref[0]) == str(neg_ref[0]):
+            enc = nodes.get(str(pos_ref[0])) or {}
+            eins = enc.get("inputs") or {}
+            if "prompt" in eins:
+                tgt = _resolve_text(nodes, pos_ref, prefer="prompt")
+                if tgt:
+                    out["positive"] = tgt
+                if "negative_prompt" in eins:
+                    out["negative"] = (str(pos_ref[0]), "negative_prompt")
+        else:
+            for key, ref in (("positive", pos_ref), ("negative", neg_ref)):
+                tgt = _resolve_text(nodes, ref)
+                if tgt:
+                    out[key] = tgt
+
         for key in ("seed", "noise_seed"):
             if key in ins:
                 out["seed"] = (sampler_id, key)
                 break
-        # 尺寸：优先采样器 latent 指向的节点
-        latent = ins.get("latent_image")
-        cand = []
-        if isinstance(latent, list) and latent:
-            cand.append(str(latent[0]))
-        cand += [nid for nid, n in nodes.items() if str(n.get("class_type", "")).startswith("Empty")]
-        for nid in cand:
-            tins = (nodes.get(nid) or {}).get("inputs") or {}
-            if "width" in tins and "height" in tins:
-                out["width"] = (nid, "width")
-                out["height"] = (nid, "height")
-                break
+
+        out.update(_detect_size(nodes, ins))
     else:
-        # 无采样器：退化为「找 CLIPTextEncode」
         encs = [nid for nid, n in nodes.items() if n.get("class_type") == "CLIPTextEncode"]
         if encs:
             out["positive"] = (encs[0], "text")
             if len(encs) > 1:
                 out["negative"] = (encs[1], "text")
 
+    # 模型加载节点（可被配置覆盖）
     for nid, n in nodes.items():
-        if n.get("class_type") in ("CheckpointLoaderSimple", "CheckpointLoader"):
-            if "ckpt_name" in (n.get("inputs") or {}):
-                out["checkpoint"] = (nid, "ckpt_name")
-                break
+        ct = str(n.get("class_type", ""))
+        ins = n.get("inputs") or {}
+        if ct in ("CheckpointLoaderSimple", "CheckpointLoader") and "ckpt_name" in ins:
+            out.setdefault("checkpoint", (nid, "ckpt_name"))
+        elif ct == "UNETLoader" and "unet_name" in ins:
+            out.setdefault("unet", (nid, "unet_name"))
+        elif ct == "CLIPLoader" and "clip_name" in ins:
+            out.setdefault("clip", (nid, "clip_name"))
+        elif ct == "VAELoader" and "vae_name" in ins:
+            out.setdefault("vae", (nid, "vae_name"))
     return out
+
+
+def _ratio_string(w: int, h: int) -> str:
+    """把任意宽高映射到 ResolutionSelector 最接近的档位。"""
+    import math
+
+    target = w / max(1, h)
+    best = min(RATIO_OPTIONS, key=lambda o: abs(math.log(target / (o[0] / o[1]))))
+    return best[2]
 
 
 def patch_workflow(wf: dict, params: dict, cfg: dict, nodes: dict, ref_name: str = "") -> dict:
     wf = json.loads(json.dumps(wf))
-    mapping = {
-        "positive": params["prompt"],
-        "negative": params["negative"],
-        "seed": params["seed"],
-        "width": params["width"],
-        "height": params["height"],
-    }
-    for key, val in mapping.items():
+    c = cfg.get("comfyui") or {}
+    mode = str(c.get("size_mode") or "auto").lower()
+
+    for key, val in (("positive", params["prompt"]), ("negative", params["negative"]), ("seed", params["seed"])):
         tgt = nodes.get(key)
         if not tgt:
             continue
-        nid, field = tgt
-        node = wf.get(nid) or wf.get(str(nid))
+        node = wf.get(tgt[0])
         if node and "inputs" in node:
-            node["inputs"][field] = val
-    if cfg["steps"] is not None and nodes.get("sampler"):
-        sid = nodes["sampler"]
-        wf[sid]["inputs"]["steps"] = int(cfg["steps"])
-    if cfg["cfg"] is not None and nodes.get("sampler"):
-        sid = nodes["sampler"]
-        wf[sid]["inputs"]["cfg"] = float(cfg["cfg"])
-    ckpt = (cfg.get("comfyui") or {}).get("checkpoint")
-    if ckpt and nodes.get("checkpoint"):
-        nid, field = nodes["checkpoint"]
-        wf[nid]["inputs"][field] = ckpt
+            node["inputs"][tgt[1]] = val
+
+    # 尺寸
+    use_selector = mode in ("auto", "selector") and nodes.get("size_mode") == "selector"
+    if mode == "latent":
+        use_selector = False
+    if use_selector:
+        sid = nodes["selector"]
+        wf[sid]["inputs"][nodes["ratio_field"]] = _ratio_string(params["width"], params["height"])
+        mp = max(0.1, min(16.0, round(params["width"] * params["height"] / 1_000_000, 1)))
+        wf[sid]["inputs"][nodes["mp_field"]] = mp
+    elif nodes.get("width"):
+        for key in ("width", "height"):
+            tgt = nodes.get(key)
+            if tgt and wf.get(tgt[0]):
+                wf[tgt[0]]["inputs"][tgt[1]] = params[key]
+
+    # 采样参数（SamplerCustom 用 sigmas 控制步数，没有 steps 字段，跳过即可）
+    sid = nodes.get("sampler")
+    if sid and wf.get(sid):
+        sins = wf[sid]["inputs"]
+        if cfg.get("steps") is not None and "steps" in sins:
+            sins["steps"] = int(cfg["steps"])
+        if cfg.get("cfg") is not None and "cfg" in sins:
+            sins["cfg"] = float(cfg["cfg"])
+
+    # 模型覆盖
+    for key, conf_key in (("checkpoint", "checkpoint"), ("unet", "unet_name"), ("clip", "clip_name"), ("vae", "vae_name")):
+        val = c.get(conf_key)
+        tgt = nodes.get(key)
+        if val and tgt and wf.get(tgt[0]):
+            wf[tgt[0]]["inputs"][tgt[1]] = val
+
+    # 参考图：把所有 LoadImage 都指向同一张（Qwen i2i 有两个槽位，
+    # 留空会引用工作流里原本的文件名，本机没有那个文件就直接校验失败）
     if ref_name:
-        for nid, node in wf.items():
+        hit = False
+        for _nid, node in wf.items():
             if node.get("class_type") == "LoadImage" and "image" in (node.get("inputs") or {}):
                 node["inputs"]["image"] = ref_name
-                break
+                hit = True
+        if not hit:
+            warn("工作流里没有 LoadImage 节点，ref 参数被忽略")
     return wf
 
 
@@ -409,36 +537,96 @@ class ComfyUI:
         c = cfg["comfyui"]
         self.host = str(c["host"]).rstrip("/")
         self.timeout = float(c["timeout"])
+        self.proj = proj
         self.workflow_path = resolve_path(proj, str(c["workflow"]))
+        wf_i2i = str(c.get("workflow_i2i") or "")
+        self.workflow_i2i_path = resolve_path(proj, wf_i2i) if wf_i2i else None
         self.cfg = cfg
         self.client_id = uuid.uuid4().hex
-        self._wf = None
-        self._nodes = None
+        self._cache: dict[str, tuple[dict, dict]] = {}
 
     def probe(self) -> tuple[bool, str]:
         try:
             st = http_json(f"{self.host}/system_stats", timeout=8, no_proxy=True)
-            dev = (st.get("devices") or [{}])[0]
-            v = st.get("system", {}).get("comfyui_version", "?")
-            return True, f"可达 · ComfyUI {v} · {dev.get('name', 'unknown')}"
         except Exception as e:  # noqa: BLE001
             return False, f"不可达（{self.host}）：{e}"
+        dev = (st.get("devices") or [{}])[0]
+        v = st.get("system", {}).get("comfyui_version", "?")
+        base = f"可达 · ComfyUI {v} · {dev.get('name', 'unknown')}"
 
-    def workflow(self) -> tuple[dict, dict]:
-        if self._wf is None:
-            if not self.workflow_path.exists():
-                raise RuntimeError(f"工作流不存在：{self.workflow_path}")
-            self._wf = json.loads(self.workflow_path.read_text(encoding="utf-8"))
-            manual = (self.cfg["comfyui"].get("node_map") or {})
-            detected = detect_nodes(self._wf)
-            if manual:
-                for k, v in manual.items():
-                    if isinstance(v, dict):
-                        detected[k] = (str(v.get("nodeId") or v.get("node")), v.get("fieldName") or v.get("field"))
-                    elif isinstance(v, list) and len(v) == 2:
-                        detected[k] = (str(v[0]), v[1])
-            self._nodes = detected
-        return self._wf, self._nodes
+        # 校验工作流引用的模型本机是否存在 —— 共享工作流最常见的失败原因
+        missing = self.check_models()
+        if not missing:
+            return True, base + " · 模型齐备"
+        detail = "；".join(missing)
+        return True, (
+            base
+            + "\n          ⚠ 工作流引用的模型本机缺失：" + detail
+            + "\n          可在 .gamedev/artgen.yaml 用 comfyui.unet_name / clip_name / vae_name 覆盖"
+        )
+
+    def _loader_options(self, node_type: str, field: str) -> list[str]:
+        try:
+            info = http_json(f"{self.host}/object_info/{node_type}", timeout=20, no_proxy=True)
+            opts = info[node_type]["input"]["required"][field][0]
+            return list(opts) if isinstance(opts, list) else []
+        except Exception:  # noqa: BLE001
+            return []
+
+    def check_models(self) -> list[str]:
+        """返回缺失的模型项（空列表=齐备）。"""
+        missing: list[str] = []
+        targets = [
+            ("UNETLoader", "unet_name", "unet_name"),
+            ("CLIPLoader", "clip_name", "clip_name"),
+            ("VAELoader", "vae_name", "vae_name"),
+            ("CheckpointLoaderSimple", "ckpt_name", "checkpoint"),
+        ]
+        checked: set[str] = set()
+        for path in (self.workflow_path, self.workflow_i2i_path):
+            if not path or not path.exists():
+                continue
+            try:
+                wf = json.loads(path.read_text(encoding="utf-8"))
+            except Exception:  # noqa: BLE001
+                continue
+            nodes = detect_nodes(wf)
+            for node_type, field, key in targets:
+                tgt = nodes.get(key)
+                if not tgt:
+                    continue
+                want = (wf.get(tgt[0]) or {}).get("inputs", {}).get(tgt[1])
+                override = (self.cfg["comfyui"].get(field) or "").strip()
+                if override:
+                    want = override
+                if not isinstance(want, str) or want in checked:
+                    continue
+                checked.add(want)
+                opts = self._loader_options(node_type, field)
+                if opts and want not in opts:
+                    alt = "、".join(opts[:3])
+                    missing.append(f"{want}（本机可用：{alt}…）")
+        return missing
+
+    def _load(self, use_i2i: bool) -> tuple[dict, dict, Path]:
+        path = self.workflow_path
+        if use_i2i and self.workflow_i2i_path and self.workflow_i2i_path.exists():
+            path = self.workflow_i2i_path
+        key = str(path)
+        if key not in self._cache:
+            if not path.exists():
+                raise RuntimeError(f"工作流不存在：{path}")
+            wf = json.loads(path.read_text(encoding="utf-8"))
+            detected = detect_nodes(wf)
+            manual = self.cfg["comfyui"].get("node_map") or {}
+            for k, v in manual.items():
+                if isinstance(v, dict):
+                    detected[k] = (str(v.get("nodeId") or v.get("node")), v.get("fieldName") or v.get("field"))
+                elif isinstance(v, list) and len(v) == 2:
+                    detected[k] = (str(v[0]), v[1])
+            self._cache[key] = (wf, detected)
+        wf, nodes = self._cache[key]
+        return wf, nodes, path
 
     def upload(self, path: Path) -> str:
         r = http_multipart(
@@ -453,17 +641,20 @@ class ComfyUI:
         return f"{sub}/{r['name']}" if sub else r["name"]
 
     def generate(self, params: dict, out: Path) -> dict:
-        wf, nodes = self.workflow()
+        ref_path = None
+        if params.get("ref"):
+            rp = resolve_path(self.proj, str(params["ref"]))
+            if rp.exists():
+                ref_path = rp
+            else:
+                warn(f"参考图不存在，按文生图处理：{rp}")
+        wf, nodes, wf_path = self._load(use_i2i=bool(ref_path))
         if not nodes.get("positive"):
             raise RuntimeError(
-                "工作流里没找到提示词节点。请在 .gamedev/artgen.yaml 的 comfyui.node_map 里显式指定，"
-                "例如 {prompt: {nodeId: '6', fieldName: 'text'}}"
+                f"工作流里没找到提示词节点（{wf_path.name}）。请在 .gamedev/artgen.yaml 的 "
+                "comfyui.node_map 里显式指定，例如 {prompt: {nodeId: '488', fieldName: 'value'}}"
             )
-        ref_name = ""
-        if params.get("ref"):
-            rp = resolve_path(out.parent.parent.parent, params["ref"])
-            if rp.exists():
-                ref_name = self.upload(rp)
+        ref_name = self.upload(ref_path) if ref_path else ""
         patched = patch_workflow(wf, params, self.cfg, nodes, ref_name)
 
         pid = retry(
@@ -508,7 +699,7 @@ class ComfyUI:
             }
         )
         out.write_bytes(http_get_bytes(f"{self.host}/view?{q}", timeout=120, no_proxy=True))
-        return {"raw": im0.get("filename"), "extra": f"workflow={self.workflow_path.name}"}
+        return {"raw": im0.get("filename"), "extra": f"workflow={wf_path.name}"}
 
 
 # ------------------------------------------------------------------ RunningHub

@@ -57,9 +57,14 @@ fallback_placeholder: true     # 生图不可用时用占位素材兜底，保�
 
 comfyui:
   host: http://127.0.0.1:8188
-  workflow: assets/workflows/comfyui_txt2img.json
-  checkpoint: sd_xl_base_1.0.safetensors   # ← 改成本机 models/checkpoints 下实际的文件名
-  timeout: 300
+  workflow: assets/workflows/qwen_image_21_turbo_t2i.json        # 文生图（Qwen-Image 2.1 turbo）
+  workflow_i2i: assets/workflows/qwen_image_21_turbo_i2i.json    # 图生图：素材 sidecar 给了 ref 时自动用
+  unet_name: ""                # 留空=用工作流里的值；本机缺 turbo 时填实际文件名
+  clip_name: ""
+  vae_name: ""
+  checkpoint: ""               # 只有 SDXL / 传统 checkpoint 工作流才需要
+  size_mode: auto              # auto：有 ResolutionSelector 就改比例+百万像素，否则直接写宽高
+  timeout: 600
   node_map: {}                 # 留空自动探测；探测失败再显式指定
 
 runninghub:

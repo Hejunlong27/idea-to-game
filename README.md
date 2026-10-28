@@ -368,6 +368,19 @@ this.load.atlas('atlas', 'assets/atlas/atlas.png', 'assets/atlas/atlas.json');
 
 ## 六、更新日志
 
+### v1.5 · 默认生图工作流换成 Qwen-Image 2.1 turbo
+
+- **新增两份工作流** `assets/workflows/qwen_image_21_turbo_t2i.json` / `..._i2i.json`（API 格式），
+  `init_project.py` 生成的 `artgen.yaml` 默认指向它们。
+- **节点探测升级**（这套工作流结构很特殊，原逻辑驱动不了）：
+  - 提示词挂在 `PrimitiveStringMultiline.value` 上、编码节点只是链接 → **沿链接追一层**
+  - 正负提示词共用一个编码节点（`SamplerCustom` 取同一节点两个输出）→ 正向写 `prompt`、反向写 `negative_prompt`
+  - 尺寸由 `ResolutionSelector` 决定（`EmptyLatentImage` 的宽高是链接）→ 换算成 `aspect_ratio` + `megapixels`，不破坏图结构
+- **新增 `workflow_i2i`**：素材 sidecar 给了 `ref` 就自动切图生图，并把参考图写进**所有** `LoadImage` 槽位。
+- **新增模型覆盖** `unet_name / clip_name / vae_name`；`--probe` 会核对工作流引用的模型本机是否存在，
+  缺失时列出本机可用清单（共享工作流的头号失败原因）。
+- 新增 `size_mode`（`auto` / `latent` / `selector`）：需要精确 W×H 时用 `latent`。
+
 ### v1.4 · 画风预设库
 
 - **新增 `assets/styles/`**：从 RHSTORY 画风库（服务端全量 306 条）里筛出 5 档适合小游戏的画风 ——

@@ -20,11 +20,32 @@
 ### 节点自动探测规则（`detect_nodes`）
 
 1. **采样器**：找 `inputs` 同时含 `positive` / `negative` / `latent_image` 的节点；找不到则退化为任一 `class_type` 含 `KSampler` 的节点
-2. **正/反向提示词**：采样器 `positive` / `negative` 指向的节点，取其 `text`（或 `value`）字段
-3. **种子**：采样器自身的 `seed` 或 `noise_seed`
-4. **宽高**：采样器 `latent_image` 指向的节点，或任一 `class_type` 以 `Empty` 开头的节点
-5. **模型**：`CheckpointLoaderSimple` 的 `ckpt_name`（仅当配置了 `comfyui.checkpoint` 才覆盖）
-6. **参考图**：工作流含 `LoadImage` 且素材 sidecar 给了 `ref` 时，先上传再填文件名
+2. **正/反向提示词**：采样器 `positive` / `negative` 指向的节点；字段按 `text` → `prompt` → `value` → `string` 优先；
+   **若该字段是链接，沿链接再追一层**（Qwen 的 `TextEncodeQwenImage21.prompt` → `PrimitiveStringMultiline.value` 就是这种）
+3. **同节点双输出**：positive 与 negative 指向**同一个**编码节点时（Qwen 的 `SamplerCustom` 就是这样），
+   正向取 `prompt`、反向取 `negative_prompt`，不能当成两个节点处理
+4. **种子**：采样器自身的 `seed` 或 `noise_seed`
+5. **宽高**：`latent_image` 指向的节点或任一 `Empty*` 节点 ——
+   字面量 → 直接写；是链接且上游有 `aspect_ratio` + `megapixels`（`ResolutionSelector`）→ 换算成比例档位 + 百万像素
+6. **模型**：`UNETLoader.unet_name` / `CLIPLoader.clip_name` / `VAELoader.vae_name` / `CheckpointLoaderSimple.ckpt_name`，
+   可被 `comfyui.unet_name / clip_name / vae_name / checkpoint` 覆盖
+7. **参考图**：给了 `ref` 时上传并写入**所有** `LoadImage.image`（多图槽位的工作流必须全填，否则另一个槽位指向本机不存在的文件）
+
+### 尺寸：`size_mode`
+
+| 值 | 行为 | 何时用 |
+|---|---|---|
+| `auto`（默认） | 有 `ResolutionSelector` 就改比例+百万像素，否则直接写宽高 | 通用 |
+| `latent` | 强制直接写 `Empty*` 的宽高（会切断与选择器的链接） | 需要精确 W×H 时 |
+| `selector` | 强制走选择器 | 明确知道工作流结构时 |
+
+⚠️ 走 selector 时输出像素是「比例档位 × 百万像素」算出来的，**不保证等于请求的 W×H**（1024×1024 是准的，512 会落到 544 附近）。
+
+### 模型存在性校验（`--probe`）
+
+`probe()` 会读取工作流里引用的模型名，逐个查 `/object_info/{UNETLoader|CLIPLoader|VAELoader|CheckpointLoaderSimple}`，
+缺失时直接报「工作流引用的模型本机缺失：xxx（本机可用：yyy…）」。**共享工作流的头号失败原因就是模型名对不上**，
+不要靠 ComfyUI 的 400 报错去猜。
 
 探测不到就在 `artgen.yaml` 的 `comfyui.node_map` 里显式写死。**不要改脚本去适配某个特定工作流** —— 不同工作流节点 id 完全不同，配置化才是可维护的。
 

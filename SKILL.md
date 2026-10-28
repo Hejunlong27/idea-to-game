@@ -270,7 +270,7 @@ python <skill>/scripts/pack_atlas.py --input assets/processed/ --out assets/atla
 
 | provider | 通道 | 说明 |
 |---|---|---|
-| `comfyui` | 本地 ComfyUI `/prompt` + `/history` + `/view` | 工作流用 **API 格式**；节点自动探测，探测不到写 `node_map` |
+| `comfyui` | 本地 ComfyUI `/prompt` + `/history` + `/view` | 默认 **Qwen-Image 2.1 turbo**（文生图 + 图生图两套，`ref` 触发 i2i）；工作流用 **API 格式**；节点自动探测，探测不到写 `node_map` |
 | `runninghub` | RunningHub `task/openapi/*` | 填 `workflow_id`；`api_key` 走 `RUNNINGHUB_API_KEY` 环境变量 |
 | `placeholder` | 程序化占位 | 兜底，标记 `art_forge: degraded` |
 | `auto` | 按序降级 | ComfyUI → RunningHub → 占位 |
@@ -361,7 +361,7 @@ python <skill>/scripts/gate_check.py --project <project> --stage ship
 | `references/genre-playbook.md` | 超休闲品类拆解与选型建议 | P0 立项时 |
 | **`assets/styles/`** | **画风预设库（5 档，已蒸馏成游戏资产向 style_tokens + 配色板 + 风险标注）** | P1 定风格时 |
 | **`references/artgen-integration.md`** | **ComfyUI / RunningHub 接口细节、节点探测规则、故障排查** | 接生图通道、出图失败时 |
-| `assets/workflows/` | ComfyUI API 格式工作流模板 + 导出/node_map 说明 | P1/P2 配 provider 时 |
+| `assets/workflows/` | ComfyUI API 格式工作流（Qwen-Image 2.1 turbo 文生图/图生图 + SDXL 兜底）+ 导出/node_map 说明 | P1/P2 配 provider 时 |
 | `modules/00-…-11-*.md` | 各环节详细执行步骤 | 执行到该环节时 |
 | **`modules/12-review.md`** | **审核官角色定义、三处介入、判定与结论、不达标处理流程** | 执行任何 R 轮审核时 |
 | `scripts/*.py` | 确定性工具脚本，可直接执行 | 对应操作时 |
