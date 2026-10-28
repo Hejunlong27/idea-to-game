@@ -85,6 +85,39 @@ python <skill>/scripts/gen_prompts.py            # 从 scope.json 批量生成�
 python <skill>/scripts/gen_prompts.py --force    # 精修 subjects.json 后重写
 ```
 
+### 2b. 一张图出多个素材（网格模式）
+
+9 个素材出 9 次 vs 出 1 张九宫格再切 —— 后者**风格天然统一、调用次数少**，但有串格风险。两种模式都支持：
+
+```bash
+# 多素材一图：3×3 九宫格
+python <skill>/scripts/gen_prompts.py --sheet items --grid 3x3 \
+  --items apple,pear,banana,grape,peach,lemon,plum,kiwi,cherry
+python <skill>/scripts/gen_assets.py --only items        # 出 1 张网格图 → 自动切 9 张
+
+# 一套动画帧：2×2 四帧（帧名 slime_idle_0..3）
+python <skill>/scripts/gen_prompts.py --frames slime_idle --grid 2x2 --count 4 \
+  --subject "a cute round slime monster" --action "idle breathing"
+python <skill>/scripts/gen_assets.py --only slime_idle
+```
+
+行为：
+
+- 生成 1 张整图 → 按网格切成 N 格 → **每格单独抠背景 + 裁边 + 统一方形画布**
+- 整图留档在 `assets/raw/_sheet_<name>.png`，方便肉眼核对有没有串格
+- `manifest.json` 里每格都记 `sheet` + `cell`，可追溯
+- 切分后帧/素材尺寸一致 —— 这是动画不抖动的前提
+
+**格数怎么选**（踩过的经验）：
+
+| 内容 | 建议 | 原因 |
+|---|---|---|
+| 动画帧 | **2×2**（4 帧） | 帧间一致性要求最高，格数一多就容易变形、位移 |
+| 简单物件（水果、宝石、图标） | 3×3 | 主体简单，模型不容易画错 |
+| 复杂角色/场景道具 | ≤2×2，或干脆逐个出 | 串格与"多画一个"的概率显著上升 |
+
+提示词里必须写 `no grid lines, no text, one item per cell, evenly spaced` —— 否则模型会把网格线也画进去。
+
 ### 3. 先出 2 张验风格（成本控制）
 
 ```bash

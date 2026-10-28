@@ -237,6 +237,32 @@ runninghub:
 { "width": 512, "height": 512, "seed": 12345, "negative": "...", "ref": "assets/ref/hero.png" }
 ```
 
+### 网格模式（一张图出多个素材 / 一套动画帧）
+
+sidecar 里加 `kind` 即进入网格模式，`gen_assets.py` 会生成 1 张整图并自动切分：
+
+```json
+// 多素材：3×3 九宫格
+{ "kind": "sheet", "grid": "3x3",
+  "items": ["apple","pear","banana","grape","peach","lemon","plum","kiwi","cherry"],
+  "width": 1024, "height": 1024, "negative": "...", "pad_to": 256 }
+
+// 动画帧：2×2 四帧 → slime_idle_0..3
+{ "kind": "frames", "grid": "2x2", "frames": 4,
+  "width": 1024, "height": 1024, "negative": "...", "pad_to": 256 }
+```
+
+| 字段 | 说明 |
+|---|---|
+| `kind` | `sheet`（多个不同素材） / `frames`（同一主体多帧） |
+| `grid` | `RxC`，按行优先切分 |
+| `items` | `kind=sheet` 时每格的名字，数量应等于 `R*C` |
+| `frames` | `kind=frames` 时的帧数，产出 `<name>_0..N-1` |
+| `pad_to` | 每格裁完后统一成的方形画布边长（0=自动取最大边） |
+
+产物：`assets/raw/<name>.png`（每格）+ `assets/raw/_sheet_<name>.png`（整图留档）。
+manifest 里每格记 `sheet` / `cell` / `grid`，signature 形如 `<hash>:<cell>`。
+
 `docs/02-art/subjects.json` 存「素材名 → 主体描述」，供 `gen_prompts.py` 批量生成提示词：
 
 ```json

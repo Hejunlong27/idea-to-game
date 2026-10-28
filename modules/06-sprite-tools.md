@@ -10,6 +10,13 @@
 
 ## 步骤
 
+### 0. 网格图已经切好了？
+
+用 `gen_prompts.py --sheet/--frames` + `gen_assets.py` 生成的素材，**切分与抠图已经在生图环节做完了**，
+产物直接落在 `assets/raw/`（每格一个 PNG，尺寸已统一）。这种情况下跳过本模块的 1–3 步，直接打图集。
+
+只有「别人给的网格图 / 手工拼的 sheet」才需要下面手工切分。
+
 ### 1. 网格切分
 
 若生图是网格图（如 3×3 布局）：
@@ -89,9 +96,31 @@ python <skill>/scripts/gate_check.py --project <project> --stage sprite_tools
 - [ ] 图集总尺寸 ≤2048（超出需分多张）
 - [ ] `assets/processed/` 中无冗余文件
 
+## 帧动画（多帧素材）
+
+一套动画 = 一组命名连续的帧，打成图集后由模板的 `anim.ts` 注册：
+
+| 约定 | 值 |
+|---|---|
+| 帧名 | `<key>_0` … `<key>_N-1`（如 `slime_idle_0..3`） |
+| 生成方式 | `gen_prompts.py --frames slime_idle --grid 2x2 --count 4` → `gen_assets.py --only slime_idle` |
+| 注册 | `config.ts` 的 `ANIM = { slime_idle: 4 }`，`BootScene` 自动注册为 `slime_idle_loop` |
+| 播放 | `playFrames(sprite, 'slime_idle')`（`src/game/anim.ts`） |
+
+**为什么用图集帧而不是多张 PNG**：CrazyGames 限制总文件数 ≤1500，一套 8 帧就是 8 个文件；
+图集只增 1 张图。
+
+**一致性要点**：
+
+- 同一套帧必须出自**同一张网格图**（同一次推理）—— 跨图生成必然色差/比例漂移
+- 每帧裁边后统一画布（`gen_assets.py` 已做），否则播放时会"抖动"
+- 帧率 8–12 fps 足够；超休闲不需要 24 fps
+- 帧数控制在 4–6 帧：再多对观感提升有限，对体积和生图成本是线性增加
+
 ## 命名规范
 
 - 精灵：`<类别>_<序号>`，如 `fruit_1` … `fruit_8`
+- 动画帧：`<动作key>_<帧序号>`，如 `slime_idle_0` … `slime_idle_3`
 - UI：`ui_<用途>`，如 `ui_btn_restart`
 - 图集内的键名必须与 `scope.json` 的 `assets` 清单可对应
 

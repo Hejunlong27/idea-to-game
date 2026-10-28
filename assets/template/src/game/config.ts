@@ -12,6 +12,20 @@ export const LAYOUT = {
   orientation: 'portrait' as 'portrait' | 'landscape',
 };
 
+/**
+ * 帧动画配置：key → 帧数。
+ * 帧名约定 `<key>_0 … <key>_N-1`，由 `gen_assets.py` 的网格帧模式产出，
+ * 打成图集后由 `anim.ts` 的 registerFrameAnims 注册为 `<key>_loop`。
+ *
+ * 例：slime_idle: 4  →  slime_idle_0 / _1 / _2 / _3
+ */
+export const ANIM: Record<string, number> = {
+  // slime_idle: 4,
+};
+
+/** 默认帧率（超休闲一般 8–12 帧/秒就够） */
+export const ANIM_FPS = 10;
+
 export const COLORS = {
   bg: 0x10121a,
   panel: 0x1c2030,

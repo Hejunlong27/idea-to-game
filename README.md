@@ -368,6 +368,18 @@ this.load.atlas('atlas', 'assets/atlas/atlas.png', 'assets/atlas/atlas.json');
 
 ## 六、更新日志
 
+### v1.6 · 网格批量出图 + 帧动画
+
+- **一张图出多个素材**（`kind: sheet`）：3×3 九宫格一次出 9 个素材，风格天然统一、调用次数从 9 降到 1。
+- **一套动画帧**（`kind: frames`）：2×2 一次出 4 帧，帧名 `<key>_0..N-1`，直接进图集。
+- `gen_prompts.py` 新增 `--sheet / --frames / --grid / --items / --count / --subject / --action / --cell-size`。
+- `gen_assets.py` 自动切分：整图 → N 格 → **每格单独抠背景 + 裁边 + 统一方形画布**；
+  整图留档 `_sheet_<name>.png`，manifest 记 `sheet` / `cell`。
+- 模板新增 `src/game/anim.ts`（`registerFrameAnims` / `playFrames` / `playOnce`）
+  + `config.ts` 的 `ANIM`（key → 帧数），BootScene 自动注册，**素材没到位时静默跳过不崩**。
+- 顺手修掉模板里一个潜伏 bug：`src/game/index.ts` 用 `import type Phaser` 却把 `Phaser` 当值用
+  （靠 Phaser UMD 挂到全局才没炸），已改为正常 import。
+
 ### v1.5 · 默认生图工作流换成 Qwen-Image 2.1 turbo
 
 - **新增两份工作流** `assets/workflows/qwen_image_21_turbo_t2i.json` / `..._i2i.json`（API 格式），

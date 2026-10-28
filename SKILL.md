@@ -249,6 +249,11 @@ python <skill>/scripts/gen_assets.py --probe
 # 提示词骨架（从 scope.json 批量生成，自带 style_tokens）
 python <skill>/scripts/gen_prompts.py
 
+# 一张图出多个素材 / 一套动画帧（网格模式）
+python <skill>/scripts/gen_prompts.py --sheet items --grid 3x3 --items apple,pear,banana
+python <skill>/scripts/gen_prompts.py --frames slime_idle --grid 2x2 --count 4 \
+  --subject "a cute round slime monster" --action "idle breathing"
+
 # 预演（不花钱）：逐条打印素材名/尺寸/seed/最终提示词
 python <skill>/scripts/gen_assets.py --dry-run
 

@@ -11,6 +11,12 @@
     python gen_prompts.py --force              # 全部重写
     python gen_prompts.py --background none    # 不加纯色背景指令（工作流自带抠图时用）
 
+    # 一张图出多个素材（九宫格）
+    python gen_prompts.py --sheet items --grid 3x3 --items apple,pear,banana,grape,peach,lemon,plum,kiwi,cherry
+    # 一张图出一套动画帧（2x2 四帧）
+    python gen_prompts.py --frames slime_idle --grid 2x2 --frames 4 \
+        --subject "a cute round slime monster" --action "idle breathing"
+
 输入: docs/01-brief/scope.json 的 assets{}、docs/02-art/palette.json 的 style_tokens
 可选: docs/02-art/subjects.json  —— 逐素材的主体描述（强烈建议手写/让 Agent 精修）
 输出: docs/02-art/prompts/<asset>.txt（+ 缺失主体的 subjects.json 骨架）
@@ -64,6 +70,88 @@ def join_unique(*parts: str) -> str:
     return ", ".join(out)
 
 
+def write_grid_prompt(
+    proj: Path, pdir: Path, tokens: str, negative: str, bg_clause: str, args,
+) -> int:
+    """写「一张图出多个素材 / 一套动画帧」的提示词与 sidecar。"""
+    grid = (args.grid or "").lower()
+    if not grid or "x" not in grid:
+        print("ERROR: --sheet / --frames 必须配 --grid RxC（如 3x3、2x2）", file=sys.stderr)
+        return 1
+    try:
+        rows, cols = (int(x) for x in grid.split("x"))
+    except Exception:
+        print(f"ERROR: --grid 格式应为 RxC（收到 {args.grid}）", file=sys.stderr)
+        return 1
+    cells = rows * cols
+    size = 1024
+    width = height = size
+
+    if args.sheet:
+        names = [x.strip() for x in args.items.split(",") if x.strip()]
+        if not names:
+            print("ERROR: --sheet 需要 --items（逗号分隔的素材名）", file=sys.stderr)
+            return 1
+        if len(names) != cells:
+            warn(f"items {len(names)} 个 vs 网格 {cells} 格 —— 建议改成 {len(names)} 格布局，否则会有空格/串格")
+        subject = args.subject.strip() or "game items"
+        prompt = join_unique(
+            f"{subject}: {', '.join(names)}",
+            f"sprite sheet in a {rows}x{cols} grid layout, {cells} separate items, one item per cell, "
+            "evenly spaced, each item centered in its own cell, equal size, no overlap, no grid lines, no text",
+            bg_clause,
+        ) + f", {tokens}"
+        sidecar = {
+            "kind": "sheet",
+            "grid": f"{rows}x{cols}",
+            "items": names,
+            "width": width,
+            "height": height,
+            "negative": negative,
+        }
+        name = args.sheet
+    else:
+        if not args.subject.strip():
+            print("ERROR: --frames 需要 --subject（主体描述）", file=sys.stderr)
+            return 1
+        n = max(2, min(args.count, cells))
+        if n != cells:
+            warn(f"帧数 {n} < 网格 {cells} 格 —— 多余格子会被忽略")
+        action = args.action.strip() or "animation"
+        prompt = join_unique(
+            f"{args.subject.strip()}, {action} animation",
+            f"{n} sequential frames arranged in a {rows}x{cols} grid, consistent character design and size across frames, "
+            "side view, evenly spaced, no overlap, no grid lines, no text",
+            bg_clause,
+        ) + f", {tokens}"
+        sidecar = {
+            "kind": "frames",
+            "grid": f"{rows}x{cols}",
+            "frames": n,
+            "width": width,
+            "height": height,
+            "negative": negative,
+        }
+        name = args.frames_name
+
+    if args.cell_size:
+        sidecar["pad_to"] = int(args.cell_size)
+
+    if args.dry_run:
+        print(f"{name}.txt → {prompt}")
+        print(f"{name}.json → {json.dumps(sidecar, ensure_ascii=False)}")
+        return 0
+
+    (pdir / f"{name}.txt").write_text(prompt + "\n", encoding="utf-8")
+    dump_json(pdir / f"{name}.json", sidecar)
+    ok(f"已写入 {name}.txt + {name}.json（{sidecar['kind']}，{rows}x{cols}）")
+    print(f"  提示词：{prompt}")
+    print("\n下一步：")
+    print("  python gen_assets.py --only " + name + " --dry-run    # 复核")
+    print("  python gen_assets.py --only " + name + "              # 出一张网格图并自动切分")
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="批量生成生图提示词")
     ap.add_argument("--project", default=None)
@@ -75,6 +163,14 @@ def main() -> int:
         help="追加纯色背景指令，便于出图后泛洪抠图；工作流自带抠图节点时选 none",
     )
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--sheet", default="", help="生成一张网格图（多个素材）：输出 <name>.txt + <name>.json")
+    ap.add_argument("--items", default="", help="--sheet 用：逗号分隔的素材名，数量应等于网格格数")
+    ap.add_argument("--frames", dest="frames_name", default="", help="生成动画帧网格：输出 <name>.txt + <name>.json")
+    ap.add_argument("--count", type=int, default=4, help="--frames 用：帧数（默认 4）")
+    ap.add_argument("--grid", default="", help="网格布局 RxC，如 3x3 / 2x2；--sheet/--frames 时必填")
+    ap.add_argument("--subject", default="", help="--sheet/--frames 用：主体描述")
+    ap.add_argument("--action", default="", help="--frames 用：动作描述，如 run cycle / idle breathing")
+    ap.add_argument("--cell-size", type=int, default=0, help="每格裁完后的统一画布边长（像素），0=自动")
     args = ap.parse_args()
 
     proj = project_dir(args.project)
@@ -104,6 +200,16 @@ def main() -> int:
             subjects = json.loads(subjects_p.read_text(encoding="utf-8"))
         except Exception as e:  # noqa: BLE001
             warn(f"subjects.json 解析失败，已忽略：{e}")
+
+    if args.sheet or args.frames_name:
+        gdir = proj / "docs" / "02-art" / "prompts"
+        gdir.mkdir(parents=True, exist_ok=True)
+        gb = {
+            "magenta": "on a flat pure magenta background",
+            "white": "on a flat pure white background",
+            "none": "",
+        }[args.background]
+        return write_grid_prompt(proj, gdir, tokens, negative, gb, args)
 
     assets = scope.get("assets") or {}
     pdir = proj / "docs" / "02-art" / "prompts"

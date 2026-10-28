@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { ASSETS, COLORS, GAME } from '../config';
+import { registerFrameAnims } from '../anim';
 
 /**
  * 启动场景：生成占位纹理、初始化存档、进入菜单。
@@ -21,6 +22,9 @@ export class BootScene extends Phaser.Scene {
     const r = GAME.targetRadius;
     this.makeCircleTexture('ph_target', r, COLORS.accent);
     this.makeCircleTexture('ph_target_hit', r, COLORS.good);
+
+    // 图集里的帧动画（帧名 <key>_0..N）—— 没有帧时静默跳过
+    if (ASSETS.useAtlas) registerFrameAnims(this);
 
     const boot = document.getElementById('boot');
     if (boot) boot.style.display = 'none';

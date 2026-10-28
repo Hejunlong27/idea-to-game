@@ -184,7 +184,32 @@ def collect_assets(proj: Path, only: list[str], limit: int | None) -> list[dict]
                 over = json.loads(side.read_text(encoding="utf-8"))
             except Exception as e:
                 warn(f"{side.name} 解析失败，已忽略：{e}")
-        items.append({"name": name, "prompt": prompt, "file": f, "override": over})
+        sheet = None
+        kind = str(over.get("kind") or "").lower()
+        if kind in ("sheet", "frames"):
+            grid = str(over.get("grid") or "3x3").lower()
+            try:
+                rows, cols = (int(x) for x in grid.split("x"))
+            except Exception:
+                warn(f"{side.name} 的 grid 格式错误（应为 RxC），按 3x3 处理")
+                rows, cols = 3, 3
+            items_list = over.get("items") or []
+            frames = int(over.get("frames") or (len(items_list) if items_list else rows * cols))
+            sheet = {
+                "kind": kind,
+                "rows": rows,
+                "cols": cols,
+                "grid": f"{rows}x{cols}",
+                "items": [str(x) for x in items_list],
+                "frames": frames,
+                "pad_to": over.get("pad_to") or 0,
+            }
+            if kind == "sheet" and len(sheet["items"]) not in (0, rows * cols):
+                warn(
+                    f"{name}: items 数量 {len(sheet['items'])} 与网格 {grid}（{rows * cols} 格）不一致，"
+                    "多余/不足的格子会被忽略"
+                )
+        items.append({"name": name, "prompt": prompt, "file": f, "override": over, "sheet": sheet})
     if limit:
         items = items[:limit]
     if not items:
@@ -868,6 +893,43 @@ def pick_colors(proj: Path) -> tuple[list[str], str]:
     return primary, bg
 
 
+def cell_names(item: dict) -> list[str]:
+    """网格图里每一格的素材名。
+
+    kind=sheet：用 sidecar 的 items（顺序按行优先）；缺省则 <name>_0..N
+    kind=frames：<name>_0..<frames-1>，便于 Phaser 建动画
+    """
+    s = item["sheet"]
+    if s.get("kind") == "sheet" and s.get("items"):
+        return s["items"][: s["rows"] * s["cols"]]
+    n = s.get("frames") or s["rows"] * s["cols"]
+    return [f"{item['name']}_{i}" for i in range(n)]
+
+
+def split_grid(im: Image.Image, rows: int, cols: int) -> list[Image.Image]:
+    w, h = im.size
+    cw, ch = w // cols, h // rows
+    out = []
+    for r in range(rows):
+        for c in range(cols):
+            out.append(im.crop((c * cw, r * ch, (c + 1) * cw, (r + 1) * ch)))
+    return out
+
+
+def finish_cell(cell: Image.Image, cfg: dict, pad: int = 0) -> Image.Image:
+    """单格后处理：抠背景 → 裁边 → 统一方形画布（保证多帧/多素材尺寸一致）。"""
+    im = cell.convert("RGBA")
+    if cfg.get("remove_bg"):
+        im = remove_bg_color(im, cfg["remove_bg"], int(cfg.get("remove_bg_tolerance") or 60))
+    im = trim_alpha(im)
+    if pad <= 0:
+        pad = max(im.width, im.height)
+    side = max(pad, im.width, im.height)
+    canvas = Image.new("RGBA", (side, side), (0, 0, 0, 0))
+    canvas.paste(im, ((side - im.width) // 2, (side - im.height) // 2))
+    return canvas
+
+
 def make_placeholder(name: str, w: int, h: int, primary: list[str], bg: str) -> Image.Image:
     im = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
@@ -1000,6 +1062,85 @@ def pick_provider(cfg: dict, proj: Path, forced: str) -> tuple[str, str]:
     return "placeholder", f"ComfyUI 与 RunningHub 均不可用（{msg}；{msg2}）"
 
 
+def generate_sheet(
+    client, cfg: dict, item: dict, params: dict, sig: str, raw_dir: Path,
+    entries: dict, primary: list[str], bg: str, provider: str,
+) -> dict:
+    """一张网格图 → 切成多个素材（kind=sheet）或一套动画帧（kind=frames）。
+
+    为什么要这么做：
+      · 风格一致性 —— 同一张图里的元素天然同光源、同笔触、同色板
+      · 省调用 —— 9 个素材 1 次推理，而不是 9 次
+      · 帧对齐 —— 动画帧在同一张图里，主体大小与基线更稳
+
+    代价：格数越多越容易「多画/少画/串格」，所以每格都做 trim + 统一画布，
+    并保留整张网格图（`_sheet_<name>.png`）便于肉眼核对。
+    """
+    spec = item["sheet"]
+    names = cell_names(item)
+    rows, cols = spec["rows"], spec["cols"]
+    out = {"results": [], "degraded": [], "failed": []}
+    sheet_path = raw_dir / f"_sheet_{item['name']}.png"
+    pad = int(spec.get("pad_to") or 0)
+
+    rec_base = {
+        "provider": provider,
+        "prompt": params["prompt"],
+        "negative": params["negative"],
+        "seed": params["seed"],
+        "sheet": item["name"],
+        "grid": spec["grid"],
+        "generated_at": datetime.now().astimezone().isoformat(timespec="seconds"),
+    }
+
+    try:
+        if client is None:
+            raise RuntimeError("provider=placeholder，跳过网格推理")
+        info = client.generate(params, sheet_path)
+        rec_base.update(info)
+        sheet_img = Image.open(sheet_path)
+        cells = split_grid(sheet_img, rows, cols)
+        for i, name in enumerate(names):
+            cell = finish_cell(cells[i], cfg, pad) if i < len(cells) else None
+            if cell is None:
+                raise RuntimeError(f"网格 {spec['grid']} 只有 {len(cells)} 格，缺 {name}")
+            dst = raw_dir / f"{name}.png"
+            cell.save(dst, "PNG")
+            entries[name] = {
+                **rec_base,
+                "asset": name,
+                "signature": f"{sig}:{name}",
+                "cell": i,
+                "width": cell.width,
+                "height": cell.height,
+                "bytes": dst.stat().st_size,
+                "status": "ok",
+            }
+            out["results"].append({"asset": name, "status": "ok", "file": dst.name, "bytes": entries[name]["bytes"]})
+        print(f"      网格 {spec['grid']} → {len(names)} 个素材（整图留档 {sheet_path.name}）")
+    except Exception as e:  # noqa: BLE001
+        warn(f"{item['name']} 网格生成失败：{e}")
+        for i, name in enumerate(names):
+            dst = raw_dir / f"{name}.png"
+            if cfg["fallback_placeholder"]:
+                make_placeholder(name, params["width"], params["height"], primary, bg).save(dst, "PNG")
+                entries[name] = {
+                    **rec_base,
+                    "asset": name,
+                    "provider": "placeholder",
+                    "signature": f"{sig}:{name}",
+                    "cell": i,
+                    "status": "degraded",
+                    "error": str(e)[:400],
+                }
+                out["degraded"].append({"asset": name, "error": str(e)[:300]})
+                out["results"].append({"asset": name, "status": "degraded", "file": dst.name})
+            else:
+                out["failed"].append({"asset": name, "error": str(e)[:300]})
+                out["results"].append({"asset": name, "status": "failed"})
+    return out
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="资产生成：ComfyUI / RunningHub / 占位")
     ap.add_argument("--project", default=None)
@@ -1111,15 +1252,36 @@ def main() -> int:
     t0 = time.time()
     for idx, it in enumerate(items, 1):
         p = asset_params(cfg, it)
-        out = raw_dir / f"{it['name']}.png"
-        sig = signature(p, provider, str(cfg["comfyui"].get("workflow", "")) + str(cfg["runninghub"].get("workflow_id", "")))
-        prev = entries.get(it["name"]) or {}
-        if not args.force and out.exists() and prev.get("signature") == sig:
-            print(f"[{idx}/{len(items)}] 跳过（未变化）：{it['name']}")
-            results.append({"asset": it["name"], "status": "skipped", "file": out.name})
+        sheet = it.get("sheet")
+        extra = json.dumps(sheet, ensure_ascii=False, sort_keys=True) if sheet else ""
+        sig = signature(
+            p,
+            provider,
+            str(cfg["comfyui"].get("workflow", "")) + str(cfg["runninghub"].get("workflow_id", "")) + extra,
+        )
+        targets = cell_names(it) if sheet else [it["name"]]
+        outs = [raw_dir / f"{n}.png" for n in targets]
+        if not args.force and all(o.exists() for o in outs) and all(
+            (entries.get(n) or {}).get("signature") == f"{sig}:{n}" if sheet else (entries.get(n) or {}).get("signature") == sig
+            for n in targets
+        ):
+            print(f"[{idx}/{len(items)}] 跳过（未变化）：{it['name']}" + (f"（{len(targets)} 格）" if sheet else ""))
+            results.append({"asset": it["name"], "status": "skipped", "file": outs[0].name})
             continue
 
-        print(f"[{idx}/{len(items)}] 生成 {it['name']}  {p['width']}x{p['height']}  seed={p['seed']}")
+        print(
+            f"[{idx}/{len(items)}] 生成 {it['name']}"
+            + (f"（{sheet['grid']} 网格 → {len(targets)} 个素材）" if sheet else "")
+            + f"  {p['width']}x{p['height']}  seed={p['seed']}"
+        )
+        if sheet:
+            r = generate_sheet(client, cfg, it, p, sig, raw_dir, entries, primary, bg, provider)
+            results.extend(r["results"])
+            degraded.extend(r["degraded"])
+            failed.extend(r["failed"])
+            continue
+
+        out = outs[0]
         rec = {
             "asset": it["name"],
             "provider": provider,

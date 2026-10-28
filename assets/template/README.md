@@ -55,7 +55,8 @@ npm run shots               # 实机截图 → docs/07-qa/screenshots/（商店�
 | `src/types.ts` | 共享类型。`PlatformBridge` 接口定义在此 |
 | `src/platform/` | 各平台适配器 + 工厂。**平台差异只允许出现在这里** |
 | `src/game/` | 纯玩法逻辑。**禁止 import `src/platform/`** |
-| `src/game/config.ts` | 全部可调数值。P3 调参只改这里 |
+| `src/game/config.ts` | 全部可调数值。P3 调参只改这里；`ANIM` 配帧动画 |
+| `src/game/anim.ts` | 帧动画：从图集注册 `<key>_loop`，`playFrames(sprite, key)` 播放 |
 | `src/game/scenes/` | 场景：Boot / Menu / Play / GameOver |
 | `src/game/util.ts` | 从 registry 取平台实例、存档读写、缩放工具 |
 | `scripts/zip-all.mjs` | 打包脚本 |
