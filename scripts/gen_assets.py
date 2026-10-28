@@ -69,7 +69,8 @@ DEFAULT_WORKFLOW = SKILL_DIR / "assets" / "workflows" / "comfyui_txt2img.json"
 
 DEFAULT_NEGATIVE = (
     "low quality, blurry, jpeg artifacts, watermark, signature, text, caption, "
-    "frame, border, cropped, extra limbs, deformed, photorealistic, 3d render"
+    "frame, border, cropped, extra limbs, deformed, photorealistic, 3d render, "
+    "cast shadow, drop shadow, ground shadow"
 )
 
 DEFAULTS = {
@@ -229,6 +230,7 @@ def asset_params(cfg: dict, item: dict) -> dict:
         "seed": int(o.get("seed", cfg["seed"])),
         "ref": o.get("ref", ""),
         "provider": o.get("provider", cfg["provider"]),
+        "trim": bool(o.get("trim", cfg.get("trim"))),
     }
 
 
@@ -916,18 +918,33 @@ def split_grid(im: Image.Image, rows: int, cols: int) -> list[Image.Image]:
     return out
 
 
-def finish_cell(cell: Image.Image, cfg: dict, pad: int = 0) -> Image.Image:
-    """单格后处理：抠背景 → 裁边 → 统一方形画布（保证多帧/多素材尺寸一致）。"""
+def prep_cell(cell: Image.Image, cfg: dict) -> Image.Image:
+    """单格预处理：抠背景 → 裁边。不做画布统一（那要看整组）。"""
     im = cell.convert("RGBA")
     if cfg.get("remove_bg"):
         im = remove_bg_color(im, cfg["remove_bg"], int(cfg.get("remove_bg_tolerance") or 60))
-    im = trim_alpha(im)
-    if pad <= 0:
-        pad = max(im.width, im.height)
-    side = max(pad, im.width, im.height)
+    return trim_alpha(im)
+
+
+def pad_square(im: Image.Image, side: int) -> Image.Image:
     canvas = Image.new("RGBA", (side, side), (0, 0, 0, 0))
     canvas.paste(im, ((side - im.width) // 2, (side - im.height) // 2))
     return canvas
+
+
+def finish_cells(cells: list[Image.Image], cfg: dict, pad: int = 0) -> list[Image.Image]:
+    """整组统一画布。
+
+    ⚠️ 必须按**整组最大边**统一，不能每格各算各的 ——
+    否则动画帧尺寸不一致，播放时会跳帧抖动（实测第一版就是这个毛病：
+    四帧分别是 365/376/367/377px）。pad 显式指定时以它为准。
+    """
+    prepped = [prep_cell(c, cfg) for c in cells]
+    if pad > 0:
+        side = pad
+    else:
+        side = max(max(im.width, im.height) for im in prepped)
+    return [pad_square(im, side) for im in prepped]
 
 
 def make_placeholder(name: str, w: int, h: int, primary: list[str], bg: str) -> Image.Image:
@@ -1100,10 +1117,11 @@ def generate_sheet(
         rec_base.update(info)
         sheet_img = Image.open(sheet_path)
         cells = split_grid(sheet_img, rows, cols)
+        if len(cells) < len(names):
+            raise RuntimeError(f"网格 {spec['grid']} 只有 {len(cells)} 格，需要 {len(names)}")
+        done = finish_cells(cells, cfg, pad)
         for i, name in enumerate(names):
-            cell = finish_cell(cells[i], cfg, pad) if i < len(cells) else None
-            if cell is None:
-                raise RuntimeError(f"网格 {spec['grid']} 只有 {len(cells)} 格，缺 {name}")
+            cell = done[i]
             dst = raw_dir / f"{name}.png"
             cell.save(dst, "PNG")
             entries[name] = {
@@ -1302,11 +1320,11 @@ def main() -> int:
                 im.save(out, "PNG")
                 rec["provider"] = "placeholder"
             # 后处理
-            if cfg.get("remove_bg") or cfg.get("trim"):
+            if cfg.get("remove_bg") or p.get("trim"):
                 im2 = Image.open(out)
                 if cfg.get("remove_bg"):
                     im2 = remove_bg_color(im2, cfg["remove_bg"], int(cfg.get("remove_bg_tolerance") or 60))
-                if cfg.get("trim"):
+                if p.get("trim"):
                     im2 = trim_alpha(im2)
                 im2.save(out, "PNG")
             rec["bytes"] = out.stat().st_size

@@ -57,6 +57,27 @@ python <skill>/scripts/init_project.py --name fruit-merge --idea "合成水果" 
 - **低多边形必须锁视角**：同一批素材全部 45° 俯视 + 固定光位，否则拼在一起像贴错图
 - 原库 306 条里绝大多数是**真人/影视/恐怖**向，与休闲小游戏不匹配，所以只挑了这 5 档；需要其他风格时按同样方法蒸馏后加 JSON 即可
 
+## 实测记录（2026-10-28，Qwen-Image 2.1 turbo / 1024×1024 / seed 固定）
+
+同一提示词（a cute round slime monster…）+ 五套 style_tokens 各出一张，结论：
+
+| 风格 | 结果 | 备注 |
+|---|---|---|
+| `pixel-game` | ✅ 一次到位 | 像素块、硬边、描边都对；小尺寸可读性最好 |
+| `flat-vector` | ✅ 一次到位 | 纯色块 + 统一描边，和程序化 UI 最搭 |
+| `lowpoly-3d` | ⚠️ 可用但有瑕疵 | 面片明暗正确，但模型自带了**地面投影**，泛洪抠图抠不掉（右下角残留色块）。已把 `cast shadow, drop shadow, ground shadow` 加进默认 negative |
+| `chibi-2d` | ✅ 一次到位 | 大头短身、腮红、马卡龙配色，最讨喜 |
+| `ghibli` | ✅ 一次到位 | 水彩渐变与柔光明显，但边缘最"软"，小尺寸要慎用 |
+
+对照图：`dist/samples/styles/contact-sheet.png`（含 HTML 画廊）。
+
+**帧动画实测**（`--frames slime_idle --grid 2x2 --count 4`）：
+
+- 4 帧风格/比例一致，切分后画布统一（这条曾经有 bug：每格各算各的画布 → 365/376/367/377px，播放会抖）
+- 但 `idle breathing` 被理解成"正面/侧面交替"而不是"同一机位的呼吸起伏"
+  → 要真正做循环动画，提示词必须写死 **same camera angle, same pose, only the body squash and stretch changes**
+- 结论：**2×2 是动画的安全上限**，格数再多一致性会崩
+
 ## 新增一档
 
 在 `assets/styles/` 下加一个 `<key>.json`，字段照抄任一现有文件：
