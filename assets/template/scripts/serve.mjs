@@ -9,6 +9,7 @@
  *   node scripts/serve.mjs                 # 默认服务仓库根目录（dev，走源码）
  *   node scripts/serve.mjs dist/crazygames # 服务构建产物
  *   PORT=5199 node scripts/serve.mjs dist/crazygames
+ *   HOST=0.0.0.0 node scripts/serve.mjs dist/taptap   # 手机同 WiFi 可访问（真机测试用）
  */
 import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
@@ -16,6 +17,8 @@ import { extname, join, normalize, resolve } from 'node:path';
 
 const root = resolve(process.argv[2] ?? '.');
 const port = Number(process.env.PORT ?? 5199);
+/** 默认只听 127.0.0.1；真机测试时设 HOST=0.0.0.0 */
+const host = process.env.HOST ?? '127.0.0.1';
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -68,7 +71,7 @@ const server = createServer(async (req, res) => {
   }
 });
 
-server.listen(port, '127.0.0.1', () => {
+server.listen(port, host, () => {
   console.log(`serve: http://127.0.0.1:${port}/  (root=${root})`);
 });
 

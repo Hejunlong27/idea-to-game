@@ -100,7 +100,73 @@ def sfx_click() -> np.ndarray:
     return tone(1320, 0.04, "sine") * 0.8
 
 
-SFX = {"hit": sfx_hit, "miss": sfx_miss, "over": sfx_over, "click": sfx_click}
+def _hit_pitch(freq: float):
+    """连击音阶：连击越高音越高，玩家不用看数字也知道自己在爬。"""
+
+    def fn() -> np.ndarray:
+        return mix(sweep(freq, freq * 1.7, 0.09), tone(freq * 1.5, 0.07, "tri") * 0.3)
+
+    return fn
+
+
+def sfx_gold() -> np.ndarray:
+    """金色史莱姆：两声清脆铃音，比普通命中更"贵"。"""
+    return mix(tone(1320, 0.22, "sine"), tone(1980, 0.18, "sine") * 0.6, tone(2640, 0.12, "sine") * 0.3)
+
+
+def sfx_bomb() -> np.ndarray:
+    """炸弹：低频冲击 + 短噪声，明确"负面"。"""
+    rng = np.random.default_rng(7)
+    t = np.linspace(0, 0.28, int(SR * 0.28), endpoint=False)
+    noise = rng.uniform(-1, 1, t.size) * np.exp(-t / 0.05)
+    # 简单一阶低通，去掉刺耳的高频
+    lp = np.convolve(noise, np.ones(24) / 24, mode="same")
+    thump = np.sin(2 * np.pi * np.linspace(120, 55, t.size) * t) * np.exp(-t / 0.12)
+    return mix(lp * 0.8, thump * 0.9)
+
+
+def sfx_ice() -> np.ndarray:
+    """冰冻：玻璃质感的高频泛音，短促。"""
+    return mix(tone(1760, 0.2, "sine"), tone(2637, 0.14, "sine") * 0.5, tone(3520, 0.08, "sine") * 0.25)
+
+
+def sfx_combo() -> np.ndarray:
+    """连击里程碑：三连上行，短。"""
+    seq = [659, 880, 1174]
+    out = np.concatenate([tone(f, 0.09, "tri") for f in seq])
+    return out / (np.max(np.abs(out)) or 1.0) * 0.85
+
+
+def sfx_levelup() -> np.ndarray:
+    """过关：四音上行小号角。"""
+    seq = [523, 659, 784, 1046]
+    out = np.concatenate([tone(f, 0.14, "tri") for f in seq])
+    return out / (np.max(np.abs(out)) or 1.0) * 0.9
+
+
+def sfx_fail() -> np.ndarray:
+    """未过关：两音下行，不刺耳（失败反馈要克制）。"""
+    seq = [392, 294]
+    out = np.concatenate([tone(f, 0.2, "tri") for f in seq])
+    return out / (np.max(np.abs(out)) or 1.0) * 0.8
+
+
+SFX = {
+    "hit": sfx_hit,
+    "hit1": _hit_pitch(660),
+    "hit2": _hit_pitch(784),
+    "hit3": _hit_pitch(880),
+    "hit4": _hit_pitch(1046),
+    "miss": sfx_miss,
+    "over": sfx_over,
+    "click": sfx_click,
+    "gold": sfx_gold,
+    "bomb": sfx_bomb,
+    "ice": sfx_ice,
+    "combo": sfx_combo,
+    "levelup": sfx_levelup,
+    "fail": sfx_fail,
+}
 
 
 def bgm_loop(bars: int = 8, bpm: int = 96) -> np.ndarray:
