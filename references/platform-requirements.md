@@ -160,6 +160,30 @@ taptap-cli skills list          # 查看随 CLI 同步的 AI 能力说明
 
 > ⚠️ 涉及账号登录与提审，属**对外发布动作**，必须由用户自己执行，技能不得代跑。
 
+### 提交物料与过审要点
+
+| 项 | 要求 | 由谁产出 |
+|---|---|---|
+| 包体 | `dist/taptap/` 打成 zip，解压后根目录即 `index.html` | `ship_pack.py` |
+| 图标 | 512×512 PNG（后台规格可能调整，以开发者中心为准） | `ship_pack.py` → `docs/08-ship/store/taptap/icon.png` |
+| 封面 | 1280×720 | 同上 `cover.png` |
+| 实机截图 | 3 张以上，竖屏 1080×1920 / 横屏 1920×1080 | 取自 `docs/07-qa/screenshots/` |
+| 文案 | 标题 ≤60 字符、简短描述 ≤120、详细描述 ≤500 | `docs/08-ship/store-copy.md` |
+| 隐私政策 | 详情页必须可访问；纯本地存档也需声明「不收集个人信息」 | 用户自备 |
+
+**审核高频驳回项（本项目已纳入 `precheck.py` 自动检查）**：
+
+- 首屏依赖**境外 CDN**（Google Fonts / 境外图床 / 境外统计）→ 国内加载失败
+- 产物使用**根绝对路径**（`/assets/x.png`）→ 内嵌 iframe 下 404
+- 长按弹出选择菜单（缺 `user-select: none`）→ 移动端体验问题
+- 未完成**小游戏前置备案**即提审
+- 广告位未在 Dirichlet 创建、或在导航按钮上误触插屏
+
+```bash
+python <skill>/scripts/ship_pack.py --platforms taptap --build   # 一键产出全部物料 + 自检清单
+python <skill>/scripts/precheck.py --dir dist/taptap --platform taptap
+```
+
 ### 文档入口
 
 - 小游戏文档指引：`https://developer.taptap.cn/minigameapidoc/quick-start/document-guide/`

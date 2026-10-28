@@ -52,7 +52,7 @@ idea-to-game/
 │  ├─ 02-scaffold.md               # P1 项目骨架 + 平台适配层 + 目标平台构建
 │  ├─ 03-art-bible.md              # P1 参考图 → 色板 + 风格规范 + 提示词模板
 │  ├─ 04-core-loop.md              # P2 灰盒玩法主循环（先用几何占位）
-│  ├─ 05-art-forge.md              # P2 生图
+│  ├─ 05-art-forge.md              # P2 生图（ComfyUI / RunningHub / 占位，可降级）
 │  ├─ 06-sprite-tools.md           # P2 切图 / 抠图 / 图集打包
 │  ├─ 07-audio-forge.md            # P2 配乐 + 音效
 │  ├─ 08-polish.md                 # P3 手感 juice + UI + 难度曲线 + 存档
@@ -67,6 +67,7 @@ idea-to-game/
 │  ├─ contracts.md                 # 文件契约、state.yaml schema、审核产物契约
 │  ├─ delivery-standards.md        # L1 / L2 / L3 三档验收清单
 │  ├─ platform-requirements.md     # 5 个平台的硬红线（已核实官方文档）
+│  ├─ artgen-integration.md        # ★ ComfyUI / RunningHub 接口、节点探测、故障排查
 │  └─ genre-playbook.md            # 超休闲品类拆解与范围控制规则
 │
 ├─ scripts/                        # 确定性工具脚本
@@ -76,12 +77,16 @@ idea-to-game/
 │  ├─ gate_check.py                # 阶段产物校验（含审核结论与交付范围一致性）
 │  ├─ review_gate.py               # ★ 审核执行与结论判定（自动 + 人工条目 → verdict）
 │  ├─ palette_extract.py           # 从参考图提取主色板（K-means）
-│  ├─ sprite_tools.py              # 网格切分 / 抠图 / 裁边 / 缩放
+│  ├─ gen_prompts.py               # 从 scope.json 批量生成提示词（自带 style_tokens）
+│  ├─ gen_assets.py                # ★ 资产生成：ComfyUI / RunningHub / 占位 + 台账 + 续跑
+│  ├─ sprite_tools.py              # 网格切分 / 泛洪抠图 / 裁边 / 统一画布
 │  ├─ pack_atlas.py                # 打包 Phaser 纹理图集（多页支持）
 │  ├─ measure_bundle.py            # 体积 / 文件数 / 绝对路径审计
-│  └─ precheck.py                  # 提交前过审自检（按平台）
+│  ├─ precheck.py                  # 提交前过审自检（按平台，含境外资源检查）
+│  └─ ship_pack.py                 # ★ 一键：构建 + 审计 + 自检 + 打 zip + 商店素材 + 清单
 │
 └─ assets/
+   ├─ workflows/                   # ComfyUI API 格式工作流模板 + 导出/node_map 说明
    └─ template/                    # Phaser 3 + Vite 项目模板（P1 复制到项目根目录）
       ├─ package.json              # 含 build:cg / build:poki / build:pg / build:gd
       ├─ vite.config.ts            # base: './' —— 保证相对路径
@@ -103,6 +108,8 @@ idea-to-game/
 | 状态与门禁脚本 | Python 3.9+，`pyyaml` |
 | 图像脚本（色板/切图/图集） | Python 3.9+，`pillow`，`numpy` |
 | 项目模板 | Node 18+，`phaser` `^3.90`、`vite` `^5`、`typescript` `^5` |
+| 生图（本地） | 运行中的 ComfyUI（默认 `http://127.0.0.1:8188`）+ 一个 SDXL checkpoint |
+| 生图（云端） | RunningHub 账号 + API Key + 工作流 ID（`RUNNINGHUB_API_KEY`） |
 | Playgama 平台 | 可选：`@playgama/bridge`（未装则自动降级） |
 
 ```bash
@@ -141,6 +148,46 @@ pip install pyyaml pillow numpy
 1. **不得替用户默认选择**，也不得用「先按全平台做」敷衍。
 2. **交付包只含用户选定的平台**，不多不少（`gate_check.py --stage ship` 会校验）。
 3. **体积预算取最严的一条** —— 如 `crazygames` + `taptap` → 按 20MB 做，不是各算一份。
+
+---
+
+## 生图通道（本地 ComfyUI / RunningHub 云端）
+
+素材不是"让模型凭空画"，而是走**可配置、可复现、可降级**的三通道：
+
+| provider | 走什么 | 配置 |
+|---|---|---|
+| `comfyui` | 本地 ComfyUI：`POST /prompt` → 轮询 `/history/{id}` → `GET /view` 下载 | `comfyui.host` + `workflow`（**API 格式**）+ `checkpoint` |
+| `runninghub` | RunningHub 工作流 API：`task/openapi/create` → `/outputs` 轮询 → 下载 `fileUrl` | `runninghub.workflow_id` + `RUNNINGHUB_API_KEY` |
+| `placeholder` | Pillow 程序化占位（色块 + 名称） | 无需配置，兜底用 |
+| `auto`（默认） | ComfyUI 可达 → RunningHub 凭证齐 → 占位，按序降级 | — |
+
+```bash
+python <skill>/scripts/gen_assets.py --probe        # 两条通道一次体检
+python <skill>/scripts/gen_assets.py --dry-run      # 逐条打印最终提示词（不花钱）
+python <skill>/scripts/gen_assets.py --max 2        # 先出 2 张验风格
+python <skill>/scripts/gen_assets.py                # 全量（未变化的自动跳过）
+```
+
+设计要点（都是踩过坑才有的）：
+
+- **节点自动探测**：从工作流 JSON 里找采样器的 `positive`/`negative` 指向、`seed`、`Empty*` 的宽高、`CheckpointLoaderSimple` 的模型名；探测不到才用 `node_map` 写死。不同工作流节点 id 完全不同，**配置化而不是改脚本**。
+- **台账 + 断点续跑**：`assets/raw/manifest.json` 记 `signature = hash(prompt|negative|size|seed|provider|workflow)`，签名不变就跳过 → 改一条提示词只重出那一张。
+- **失败必须降级**：单张重试 3 次（指数退避）→ 仍失败用占位顶上并记 `degraded`，**不让"没显卡"卡死整条流水线**。
+- **本地地址绕过系统代理**：`http_proxy` 会劫持 `127.0.0.1`，导致 ComfyUI 明明在跑却返回 502。脚本对 ComfyUI 请求一律 `ProxyHandler({})`。
+- **透明背景**：SDXL 不出 alpha。提示词加 `on a flat pure magenta background` + `remove_bg: "#FF00FF"`，出图后**从四边泛洪**抠色（不会误伤主体内部同色像素）。
+
+细节：`references/artgen-integration.md`、`assets/workflows/README.md`。
+
+## 一键交付
+
+```bash
+python <skill>/scripts/ship_pack.py --build
+```
+
+跑完得到：`dist/<平台>.zip`（解压即 `index.html`）+ 体积审计 JSON + 过审自检 JSON +
+商店素材（`icon` / `cover` / 3 张截图）+ `submit-checklist.md`（逐平台实测数值 + 待人工事项）。
+它**不替你做提交**，也不替代 R2 终审 —— 最后一道门仍是 `gate_check.py --stage ship`。
 
 ---
 
@@ -308,15 +355,53 @@ this.load.atlas('atlas', 'assets/atlas/atlas.png', 'assets/atlas/atlas.json');
 |---|---|
 | 可运行游戏项目 | 项目根目录（`npm run dev` 即玩） |
 | 各阶段文档与报告 | `docs/01-brief` … `docs/08-ship` |
-| 三平台可分发包 | `dist/crazygames.zip`、`dist/poki.zip`、`dist/playgama.zip` |
-| 过审自检清单 | `docs/08-ship/submit-checklist.md` |
-| 商店素材文案 | `docs/08-ship/store-copy.md` |
+| 选定平台分发包 | `dist/<平台>.zip`（只含用户选定平台，不多不少） |
+| 过审自检清单 | `docs/08-ship/submit-checklist.md`（含逐平台实测数值） |
+| 商店素材与文案 | `docs/08-ship/store/<平台>/`、`docs/08-ship/store-copy.md` |
+| 生图台账 | `assets/raw/manifest.json`（provider / seed / prompt hash / 降级项） |
 
 交付标准分三档（L1 可玩 / L2 可交付 / L3 可过审），完整清单见 `references/delivery-standards.md`。
 
 ---
 
-## 六、许可
+## 六、更新日志
+
+### v1.3 · 生图通道接入 + 一键交付
+
+- **新增 `scripts/gen_assets.py`**：ComfyUI（本地）/ RunningHub（云端工作流）/ 程序化占位三通道，
+  `auto` 按序降级。含工作流节点自动探测、台账与断点续跑、重试与占位兜底、`--probe` / `--dry-run`。
+- **新增 `references/artgen-integration.md`**：两个平台的接口细节、节点探测规则、故障排查表。
+- **新增 `assets/workflows/`**：ComfyUI API 格式工作流模板 + 导出与 `node_map` 配置说明。
+- **新增 `scripts/gen_prompts.py`**：从 `scope.json` 批量生成提示词，保证每条都带 `style_tokens`。
+- **新增 `scripts/ship_pack.py`**：构建 → 体积审计 → 过审自检 → 打 zip → 商店素材 → 自检清单，一条命令跑完。
+- **新增 `scripts/shots.mjs`（模板内）**：`npm run shots` 用系统 Chrome 出 3 张实机截图，
+  顺带收集控制台错误（有错误即退出码 1）。截图直接喂给 `ship_pack.py` 生成商店素材。
+- **`precheck.py` 强化**：新增「无境外 CDN / 外部资源依赖」「未引用境外字体服务」——
+  只统计**真正会被加载**的 URL（`script src` / `link href` / `fetch` / `url()`），
+  不会把库注释里的 `phaser.io`、`github.com` 误报成外链。另加 `--json` 输出。
+- **`sprite_tools.py`**：新增 `--remove-bg`（四边泛洪抠色，不误伤主体内部同色）与 `--pad-to`（统一透明画布）。
+- **`gate_check.py`**：`art_forge` 校验生图台账（有提示词没出图 → 失败；降级项 → 告警）；
+  `qa` 校验实机截图 ≥3 张。
+- **`init_project.py`**：自动写入 `.gamedev/artgen.yaml` 并复制工作流模板。
+
+### v1.2 · 质量与玩法审核官
+
+- 新增 `references/crazygames-standard.md`（A–H 八维度，REQ 60 + GUIDE 28）与 `modules/12-review.md`。
+- 新增 `scripts/review_gate.py`，R0 / R1 / R2 三处硬闸，结论按阶段分文件（`verdict-r0/r1/r2.json`）。
+- `gate_check.py --stage ship` 强制校验 R2 结论与 R0/R1 已完成。
+
+### v1.1 · TapTap 平台 + 强制平台确认
+
+- 新增 `taptap` 适配器（网页游戏 / Tap 小游戏双形态自动降级）与构建目标。
+- 新增门禁 G0：收到第一个指令后必须先问平台，不得默认。
+
+### v1.0 · 首版
+
+- 12 个能力环节 + 5 平台适配层 + 单文件版构建 + 启动看门狗。
+
+---
+
+## 七、许可
 
 [Apache License 2.0](LICENSE) © 2026 Hejunlong27
 

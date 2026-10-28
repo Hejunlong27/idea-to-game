@@ -1,0 +1,149 @@
+#!/usr/bin/env python3
+"""从 scope.json + palette.json 批量生成生图提示词（模块 03 收尾 / 05 前置）。
+
+目的：把「写提示词」这件确定性的事自动化，保证
+  ① 每个素材都有提示词（不漏）
+  ② 每条都带 style_tokens（gate_check 的硬校验项）
+  ③ 风格串只出现一次，避免风格漂移
+
+用法:
+    python gen_prompts.py                      # 补齐缺失的提示词，不动已有文件
+    python gen_prompts.py --force              # 全部重写
+    python gen_prompts.py --background none    # 不加纯色背景指令（工作流自带抠图时用）
+
+输入: docs/01-brief/scope.json 的 assets{}、docs/02-art/palette.json 的 style_tokens
+可选: docs/02-art/subjects.json  —— 逐素材的主体描述（强烈建议手写/让 Agent 精修）
+输出: docs/02-art/prompts/<asset>.txt（+ 缺失主体的 subjects.json 骨架）
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _common import dump_json, ok, project_dir, warn  # noqa: E402
+
+# 分类 → (主体兜底描述后缀, 建议尺寸)
+BUCKETS = {
+    "sprites": ("game sprite, front view, single object, centered", 1024),
+    "characters": ("game character, full body, front view, centered", 1024),
+    "ui": ("game UI element, flat icon, centered, no text", 512),
+    "props": ("game prop, front view, centered", 768),
+    "bg": ("seamless game background, no characters", 1024),
+    "backgrounds": ("seamless game background, no characters", 1024),
+    "fx": ("game visual effect sprite, centered", 512),
+}
+
+NEGATIVE = (
+    "low quality, blurry, jpeg artifacts, watermark, signature, text, caption, "
+    "frame, border, cropped, extra limbs, deformed, photorealistic, 3d render"
+)
+
+
+def humanize(name: str) -> str:
+    return name.replace("_", " ").replace("-", " ").strip()
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description="批量生成生图提示词")
+    ap.add_argument("--project", default=None)
+    ap.add_argument("--force", action="store_true", help="覆盖已有提示词")
+    ap.add_argument(
+        "--background",
+        default="magenta",
+        choices=["magenta", "white", "none"],
+        help="追加纯色背景指令，便于出图后泛洪抠图；工作流自带抠图节点时选 none",
+    )
+    ap.add_argument("--dry-run", action="store_true")
+    args = ap.parse_args()
+
+    proj = project_dir(args.project)
+    scope_p = proj / "docs" / "01-brief" / "scope.json"
+    pal_p = proj / "docs" / "02-art" / "palette.json"
+    if not scope_p.exists():
+        print(f"ERROR: 缺少 {scope_p}（先做 modules/01-brief.md）", file=sys.stderr)
+        return 1
+    if not pal_p.exists():
+        print(f"ERROR: 缺少 {pal_p}（先做 modules/03-art-bible.md）", file=sys.stderr)
+        return 1
+
+    scope = json.loads(scope_p.read_text(encoding="utf-8"))
+    palette = json.loads(pal_p.read_text(encoding="utf-8"))
+    tokens = (palette.get("style_tokens") or "").strip()
+    if not tokens:
+        print("ERROR: palette.json 缺少 style_tokens —— 它是风格一致性的唯一锚点", file=sys.stderr)
+        return 1
+
+    subjects_p = proj / "docs" / "02-art" / "subjects.json"
+    subjects = {}
+    if subjects_p.exists():
+        try:
+            subjects = json.loads(subjects_p.read_text(encoding="utf-8"))
+        except Exception as e:  # noqa: BLE001
+            warn(f"subjects.json 解析失败，已忽略：{e}")
+
+    assets = scope.get("assets") or {}
+    pdir = proj / "docs" / "02-art" / "prompts"
+    pdir.mkdir(parents=True, exist_ok=True)
+
+    bg_clause = {
+        "magenta": "on a flat pure magenta background",
+        "white": "on a flat pure white background",
+        "none": "",
+    }[args.background]
+
+    written, skipped, missing_subject = 0, 0, []
+    for bucket, names in assets.items():
+        if not isinstance(names, list):
+            continue
+        suffix, size = BUCKETS.get(bucket, ("game asset, centered", 1024))
+        for raw in names:
+            name = str(raw).strip()
+            if not name:
+                continue
+            dst = pdir / f"{name}.txt"
+            if dst.exists() and not args.force:
+                skipped += 1
+                continue
+            subject = subjects.get(name)
+            if not subject:
+                missing_subject.append(name)
+                subject = humanize(name)
+            parts = [subject, suffix]
+            if bg_clause:
+                parts.append(bg_clause)
+            parts.append(tokens)
+            prompt = ", ".join(p.strip().strip(",") for p in parts if p.strip())
+            if args.dry_run:
+                print(f"{name}.txt → {prompt}")
+                continue
+            dst.write_text(prompt + "\n", encoding="utf-8")
+            side = pdir / f"{name}.json"
+            if not side.exists():
+                dump_json(side, {"width": size, "height": size, "negative": NEGATIVE})
+            written += 1
+
+    if args.dry_run:
+        return 0
+
+    # 为缺失主体生成骨架，方便人工/Agent 精修
+    if missing_subject:
+        skeleton = dict(subjects)
+        for n in missing_subject:
+            skeleton.setdefault(n, humanize(n))
+        if not subjects_p.exists():
+            dump_json(subjects_p, skeleton)
+            warn(f"已生成 subjects.json 骨架（{len(missing_subject)} 项用了文件名兜底描述）—— 建议精修后 --force 重跑")
+        else:
+            warn(f"{len(missing_subject)} 项缺少主体描述，已用文件名兜底：{', '.join(missing_subject[:8])}")
+
+    ok(f"提示词已生成 {written} 条，跳过 {skipped} 条 → {pdir}")
+    print("下一步：gen_assets.py --probe 确认 provider，再 gen_assets.py --dry-run 复核提示词")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -16,6 +16,8 @@
     "standalone": "vite build --config vite.standalone.config.ts && node scripts/build-standalone.mjs dist/standalone dist/standalone.html",
     "test:standalone": "node scripts/test-standalone.mjs dist/standalone.html dist/crazygames",
     "serve:cg": "node scripts/serve.mjs dist/crazygames",
+    "shots": "node scripts/shots.mjs --dir dist/taptap",
+    "shots:cg": "node scripts/shots.mjs --dir dist/crazygames",
     "zip:all": "node scripts/zip-all.mjs",
     "preview:cg": "npx --yes serve dist/crazygames -l 5173"
   },

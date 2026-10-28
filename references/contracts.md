@@ -8,6 +8,7 @@
 <project>/
 ├─ .gamedev/
 │  ├─ state.yaml
+│  ├─ artgen.yaml           # 生图通道配置（comfyui / runninghub / placeholder）
 │  └─ logs/
 ├─ docs/
 │  ├─ 00-platforms/ platform-plan.md
@@ -30,7 +31,8 @@
 │  ├─ platform/   各平台适配器 + 工厂
 │  └─ main.ts
 ├─ assets/
-│  ├─ raw/        生图原始产物
+│  ├─ raw/        生图原始产物 + manifest.json（生成台账）
+│  ├─ workflows/  ComfyUI API 格式工作流 + README
 │  ├─ processed/  切图抠图后
 │  ├─ atlas/      图集 png + json
 │  └─ audio/{bgm,sfx}/
@@ -132,6 +134,67 @@ delivery:
 
 `style_tokens` 是注入所有生图提示词的统一风格串，必须与 `art-bible.md` 中记录的一致。
 
+## `.gamedev/artgen.yaml`
+
+`scripts/gen_assets.py` 的唯一配置源（优先级：命令行 > 环境变量 > 本文件 > 内置默认）。
+
+```yaml
+provider: auto                 # auto | comfyui | runninghub | placeholder
+size: { width: 1024, height: 1024 }
+seed: 20261016
+negative: "low quality, blurry, watermark, text, extra limbs, photorealistic"
+remove_bg: "#FF00FF"           # 出图后把该背景色泛洪抠成透明；留空不抠
+trim: false
+fallback_placeholder: true     # 失败时用占位素材兜底（不得让流程卡死）
+comfyui:
+  host: http://127.0.0.1:8188
+  workflow: assets/workflows/comfyui_txt2img.json
+  checkpoint: sd_xl_base_1.0.safetensors
+  timeout: 300
+  node_map: {}                 # 留空自动探测；{prompt: {nodeId: "6", fieldName: "text"}}
+runninghub:
+  base_url: https://www.runninghub.cn
+  api_key: ""                  # 建议用 RUNNINGHUB_API_KEY 环境变量
+  workflow_id: ""
+  timeout: 600
+  poll: 3
+  instance_type: ""
+  node_map: {}
+```
+
+环境变量：`COMFYUI_HOST` / `RUNNINGHUB_API_KEY` / `RUNNINGHUB_BASE_URL` / `RUNNINGHUB_WORKFLOW_ID` / `I2G_ARTGEN_PROVIDER`。
+
+**密钥不得提交进仓库** —— `api_key` 留空，用环境变量。
+
+## `assets/raw/manifest.json`（生成台账）
+
+```json
+{
+  "version": 1,
+  "provider": "comfyui",
+  "updated": "2026-10-28T18:00:00+08:00",
+  "assets": {
+    "apple": {
+      "provider": "comfyui",
+      "prompt": "a shiny red apple, front view, ...",
+      "negative": "...",
+      "seed": 20261016,
+      "width": 1024, "height": 1024,
+      "signature": "a1b2c3d4e5f6a7b8",
+      "status": "ok",
+      "bytes": 48211,
+      "generated_at": "..."
+    }
+  }
+}
+```
+
+- `signature = sha256(provider|prompt|negative|w|h|seed|ref|workflow)[:16]`
+- 签名未变且文件存在 → 跳过（断点续跑、只重出改动的那张）
+- `status`：`ok` / `degraded`（占位兜底）/ `failed`
+
+`assets/raw/.artgen-report.json` 记录**本次运行**结果（含 `degraded` / `failed` 明细），交付报告必须引用它。
+
 ## `docs/02-art/prompts/<asset>.txt`
 
 单行提示词，格式：
@@ -141,6 +204,18 @@ delivery:
 ```
 
 禁止在提示词里重新描述风格 —— 风格只由 `style_tokens` 提供，保证一致性。
+
+同名 `.json` sidecar 可逐素材覆盖参数（可选）：
+
+```json
+{ "width": 512, "height": 512, "seed": 12345, "negative": "...", "ref": "assets/ref/hero.png" }
+```
+
+`docs/02-art/subjects.json` 存「素材名 → 主体描述」，供 `gen_prompts.py` 批量生成提示词：
+
+```json
+{ "apple": "a shiny red apple, front view", "ui_btn_restart": "round button with restart arrow icon" }
+```
 
 ## `assets/atlas/atlas.json`
 
@@ -163,6 +238,9 @@ Phaser 标准纹理图集格式（TexturePacker JSON Hash）：
 | `dist/<平台>.zip` | 提交用压缩包（内部相对路径，根目录直接是 index.html） |
 | `docs/08-ship/submit-checklist.md` | 过审自检清单，逐条打勾并附实测值 |
 | `docs/08-ship/store-copy.md` | 标题（≤60 字符）、简短描述（≤120）、详细描述（≤500）、截图清单 |
+| `docs/08-ship/store/<平台>/` | `icon.png` / `cover.png` / `screenshot-1..3.png`（`ship_pack.py` 生成） |
+| `docs/08-ship/precheck-<平台>.json` | 过审自检逐条结果（机器可读） |
+| `docs/06-perf/measure-<平台>.json` | 体积/文件数审计原始数据 |
 
 **交付包的平台范围必须与 `delivery.platforms` 完全一致**：
 - 选定但缺产物 → 校验失败

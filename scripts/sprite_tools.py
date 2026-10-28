@@ -11,6 +11,12 @@
     # 批量缩放
     python sprite_tools.py --input assets/processed/ --resize 64x64 --out assets/processed/
 
+    # 抠图：把指定背景色转为透明（从四边泛洪，主体内同色区域不受影响）
+    python sprite_tools.py --input fruit.png --remove-bg --bg-color "#FF00FF" --out assets/processed/
+
+    # 抠图 + 裁边 + 统一成 256x256 透明画布（居中）
+    python sprite_tools.py --input assets/raw/ --remove-bg --trim --pad-to 256x256 --out assets/processed/
+
     # 按 alpha 自动裁边（去透明留白）
     python sprite_tools.py --input assets/processed/ --trim --out assets/processed/
 
@@ -95,6 +101,45 @@ def do_resize(im: Image.Image, size: tuple[int, int]) -> Image.Image:
     return im.convert("RGBA").resize(size, Image.LANCZOS)
 
 
+def do_pad_to(im: Image.Image, size: tuple[int, int]) -> Image.Image:
+    """把图等比缩放进 size 画布并居中，留透明边（统一精灵尺寸用）。"""
+    im = im.convert("RGBA")
+    w, h = size
+    scale = min(w / im.width, h / im.height)
+    nw, nh = max(1, int(im.width * scale)), max(1, int(im.height * scale))
+    canvas = Image.new("RGBA", size, (0, 0, 0, 0))
+    canvas.paste(im.resize((nw, nh), Image.LANCZOS), ((w - nw) // 2, (h - nh) // 2))
+    return canvas
+
+
+def do_remove_bg(im: Image.Image, bg: tuple[int, int, int], tol: int = 40) -> Image.Image:
+    """从四边泛洪抠背景色。比 --matte 的全局替换更安全（不会误伤主体内部同色像素）。"""
+    im = im.convert("RGBA")
+    w, h = im.size
+    px = im.load()
+
+    def close(c) -> bool:
+        return all(abs(c[i] - bg[i]) <= tol for i in range(3))
+
+    stack = [(x, 0) for x in range(w)] + [(x, h - 1) for x in range(w)]
+    stack += [(0, y) for y in range(h)] + [(w - 1, y) for y in range(h)]
+    seen = bytearray(w * h)
+    while stack:
+        x, y = stack.pop()
+        if x < 0 or y < 0 or x >= w or y >= h:
+            continue
+        idx = y * w + x
+        if seen[idx]:
+            continue
+        seen[idx] = 1
+        r, g, b, a = px[x, y]
+        if not close((r, g, b)):
+            continue
+        px[x, y] = (r, g, b, 0)
+        stack.extend([(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)])
+    return im
+
+
 def process_one(im: Image.Image, args) -> list[Image.Image]:
     results = []
     if args.grid:
@@ -103,12 +148,16 @@ def process_one(im: Image.Image, args) -> list[Image.Image]:
     else:
         parts = [im]
     for p in parts:
+        if args.remove_bg:
+            p = do_remove_bg(p, parse_color(args.bg_color), args.bg_tolerance)
         if args.matte:
             p = do_matte(p, parse_color(args.bg_color), args.tolerance)
         if args.trim:
             p = do_trim(p)
         if args.resize:
             p = do_resize(p, parse_size(args.resize))
+        if args.pad_to:
+            p = do_pad_to(p, parse_size(args.pad_to))
         results.append(p)
     return results
 
@@ -118,11 +167,14 @@ def main() -> int:
     ap.add_argument("--input", required=True, help="输入图片或目录")
     ap.add_argument("--out", required=True, help="输出目录")
     ap.add_argument("--grid", default="", help="网格切分，如 3x3")
-    ap.add_argument("--matte", action="store_true", help="抠图（背景色转透明）")
+    ap.add_argument("--matte", action="store_true", help="全局抠图（背景色转透明，可能误伤主体内同色像素）")
+    ap.add_argument("--remove-bg", action="store_true", help="从四边泛洪抠背景色（AI 出图首选）")
     ap.add_argument("--bg-color", default="#FFFFFF", help="抠图背景色，默认 #FFFFFF")
-    ap.add_argument("--tolerance", type=int, default=24, help="抠图容差，默认 24")
+    ap.add_argument("--tolerance", type=int, default=24, help="--matte 容差，默认 24")
+    ap.add_argument("--bg-tolerance", type=int, default=40, help="--remove-bg 容差，默认 40")
     ap.add_argument("--trim", action="store_true", help="按 alpha 裁掉透明边距")
-    ap.add_argument("--resize", default="", help="统一缩放，如 64x64")
+    ap.add_argument("--resize", default="", help="统一缩放，如 64x64（会拉伸）")
+    ap.add_argument("--pad-to", default="", help="等比缩放进 WxH 透明画布并居中，如 256x256")
     ap.add_argument("--prefix", default="", help="输出文件名前缀")
     args = ap.parse_args()
 

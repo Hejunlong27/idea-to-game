@@ -43,16 +43,28 @@ flat vector, thick dark outline, warm saturated palette, soft rounded shapes, hi
 
 ### 4. 生成各素材提示词
 
-按 `docs/01-brief/scope.json` 的 `assets` 清单，为每个素材在 `docs/02-art/prompts/<asset>.txt` 写一行提示词：
+**先跑脚本生成骨架，再精修主体描述**（手写 30 条提示词既慢又容易漏 `style_tokens`）：
+
+```bash
+python <skill>/scripts/gen_prompts.py            # 从 scope.json 批量生成
+python <skill>/scripts/gen_prompts.py --dry-run  # 只看不写
+```
+
+脚本会为每个素材写 `docs/02-art/prompts/<asset>.txt` 与同名 `.json`（尺寸/negative），
+并生成 `docs/02-art/subjects.json` 骨架 —— **主体描述必须精修**（`apple` → `a shiny red apple, front view`），
+改完 `--force` 重跑即可。
+
+提示词格式：
 
 ```
-<subject>, <view/pose>, game asset, transparent background, centered, <style_tokens>
+<subject>, <view/pose>, game asset, centered, <纯色背景指令>, <style_tokens>
 ```
 
 **规则**：
 - 提示词中**禁止**重新描述风格 —— 风格只由 `style_tokens` 提供
-- 尺寸在 `art-bible.md` 中统一约定（如精灵 64×64、UI 图标 48×48）
+- 尺寸在 `art-bible.md` 中统一约定（如精灵 64×64、UI 图标 48×48）；生图尺寸由 `.json` sidecar 或 `artgen.yaml` 的 `size` 控制
 - 同类素材的视角与构图保持一致（如全部正面平视、全部居中）
+- 用本地 ComfyUI / RunningHub 出图时，加 `on a flat pure magenta background` 以便出图后泛洪抠图（见 `05-art-forge`）
 
 ### 5. 写 art-bible.md
 

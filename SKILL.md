@@ -134,7 +134,9 @@ agent_created: true
 12. **SDK script URL 必须核对**：`vite.config.ts` 的 `SDK_SCRIPTS` 中预填了各平台 SDK 的 CDN 地址，提交前必须对照官方文档核对一次 —— 平台会更换 CDN。
 13. **最终交付必须给出明确的 CrazyGames 标准结论**：三选一，措辞不得模糊。
     禁止「基本达标」「接近标准」「小问题不影响提交」「后续版本会改」。
-14. **产物不能双击打开，必须给用户一条能走的路径**：构建产物是外部 ES module，浏览器在 `file://` 下会以 CORS（origin `null`）**拒绝执行且不报错**，页面永远停在 `Loading…`。
+14. **生图通道必须可配置、可降级**：不得把 ComfyUI / RunningHub 的地址、节点 id、模型名硬编码进脚本或代码；
+    一律走 `.gamedev/artgen.yaml`。两个通道都不可用时必须降级为占位素材继续推进，**不允许因为"没显卡"卡死流程**。
+15. **产物不能双击打开，必须给用户一条能走的路径**：构建产物是外部 ES module，浏览器在 `file://` 下会以 CORS（origin `null`）**拒绝执行且不报错**，页面永远停在 `Loading…`。
     因此模板内置了两道防线，**不得删除**：
     - `index.html` 的**启动看门狗**（file:// 直开 / 脚本异常 / 8 秒超时 → 页面给出可操作提示，而不是静默 Loading）
     - `npm run standalone` 出的**单文件 HTML**（JS 内联 + 资源全变 data URI，双击即玩）
@@ -154,7 +156,7 @@ agent_created: true
 | P1 | `modules/03-art-bible.md` | 参考图 → 色板 + 风格规范 + 提示词模板 | `docs/02-art/` |
 | P2 | `modules/04-core-loop.md` | 灰盒玩法主循环实现 | `src/game/` |
 | **R1** | **`modules/12-review.md`** | **审核官介入②：灰盒预审（A 玩法 / B 核心循环 / C 操作引导）—— 不通过禁止生图** | `docs/09-review/r1-graybox-review.md` |
-| P2 | `modules/05-art-forge.md` | 按 Art Bible 生图 | `assets/raw/` |
+| P2 | `modules/05-art-forge.md` | 按 Art Bible 生图（ComfyUI / RunningHub / 占位） | `assets/raw/` + `manifest.json` |
 | P2 | `modules/06-sprite-tools.md` | 切图 / 抠图 / 裁剪 / 图集打包 | `assets/processed/`、`assets/atlas/` |
 | P2 | `modules/07-audio-forge.md` | BGM + 音效 | `assets/audio/` |
 | P3 | `modules/08-polish.md` | 手感 juice + UI 接线 + 难度曲线 + 存档 | 优化后的 `src/` |
@@ -235,29 +237,54 @@ python <skill>/scripts/review_gate.py --project <project> --phase r2 --round 1
 | `REJECTED` | **REQ 有 FAIL** | ❌ 硬阻断 |
 | `INCOMPLETE` | 人工条目未填完 | ❌ |
 
-### 5. 素材处理
+### 5. 素材处理（生图通道：本地 ComfyUI / RunningHub 云端）
+
+**先体检，再出图**。两个通道都不可用时自动降级为程序化占位素材，流程不中断。
 
 ```bash
+# 体检：ComfyUI 是否可达、RunningHub 凭证是否齐全
+python <skill>/scripts/gen_assets.py --probe
+
+# 提示词骨架（从 scope.json 批量生成，自带 style_tokens）
+python <skill>/scripts/gen_prompts.py
+
+# 预演（不花钱）：逐条打印素材名/尺寸/seed/最终提示词
+python <skill>/scripts/gen_assets.py --dry-run
+
+# 先出 2 张验风格，满意再全量
+python <skill>/scripts/gen_assets.py --max 2
+python <skill>/scripts/gen_assets.py
+
 # 从风格参考图提取主色板
 python <skill>/scripts/palette_extract.py --input style.png --out docs/02-art/palette.json
 
-# 切图 + 抠图（支持 2x3 / 3x2 等网格，或按 alpha 自动裁边）
-python <skill>/scripts/sprite_tools.py --input assets/raw/sheet.png --grid 3x3 --trim --out assets/processed/
+# 抠图（AI 出图不带 alpha，必做）+ 统一画布
+python <skill>/scripts/sprite_tools.py --input assets/raw/ --remove-bg --bg-color "#FF00FF" --trim --pad-to 256x256 --out assets/processed/
 
 # 打包为 Phaser 可用图集
 python <skill>/scripts/pack_atlas.py --input assets/processed/ --out assets/atlas/atlas --padding 2
 ```
 
+**provider 配置**在项目内的 `.gamedev/artgen.yaml`（`init_project.py` 已生成）：
+
+| provider | 通道 | 说明 |
+|---|---|---|
+| `comfyui` | 本地 ComfyUI `/prompt` + `/history` + `/view` | 工作流用 **API 格式**；节点自动探测，探测不到写 `node_map` |
+| `runninghub` | RunningHub `task/openapi/*` | 填 `workflow_id`；`api_key` 走 `RUNNINGHUB_API_KEY` 环境变量 |
+| `placeholder` | 程序化占位 | 兜底，标记 `art_forge: degraded` |
+| `auto` | 按序降级 | ComfyUI → RunningHub → 占位 |
+
+细节见 `references/artgen-integration.md` 与 `assets/workflows/README.md`。
+
 ### 6. 审计与交付（逐平台）
 
 ```bash
-# 体积与文件数审计（按平台红线，参数表在 scripts/_common.py 的 PLATFORMS）
-python <skill>/scripts/measure_bundle.py --dir dist/crazygames --platform crazygames
-python <skill>/scripts/measure_bundle.py --dir dist/taptap     --platform taptap
+# 一键：构建 → 体积审计 → 过审自检 → 打 zip → 商店素材 → 自检清单
+python <skill>/scripts/ship_pack.py --build
 
-# 提交前过审自检
-python <skill>/scripts/precheck.py --dir dist/crazygames --platform crazygames
-python <skill>/scripts/precheck.py --dir dist/taptap     --platform taptap
+# 或手工分步
+python <skill>/scripts/measure_bundle.py --dir dist/taptap --platform taptap
+python <skill>/scripts/precheck.py --dir dist/taptap --platform taptap
 
 # 交付前校验（含审核结论 + 平台范围一致性）
 python <skill>/scripts/gate_check.py --project <project> --stage ship
@@ -288,7 +315,8 @@ python <skill>/scripts/gate_check.py --project <project> --stage ship
 ├─ src/types.ts                 # 共享类型（PlatformBridge 接口定义）
 ├─ src/game/                    # 纯玩法逻辑，禁止 import src/platform/
 ├─ src/platform/                # 各平台适配器 + 工厂（taptap/crazygames/poki/playgama/gd/mock）
-├─ assets/{raw,processed,atlas,audio}/
+├─ .gamedev/artgen.yaml        # 生图通道配置（comfyui / runninghub / placeholder）
+├─ assets/{raw,processed,atlas,audio,workflows}/
 └─ dist/<用户选定平台>/
 ```
 
@@ -308,7 +336,9 @@ python <skill>/scripts/gate_check.py --project <project> --stage ship
 
 | 失败点 | 降级策略 |
 |---|---|
-| 生图不可用 | 生成程序化占位素材，标记 `art_forge: degraded`，游戏仍可玩 |
+| ComfyUI / RunningHub 均不可用 | `gen_assets.py` 自动降级为程序化占位素材，标记 `art_forge: degraded`，游戏仍可玩 |
+| 单张素材生成失败 | 重试 3 次（指数退避）→ 仍失败用占位兜底并记入 `.artgen-report.json`，交付报告必须列出 |
+| 工作流节点探测不到 | 在 `.gamedev/artgen.yaml` 的 `node_map` 显式指定 nodeId + fieldName，不要改脚本 |
 | 配乐不可用 | 用 Web Audio 合成音效，跳过 BGM |
 | 风格提取失败 | 退回默认色板并要求用户补充参考图，标记 `art_bible: fallback` |
 | 首包超红线 | 自动：纹理压缩 → 降分辨率 → 音频降码率 → 砍非必要素材，最多 3 次 |
@@ -328,8 +358,13 @@ python <skill>/scripts/gate_check.py --project <project> --stage ship
 | `references/delivery-standards.md` | L1/L2/L3 完整验收清单（含审核门禁） | 验收与交付时 |
 | `references/platform-requirements.md` | 5 个平台的硬红线（已核实官方文档） | 平台确认、构建、审计、打包时 |
 | `references/genre-playbook.md` | 超休闲品类拆解与选型建议 | P0 立项时 |
+| **`references/artgen-integration.md`** | **ComfyUI / RunningHub 接口细节、节点探测规则、故障排查** | 接生图通道、出图失败时 |
+| `assets/workflows/` | ComfyUI API 格式工作流模板 + 导出/node_map 说明 | P1/P2 配 provider 时 |
 | `modules/00-…-11-*.md` | 各环节详细执行步骤 | 执行到该环节时 |
 | **`modules/12-review.md`** | **审核官角色定义、三处介入、判定与结论、不达标处理流程** | 执行任何 R 轮审核时 |
 | `scripts/*.py` | 确定性工具脚本，可直接执行 | 对应操作时 |
 | **`scripts/review_gate.py`** | **审核执行与结论判定（自动 + 人工条目合并出 verdict）** | 每轮审核时 |
+| **`scripts/gen_assets.py`** | **资产生成：ComfyUI / RunningHub / 占位，含台账与断点续跑** | P2 生图时 |
+| `scripts/gen_prompts.py` | 从 scope.json 批量生成提示词（自带 style_tokens） | P1 收尾、P2 之前 |
+| **`scripts/ship_pack.py`** | **一键构建 + 审计 + 自检 + 打 zip + 商店素材 + 自检清单** | P4 交付时 |
 | `assets/template/` | Phaser 3.90 + Vite + 5 平台适配层模板 | P1 建项目时复制 |

@@ -27,15 +27,19 @@ python <skill>/scripts/sprite_tools.py \
 
 ### 2. 抠图
 
-若素材不是透明背景，按 alpha 通道或边缘色做抠图：
+AI 出图**不带 alpha**（SDXL/SD1.5），必须抠。优先用泛洪抠图（从四边向内，主体内部同色区域不受影响）：
 
 ```bash
 python <skill>/scripts/sprite_tools.py \
-  --input assets/raw/fruit.png \
-  --matte \
-  --bg-color "#FFFFFF" \
+  --input assets/raw/ \
+  --remove-bg --bg-color "#FF00FF" --bg-tolerance 40 \
+  --trim --pad-to 256x256 \
   --out assets/processed/
 ```
+
+- `--remove-bg`：四边泛洪抠背景色，**AI 出图首选**
+- `--matte`：全局替换同色像素，只适合纯色底且主体无同色的情况（会误伤高光）
+- `--pad-to WxH`：等比缩放进统一透明画布并居中 —— 让所有精灵尺寸一致，避免图集里大小不一
 
 ### 3. 统一尺寸
 
@@ -47,6 +51,8 @@ python <skill>/scripts/sprite_tools.py \
   --resize 64x64 \
   --out assets/processed/
 ```
+
+`--resize` 会**拉伸**（强制 WxH）；要保持比例用 `--pad-to`。
 
 ### 4. 打包图集
 

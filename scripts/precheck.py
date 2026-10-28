@@ -15,8 +15,10 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
+from urllib.parse import urlsplit
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _common import (  # noqa: E402
@@ -26,6 +28,7 @@ from _common import (  # noqa: E402
     platform_conf,
     scan_absolute_paths,
     scan_external_urls,
+    scan_resource_urls,
 )
 
 TEXT_EXT = {".html", ".htm", ".js", ".mjs", ".cjs", ".css"}
@@ -51,6 +54,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="提交前过审自检")
     ap.add_argument("--dir", required=True)
     ap.add_argument("--platform", required=True, choices=PLATFORM_KEYS)
+    ap.add_argument("--json", default="", help="同时输出 JSON 结果（供 ship_pack.py 汇总）")
     args = ap.parse_args()
 
     root = Path(args.dir).expanduser().resolve()
@@ -88,6 +92,7 @@ def main() -> int:
         f"发现 {len(abs_hits)} 处，例如 {abs_hits[0][0]}: {abs_hits[0][1]}" if abs_hits else "")
 
     ext_hits = scan_external_urls(root)
+    res_hits = scan_resource_urls(root)  # 只含真正会被加载的外部地址
     if ext_hits:
         hosts = sorted({u.split("/")[2] for _, u in ext_hits if len(u.split("/")) > 2})
         print(f"NOTE: 外部 URL {len(ext_hits)} 处，域名: {', '.join(hosts[:8])}（SDK CDN 属正常）")
@@ -150,6 +155,33 @@ def main() -> int:
         add("小游戏前置备案已确认（人工核对）", True,
             "Tap 小游戏正式上架必须先完成前置备案；网页游戏 H5 形态无此要求")
 
+        # 境外资源依赖：国内平台首屏不得依赖境外 CDN（Google Fonts / 境外统计 / 境外图床）
+        allowed_hosts = {"localhost", "127.0.0.1", "0.0.0.0"}
+        allowed_suffix = (".taptap.cn", ".taptap.com", ".taptapdada.com")
+        offshore = []
+        for rel, u in res_hits:
+            try:
+                host = urlsplit(u).hostname or ""
+            except ValueError:
+                continue
+            if not host or host in allowed_hosts or host.endswith(allowed_suffix):
+                continue
+            offshore.append(f"{host}（{rel}）")
+        add(
+            "无境外 CDN / 外部资源依赖",
+            not offshore,
+            "" if not offshore else
+            f"发现 {len(offshore)} 处境外域名，国内加载会失败或极慢：{'; '.join(sorted(set(offshore))[:6])}"
+            " —— 字体/图标/统计脚本必须内联或换国内源",
+        )
+        # 字体：境外字体服务是最高频的踩坑点
+        font_offshore = [u for _, u in res_hits if "fonts.googleapis" in u or "fonts.gstatic" in u]
+        add("未引用境外字体服务", not font_offshore,
+            "" if not font_offshore else f"发现 {font_offshore[0]} —— 请改为本地字体或系统字体栈")
+
+        add("含隐私政策说明（人工核对）", True,
+            "TapTap 审核要求可访问的隐私政策链接；纯本地存档、不收集个人信息也需在详情页声明")
+
     if "console.log" in text:
         print("WARN: 产物中存在 console.log，建议生产构建剔除")
 
@@ -168,9 +200,32 @@ def main() -> int:
     print("=" * 62)
     if failed:
         print(f"{failed} 项未通过。修复后再提交。")
-        return 1
-    print("全部通过，可提交。")
-    return 0
+    else:
+        print("全部通过，可提交。")
+
+    if args.json:
+        out = Path(args.json).expanduser().resolve()
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(
+            json.dumps(
+                {
+                    "dir": str(root),
+                    "platform": args.platform,
+                    "label": label,
+                    "total_bytes": total,
+                    "file_count": count,
+                    "failed": failed,
+                    "passed": len(checks) - failed,
+                    "checks": [{"name": n, "pass": p, "detail": d} for n, p, d in checks],
+                },
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+        print(f"结果已写入：{out}")
+
+    return 1 if failed else 0
 
 
 if __name__ == "__main__":

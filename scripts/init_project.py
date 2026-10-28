@@ -17,7 +17,16 @@ from datetime import datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _common import PLATFORM_KEYS, STAGES, TEMPLATE_DIR, dump_json, ok, save_state, warn  # noqa: E402
+from _common import (  # noqa: E402
+    PLATFORM_KEYS,
+    SKILL_DIR,
+    STAGES,
+    TEMPLATE_DIR,
+    dump_json,
+    ok,
+    save_state,
+    warn,
+)
 
 DOC_DIRS = [
     "00-platforms",
@@ -31,7 +40,36 @@ DOC_DIRS = [
     "08-ship",
     "09-review/evidence",
 ]
-ASSET_DIRS = ["raw", "processed", "atlas", "audio/bgm", "audio/sfx", "ref"]
+ASSET_DIRS = ["raw", "processed", "atlas", "audio/bgm", "audio/sfx", "ref", "workflows"]
+
+ARTGEN_YAML = """\
+# IdeaToGame 资产生成配置（scripts/gen_assets.py 读取）
+# 优先级：命令行 > 环境变量 > 本文件 > 内置默认
+# 环境变量：COMFYUI_HOST / RUNNINGHUB_API_KEY / RUNNINGHUB_BASE_URL / RUNNINGHUB_WORKFLOW_ID
+provider: auto                 # auto | comfyui | runninghub | placeholder
+size: { width: 1024, height: 1024 }
+seed: 20261016                 # 固定种子，保证同批素材风格一致；换风格才改
+negative: "low quality, blurry, jpeg artifacts, watermark, text, extra limbs, photorealistic, 3d render"
+remove_bg: "#FF00FF"           # 出图后把该背景色泛洪抠成透明（SDXL 不出 alpha）
+trim: false                    # 出图后按 alpha 裁边（裁边交给 sprite_tools 更可控）
+fallback_placeholder: true     # 生图不可用时用占位素材兜底，保证流程不断
+
+comfyui:
+  host: http://127.0.0.1:8188
+  workflow: assets/workflows/comfyui_txt2img.json
+  checkpoint: sd_xl_base_1.0.safetensors   # ← 改成本机 models/checkpoints 下实际的文件名
+  timeout: 300
+  node_map: {}                 # 留空自动探测；探测失败再显式指定
+
+runninghub:
+  base_url: https://www.runninghub.cn      # 国际版 https://www.runninghub.ai
+  api_key: ""                  # 建议改用环境变量 RUNNINGHUB_API_KEY，不要提交进仓库
+  workflow_id: ""              # RunningHub 工作流页面 URL 里的数字 ID
+  timeout: 600
+  poll: 3
+  instance_type: ""            # 需要 4090 48G 时填 plus
+  node_map: {}
+"""
 
 
 def main() -> int:
@@ -96,6 +134,18 @@ def main() -> int:
                 shutil.copy2(item, dst)
         ok(f"已复制项目模板 → {proj}")
 
+    # 工作流模板（ComfyUI API 格式 + 使用说明）
+    wf_src = SKILL_DIR / "assets" / "workflows"
+    if wf_src.is_dir():
+        for item in wf_src.iterdir():
+            if item.is_file():
+                shutil.copy2(item, proj / "assets" / "workflows" / item.name)
+        ok("已复制工作流模板 → assets/workflows/")
+
+    # 资产生成配置
+    (proj / ".gamedev" / "artgen.yaml").write_text(ARTGEN_YAML, encoding="utf-8")
+    ok("已写入 .gamedev/artgen.yaml（生图 provider 配置）")
+
     style_ref = ""
     if args.style_ref:
         src = Path(args.style_ref).expanduser().resolve()
@@ -135,6 +185,7 @@ def main() -> int:
     print("  1. 读 modules/01-brief.md，产出 docs/01-brief/gdd.md 与 scope.json")
     print("  2. 运行 gate_check.py --stage brief 校验")
     print("  3. 向用户确认方向（门禁 G1）")
+    print("  4. 生图前先跑 gen_assets.py --probe 确认 ComfyUI / RunningHub 可用")
     return 0
 
 

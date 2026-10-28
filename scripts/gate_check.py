@@ -191,6 +191,66 @@ def check_sprite_tools(proj: Path, errs: list, warns: list):
             errs.append(f"{j.name} 引用的图集图不存在：{meta_img}")
 
 
+def check_art_forge(proj: Path, errs: list, warns: list):
+    """校验生图台账：提示词是否都出了图、有没有降级项。"""
+    raw = proj / "assets" / "raw"
+    mf = raw / "manifest.json"
+    prompts = []
+    pdir = proj / "docs" / "02-art" / "prompts"
+    if pdir.is_dir():
+        prompts = sorted(p.stem for p in pdir.glob("*.txt"))
+    if not mf.exists():
+        has_png = raw.is_dir() and any(raw.glob("*.png"))
+        if has_png:
+            warns.append(
+                "assets/raw/ 有图片但缺少 manifest.json —— 无法追溯 provider / seed / 降级项"
+                "（用 gen_assets.py 生成会自动写台账）"
+            )
+        return
+    try:
+        data = json.loads(mf.read_text(encoding="utf-8"))
+    except Exception as e:  # noqa: BLE001
+        errs.append(f"manifest.json 解析失败：{e}")
+        return
+    assets = data.get("assets") or {}
+    degraded = [k for k, v in assets.items() if (v or {}).get("status") == "degraded"]
+    if degraded:
+        warns.append(
+            f"{len(degraded)} 个素材为降级产物（占位兜底）：{', '.join(degraded[:6])}"
+            " —— 最终交付报告必须列出，不得当成品交付"
+        )
+    ph = [k for k, v in assets.items() if (v or {}).get("provider") == "placeholder"]
+    if ph and len(ph) == len(assets):
+        warns.append("全部素材都是程序化占位 —— 只有 L1 可玩档位，不能作为 L2/L3 交付")
+    missing = [n for n in prompts if n not in assets]
+    if missing:
+        errs.append(
+            f"以下素材有提示词但没有出图：{', '.join(missing[:8])}"
+            + (" …" if len(missing) > 8 else "")
+            + " —— 跑 gen_assets.py 补齐（--only 可单类补）"
+        )
+
+
+def check_qa(proj: Path, errs: list, warns: list):
+    shot_dir = proj / "docs" / "07-qa" / "screenshots"
+    shots = []
+    if shot_dir.is_dir():
+        shots = [p for p in shot_dir.iterdir() if p.suffix.lower() in {".png", ".jpg", ".jpeg", ".webp"}]
+    if len(shots) < 3:
+        errs.append(
+            f"实机截图不足（{len(shots)}/3）—— 商店提交必须有 3 张实机截图，跑 `npm run shots` 生成"
+        )
+    sj = shot_dir / "shots.json"
+    if sj.exists():
+        try:
+            d = json.loads(sj.read_text(encoding="utf-8"))
+            errs_list = d.get("errors") or []
+            if errs_list:
+                warns.append(f"截图时控制台有 {len(errs_list)} 条错误：{str(errs_list[0])[:120]}")
+        except Exception:  # noqa: BLE001
+            warns.append("shots.json 解析失败")
+
+
 def check_review(proj: Path, errs: list, warns: list, phase: str):
     """校验审核结论（R0/R1/R2）。REJECTED / INCOMPLETE 一律视为未通过。"""
     from _common import PASSING_VERDICTS
@@ -314,6 +374,8 @@ CHECKERS = {
     "brief": check_brief,
     "scaffold": check_scaffold,
     "art_bible": check_art_bible,
+    "art_forge": check_art_forge,
+    "qa": check_qa,
     "sprite_tools": check_sprite_tools,
     "audio_forge": check_audio,
     "review_plan": lambda p, e, w: check_review(p, e, w, "r0"),

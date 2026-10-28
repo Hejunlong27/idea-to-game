@@ -17,6 +17,7 @@ npm run zip:all             # 打成 dist/<platform>.zip
 npm run serve:cg            # 起本地 HTTP 预览 dist/crazygames（默认 5199 端口）
 npm run standalone          # 打「双击即玩」单文件 HTML → dist/standalone.html
 npm run test:standalone     # 回归测试 file:// 下的两种情形
+npm run shots               # 实机截图 → docs/07-qa/screenshots/（商店素材必需）
 ```
 
 > ⚠️ **只构建用户选定的平台**，不要默认 `build:all` —— 未选定的平台产物会被
@@ -61,6 +62,7 @@ npm run test:standalone     # 回归测试 file:// 下的两种情形
 | `scripts/serve.mjs` | 本地静态 HTTP 服务（预览用，产物不能双击打开） |
 | `scripts/build-standalone.mjs` | 把构建产物内联成单文件 HTML（双击即玩） |
 | `scripts/test-standalone.mjs` | file:// 启动行为回归测试 |
+| `scripts/shots.mjs` | 实机截图（系统 Chrome + puppeteer-core），顺带收集控制台错误 |
 | `vite.standalone.config.ts` | 单文件版的构建配置（资源全部内联成 data URI） |
 | `index.html` | 含启动看门狗：启动失败必须给出可操作提示，不得静默停在 Loading |
 
@@ -124,7 +126,7 @@ npm run build:cg && grep -o 'sdk.crazygames.com[^"]*' dist/crazygames/index.html
 ## 新增平台
 
 1. 新建 `src/platform/<name>.ts`，实现 `PlatformBridge`，`name` 设为 `i2g-platform:<name>`
-2. 在 `src/platform/index.ts` 的 `PLATFORM_TARGETS` 与 switch 中注册
+2. 在 `src/platform/index.ts` 的 `PLATFORM_TARGETS` 与 **if 链**中注册（**不要用 switch**，见文件内注释）
 3. 在 `package.json` 加 `build:<name>` 脚本
 4. 在 `vite.config.ts` 的 `SDK_SCRIPTS` 中加该平台的 SDK URL（宿主注入型留空）
 5. 在技能包的 `scripts/_common.py` 的 `PLATFORMS` 表登记红线参数

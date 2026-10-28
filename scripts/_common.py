@@ -256,3 +256,43 @@ def scan_external_urls(root: Path):
         for m in pat.finditer(text):
             seen.setdefault(m.group(0), rel)
     return [(rel, url) for url, rel in seen.items()]
+
+
+# 真正会发起网络请求的写法。用于「是否依赖境外资源」判定 ——
+# 不能拿 scan_external_urls 当判据：第三方库的注释、文档链接、开源协议地址
+# 会大量误报（Phaser 包体里就有 phaser.io / github.com / opensource.org）。
+_LOADER_PATTERNS = [
+    r"""<script[^>]+src\s*=\s*["'](https?://[^"']+)""",
+    r"""<link[^>]+href\s*=\s*["'](https?://[^"']+)""",
+    r"""<(?:img|iframe|audio|video|source|embed)[^>]+src\s*=\s*["'](https?://[^"']+)""",
+    r"""(?:fetch|importScripts)\s*\(\s*["'`](https?://[^"'`]+)""",
+    r"""(?:src|href)\s*=\s*["'`](https?://[^"'`]+)""",
+    r"""url\(\s*["']?(https?://[^"')\s]+)""",
+    r"""@import\s+(?:url\()?\s*["']?(https?://[^"')\s]+)""",
+    r"""\.open\s*\(\s*["'](?:GET|POST|PUT|DELETE)["']\s*,\s*["'`](https?://[^"'`]+)""",
+    r"""new\s+(?:Image|Audio|WebSocket|EventSource)\s*\(\s*["'`](https?://[^"'`]+)""",
+]
+
+
+def scan_resource_urls(root: Path):
+    """只报**会被真正加载**的外部 URL（script/link/src/fetch/url()/open 等）。
+
+    返回 [(相对路径, url)]，按 URL 去重。
+    """
+    import re
+
+    pats = [re.compile(p, re.I) for p in _LOADER_PATTERNS]
+    seen = {}
+    for f in iter_files(root):
+        if f.suffix.lower() not in TEXT_EXT:
+            continue
+        try:
+            text = f.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            continue
+        rel = f.relative_to(root).as_posix()
+        for p in pats:
+            for m in p.finditer(text):
+                url = m.group(1).rstrip("\"'`,;")
+                seen.setdefault(url, rel)
+    return [(rel, url) for url, rel in seen.items()]

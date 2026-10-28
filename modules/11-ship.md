@@ -38,7 +38,32 @@ python <skill>/scripts/state.py show --project <project>
 
 确认 `delivery.platforms` 与 `platform_confirmed: true`。这是本环节的**唯一范围依据**。
 
-### 2. 逐平台构建
+### 2. 一键跑完（推荐）
+
+`ship_pack.py` 把本环节所有确定性动作串起来：构建 → 体积审计 → 过审自检 → 打 zip → 商店素材 → 生成自检清单。
+
+```bash
+python <skill>/scripts/ship_pack.py --build              # 按 state.yaml 的选定平台全流程
+python <skill>/scripts/ship_pack.py --platforms taptap   # 不重新构建，只审计已有 dist/
+```
+
+产物：
+
+| 路径 | 内容 |
+|---|---|
+| `dist/<平台>.zip` | 提交包，解压后根目录直接是 `index.html` |
+| `docs/06-perf/measure-<平台>.json` | 体积/文件数原始数据 |
+| `docs/08-ship/precheck-<平台>.json` | 过审自检逐条结果 |
+| `docs/08-ship/store/<平台>/` | `icon.png` / `cover.png` / `screenshot-1..3.png` |
+| `docs/08-ship/submit-checklist.md` | 逐平台实测数值 + 待人工事项 |
+| `docs/08-ship/store-copy.md` | 文案骨架（不存在时创建） |
+
+它会做但**不会替你做**的事：
+- R2 终审未通过时**只警告不阻断**（阻断由 `gate_check.py --stage ship` 负责）—— 演练可以跑，正式交付不行
+- 截图缺失时**如实报缺**，不会拿美术稿冒充实机截图
+- 不执行任何平台提交动作
+
+### 3. 手工分步（需要单独控制时）
 
 **只构建选定平台**，不要 `build:all`：
 
@@ -59,7 +84,7 @@ npm run build:cg && npm run build:taptap
 
 若 `dist/` 中存在**非选定平台**的历史产物，先删掉再打包 —— 否则会被判「超出交付范围」。
 
-### 3. 逐平台过审自检
+### 4. 逐平台过审自检（手工）
 
 ```bash
 python <skill>/scripts/precheck.py --dir dist/crazygames --platform crazygames
@@ -78,8 +103,10 @@ python <skill>/scripts/precheck.py --dir dist/taptap     --platform taptap
 - [ ] SDK 调用有异常捕获
 - [ ] iOS 音频恢复逻辑存在
 - [ ] 中国大陆平台：已确认前置备案（人工核对）
+- [ ] 中国大陆平台：**无境外 CDN / 外部资源依赖**（Google Fonts、境外统计、境外图床一律不许）
+- [ ] 中国大陆平台：隐私政策说明已准备
 
-### 4. 打包
+### 5. 打包（手工）
 
 ```bash
 node scripts/zip-all.mjs
@@ -87,7 +114,7 @@ node scripts/zip-all.mjs
 
 每个 zip 解压后根目录直接是 `index.html`，本地可直接打开运行。
 
-### 5. 校验交付范围一致性
+### 6. 校验交付范围一致性
 
 ```bash
 python <skill>/scripts/gate_check.py --project <project> --stage ship
@@ -95,7 +122,7 @@ python <skill>/scripts/gate_check.py --project <project> --stage ship
 
 该命令会检查：选定但缺产物、未选却出现产物 —— 两者都判失败。
 
-### 6. 准备商店素材
+### 7. 准备商店素材
 
 写 `docs/08-ship/store-copy.md`：
 
@@ -114,11 +141,11 @@ python <skill>/scripts/gate_check.py --project <project> --stage ship
 - TapTap：宣传物料需完整上传；小游戏有独立审核规范；需完成**前置备案**
 - GameDistribution：需先确认无同款游戏
 
-### 7. 写自检清单
+### 8. 写自检清单
 
 `docs/08-ship/submit-checklist.md` 逐条打勾，并附**逐平台实测数值**（首包 MB、文件数、帧率）。
 
-### 8. 输出最终交付报告
+### 9. 输出最终交付报告
 
 **必须包含一行明确的 CrazyGames 标准结论**（三选一，措辞不得模糊，模板见 `modules/12-review.md` 第八节）：
 
