@@ -8,6 +8,52 @@
 
 ---
 
+## ⚠️ v2.0：内容深度也是硬门禁
+
+v1 保证「能出货」，v2 追加保证「值得玩」。
+
+绝大多数小游戏不是做不出来，是**做出来三分钟就玩完** —— 只有循环，没有世界观、没有角色、没有分层音频。
+本包把这个判断变成了可执行的判据：
+
+`references/content-depth.md` 定义四维百分制，`scripts/richness_check.py` 执行：
+
+| 维度 | 权重 | 硬指标 |
+|---|---|---|
+| **玩法深度** | 30 | 机制 ≥5 且**互相咬合**；非数值难度轴 ≥2；每关有取舍 |
+| **叙事完整** | 25 | 世界观 + 3 条约束型规则；主角 want≠need；三幕有 turn；每关 logline；≥12 条对白 |
+| **美学体系** | 25 | 风格锚；色板语义；≥6 类素材 role；主角 i2i ref 链；UI 语言；主视觉 |
+| **音频设计** | 20 | ≥16 音效且分四层；≥2 段音乐情绪互异；关键节点 stinger；对白配音 |
+
+**通过线**：总分 ≥70 **且** 任一维 ≥60%。任一维低于 60% 直接 `THIN`，不给总分掩护。
+
+**防守核心是交叉校验 —— 不信文档，只信产物**：
+蓝图声明 7 关 → `levels.json` 必须 7 条；声明 22 音效 → 磁盘必须真有 22 个 mp3；
+声明 16 条对白 → 源码里必须真能找到这些句子。对不上即 FAIL。
+
+新增门禁 **RC**，插在 R0 之后、**写代码之前**（丰富度是设计属性，代码写完再补等于重做）。
+
+配套四个生成器（**脚本给骨架与约束，内容必须人/模型写**）：
+
+| 脚本 | 作用 |
+|---|---|
+| `content_forge.py` | idea → 品类推断 / 叙事框架推荐 / 机制匹配 / 蓝图骨架 / 槽位校验 |
+| `asset_forge.py` | 8 种 role 素材规格 + 七槽位提示词 + i2i 一致性锚 + 提示词 lint |
+| `audio_forge.py` | 四层音效方案 + YuE2-Studio MCP 调用清单 + TTS 请求清单 + 通道探测 |
+| `richness_check.py` | 四维打分 + 交叉校验 + 最小改动清单 |
+
+数据：`assets/data/mechanic-vocab.json`（48 个机制）、`story-frames.json`（8 个叙事框架）。
+
+**实测基线（改判据前必须重跑这两个）**：
+
+| 项目 | 丰富度 | 结论 |
+|---|---|---|
+| `slime-whack`（v1.6 最优样本） | **14.5** | `INCOMPLETE` —— 有循环，无叙事/无角色/无分层音频 |
+| `lighthouse-keep`（v2） | **98.0** | `RICH` —— 6 机制全咬合、16 对白落地、22 音效四层 |
+
+只能判 PASS 的门禁是废的。这一对数据说明它真的在区分。
+
+---
+
 ## 零、内置角色：质量与玩法审核官
 
 技能内置一名**独立把关的审核官**，判据是 `references/crazygames-standard.md`（CrazyGames 官方审核与质量标准的完整条目表，A–H 八维度，REQ/GUIDE 分开）。它是**不可放宽的硬底线**。
@@ -49,6 +95,7 @@ idea-to-game/
 ├─ modules/                        # 12 个能力环节的详细执行步骤（按需读取）
 │  ├─ 00-platforms.md              # P-1 平台确认：问用户发哪些平台（门禁 G0）
 │  ├─ 01-brief.md                  # P0 立项：idea → 一页 GDD + 范围边界
+│  ├─ 01b-story.md                 # ★ P0 故事与设定：世界观 / 三幕 / 主角弧光 / 对白
 │  ├─ 02-scaffold.md               # P1 项目骨架 + 平台适配层 + 目标平台构建
 │  ├─ 03-art-bible.md              # P1 参考图 → 色板 + 风格规范 + 提示词模板
 │  ├─ 04-core-loop.md              # P2 灰盒玩法主循环（先用几何占位）
@@ -68,7 +115,10 @@ idea-to-game/
 │  ├─ delivery-standards.md        # L1 / L2 / L3 三档验收清单
 │  ├─ platform-requirements.md     # 5 个平台的硬红线（已核实官方文档）
 │  ├─ artgen-integration.md        # ★ ComfyUI / RunningHub 接口、节点探测、故障排查
-│  └─ genre-playbook.md            # 超休闲品类拆解与范围控制规则
+│  ├─ genre-playbook.md            # 超休闲品类拆解与范围控制规则
+│  ├─ content-depth.md             # ★ v2 内容丰富度判据（四维百分制，richness_check 唯一来源）
+│  ├─ mechanic-vocab.md            # v2 机制词库使用指南（一主两副 / 五条非数值轴 / 反模式）
+│  └─ audio-design.md              # v2 四层音效规范 + YuE2 MCP 契约 + TTS 契约 + 体积预算
 │
 ├─ scripts/                        # 确定性工具脚本
 │  ├─ _common.py                   # 公共工具（路径、状态读写、平台参数表、绝对路径扫描）
@@ -78,6 +128,10 @@ idea-to-game/
 │  ├─ review_gate.py               # ★ 审核执行与结论判定（自动 + 人工条目 → verdict）
 │  ├─ palette_extract.py           # 从参考图提取主色板（K-means）
 │  ├─ gen_prompts.py               # 从 scope.json 批量生成提示词（自带 style_tokens）
+│  ├─ content_forge.py             # ★ v2 内容蓝图：analyze / scaffold / validate
+│  ├─ richness_check.py            # ★ v2 丰富度门禁：四维打分 + 交叉校验 → RICH/THIN
+│  ├─ asset_forge.py               # ★ v2 素材生成器：8 种 role + 一致性锚 + 提示词 lint
+│  ├─ audio_forge.py               # ★ v2 音频设计：三层方案 + YuE2/TTS 调用清单
 │  ├─ style_lib.py                 # ★ 画风预设：list / show / apply（写入 palette.json）
 │  ├─ gen_assets.py                # ★ 资产生成：ComfyUI / RunningHub / 占位 + 台账 + 续跑
 │  ├─ sprite_tools.py              # 网格切分 / 泛洪抠图 / 裁边 / 统一画布
@@ -87,6 +141,7 @@ idea-to-game/
 │  └─ ship_pack.py                 # ★ 一键：构建 + 审计 + 自检 + 打 zip + 商店素材 + 清单
 │
 └─ assets/
+   ├─ data/                        # ★ v2 数据：mechanic-vocab.json（48 机制）/ story-frames.json（8 框架）
    ├─ styles/                      # ★ 画风预设库（5 档，含 style_tokens / 色板 / 风险标注）
    ├─ workflows/                   # ComfyUI API 格式工作流模板 + 导出/node_map 说明
    └─ template/                    # Phaser 3 + Vite 项目模板（P1 复制到项目根目录）
@@ -367,6 +422,44 @@ this.load.atlas('atlas', 'assets/atlas/atlas.png', 'assets/atlas/atlas.json');
 ---
 
 ## 六、更新日志
+
+### v2.0 · 内容深度引擎（丰富度门禁 + 四个生成器）
+
+**问题**：v1 解决「能出货」，但内容浅 —— GDD 只有一张数值表，
+没有世界观/叙事/机制组合/音频情绪编排，产物停在「练习作品」观感。
+
+**判据与门禁**
+- `references/content-depth.md` —— 四维百分制（玩法 30 / 叙事 25 / 美学 25 / 音频 20），
+  总分 ≥70 且任一维 ≥60% 才 `RICH`；X1–X4 交叉校验「声明 vs 产物」
+- 新增门禁 **RC**（`review_richness`），插在 R0 之后、写代码之前
+- `references/mechanic-vocab.md` + `assets/data/mechanic-vocab.json` —— 48 个机制，
+  含 `interacts` / `decision` / `cost`，支撑「机制咬合」校验
+- `references/audio-design.md` —— 四层音效规范 + YuE2-Studio MCP 契约 + TTS 契约 + 体积预算
+- `assets/data/story-frames.json` —— 8 个叙事框架（三幕 + turn + 适合品类）
+- `modules/01b-story.md` —— 故事与设定怎么写（want≠need、三幕 turn、cue 规范、反模式）
+
+**新增脚本**
+- `content_forge.py` —— analyze / scaffold / validate
+- `richness_check.py` —— 四维打分 + 交叉校验 + 最小改动清单
+- `asset_forge.py` —— 8 种 role（character / prop / tile / bg / ui / fx / cutscene / keyart / icon）
+  + 七槽位提示词 + 主角 i2i ref 链 + lint（拦中文、拦素材 id 泄漏、拦缺槽位）
+- `audio_forge.py` —— sfx / music / voice 三份方案 + YuE2 调用清单 + TTS 请求清单 + 通道探测
+
+**变更**
+- `_common.py` `STAGES` 加 `content` / `review_richness`
+- `gate_check.py` 加两阶段校验；v1 阈值更新为 v2（MVP ≤6 / 素材 ≤40 / **音效 ≥16**）
+- `gen_audio.py` 加 8 个参数化配方（blip / sweep_up / sweep_down / chime / arp /
+  noise_burst / thud / pad_loop）+ `--spec` / `--music-spec` / `--mode`
+- `SKILL.md` 插入 RC 门禁与四生成器索引
+
+**实测坑（已写进代码与文档）**
+1. 深色主体 + 深色背景 → `remove_bg auto` 把主体当背景抠掉。**`SOLID_BG` 一律用亮色**
+2. 网格生图不能「多格少物」：3×3 塞 4 个道具 → 同一道具画三遍。按 item 数自适应；不同道具首选单张
+3. AI 画不出无缝地块纹理（连续 3 次空白图 0.3KB）→ 需要像素级重复的素材一律程序化
+4. Phaser FIT 下 `pointer.x/y` ≠ 设计坐标 → 点格子静默失败，必须手动换算
+
+**验证**：`lighthouse-keep`（7 夜塔防）98.0/100 `RICH`，QA 11/11；
+`slime-whack`（v1.6）14.5/100 `INCOMPLETE` 作为对照基线。
 
 ### v1.6 · 网格批量出图 + 帧动画
 
