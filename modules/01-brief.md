@@ -41,17 +41,66 @@
 - 屏幕方向（portrait / landscape）
 - 与参考游戏的差异点（若来自同款游戏名）
 
+### 3b. 写内容蓝图（**v2 新增，必做，不可跳过**）
+
+GDD 只写玩法，**内容和深度写在另一份文件里**：`docs/01-brief/content-blueprint.json`。
+
+```bash
+# 1) 先分析：推断品类 / 推荐叙事框架 / 匹配机制候选 / 列素材角色需求
+python <skill>/scripts/content_forge.py --idea "<一句话想法>" --analyze
+
+# 2) 生成骨架（带 _todo 与数量要求）
+python <skill>/scripts/content_forge.py --project <project> --scaffold
+
+# 3) 按 docs/01-brief/story.md 与蓝图里的 _todo 逐项填写（这一步是创作，脚本不代劳）
+#    —— 世界观 3 条规则、主角 want/need/flaw/arc、三幕、每关 decision、≥12 条对白…
+
+# 4) 校验槽位
+python <skill>/scripts/content_forge.py --project <project> --validate
+```
+
+**蓝图必须覆盖四块**（判据见 `references/content-depth.md`）：
+
+| 块 | 必填 | 常见错误 |
+|---|---|---|
+| `world` | logline ≥16 字、3 条**约束型**世界规则 | 规则写成形容词（"这里很神秘"），不是约束 |
+| `story` | 主角四要素（want≠need）、三幕 have turn、≥12 条对白（带 cue） | 有对白但没有触发点，游戏里没地方播 |
+| `mechanics` | 机制 ≥5 个且每个 `interacts` 引用真实 id | 机制堆量但互不相干（加法而非乘法） |
+| `levels` | 每关 `decision` 能写成「A好但B坏」 | 写成"躲开障碍"（没有取舍） |
+
+参考 `references/mechanic-vocab.md` 的"一主两副"原则与五条非数值难度轴。
+
 ### 4. 写 scope.json
 
 按 `references/contracts.md` 的 schema 写 `docs/01-brief/scope.json`，必须包含 `mvp_features`、`out_of_scope`、`assets`（生图与配乐环节的输入清单）。
 
-**范围控制硬约束**（见 `references/genre-playbook.md`）：MVP 功能 ≤5 项、素材 ≤30 个、音效 ≤5 个、BGM ≤1 条。
+**范围控制硬约束**（v2 修订 —— 原「音效 ≤5、BGM ≤1」已被丰富度门禁取代）：
+
+| 项 | v1 上限 | **v2 要求** | 理由 |
+|---|---|---|---|
+| MVP 功能 | ≤5 | ≤6 | 每个功能应对应一个机制，机制合计 ≥5 |
+| 素材数量 | ≤30 | ≤40，且 processed 后 ≤2.5MB | 需要覆盖 6 类 role（角色/道具/地块/背景/UI/特效） |
+| 音效 | ≤5 | **≥16**，四层覆盖，合计 ≤400KB | 分层是"听出局势"的前提（content-depth U1/U2） |
+| BGM | ≤1 | **2–3 段**，情绪互异，合计 ≤1.2MB | 无段落推进 = 全程同一听觉平面 |
+
+体积红线不变（取最严平台），只是把"数量上限"换成"数量下限 + 体积上限"。
+理由：v1 的限制是为省体积，但真正撑大体积的是分辨率不是数量（96kbps 音效 10KB/个）。
 
 ### 5. 校验
 
 ```bash
 python <skill>/scripts/gate_check.py --project <project> --stage brief
+python <skill>/scripts/gate_check.py --project <project> --stage content
 ```
+
+### 5b. 丰富度门禁 RC（**v2 新增**）
+
+```bash
+python <skill>/scripts/richness_check.py --project <project> --stage design
+```
+
+结论 `RICH` 才能进入 P1 写代码；`THIN` 必须回 P0 补内容。
+**这是设计期最强的一道闸**：写完代码再补故事等于重做。
 
 ### 6. 门禁 G1（必须人工）
 

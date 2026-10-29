@@ -16,7 +16,9 @@ TEMPLATE_DIR = SKILL_DIR / "assets" / "template"
 
 STAGES = [
     "brief",
+    "content",          # 内容蓝图（世界观/叙事/机制组合）—— v2 新增
     "review_plan",      # R0 审核官介入：规划预审
+    "review_richness",  # RC 丰富度门禁（v2 新增，R0 之后、写代码之前）
     "scaffold",
     "art_bible",
     "core_loop",

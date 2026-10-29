@@ -1,0 +1,118 @@
+{
+  "version": "2.0",
+  "note": "叙事框架库 —— content_forge.py --analyze 按品类/情绪词推荐。每框架必须有 3 幕且第 2 幕有 turn。小游戏叙事铁律：故事服务于循环，不取代循环。",
+  "frames": [
+    {
+      "id": "cycle_curse",
+      "name_zh": "循环诅咒",
+      "premise": "每{周期}都会重来一次，只有主角记得。这个世界已经重复了{N}次。",
+      "why": "重开机制天然合法化。「又输了一次」变成叙事的一部分，而不是惩罚。最适合 roguelite / 限时刷分类。",
+      "acts": [
+        { "act": 1, "goal": "主角试图按常规方式解决，失败", "turn": "发现自己在重复同一天" },
+        { "act": 2, "goal": "用记忆优势试各种解法，越试越糟", "turn": "发现「重来」本身有代价，每次都消耗某样东西" },
+        { "act": 3, "goal": "接受无法打破循环，改为改变循环内的选择", "turn": "结局：不逃了，把这一轮活对" }
+      ],
+      "requires": ["run_map", "meta_unlock", "narrative_gate"],
+      "genres": ["roguelite", "arcade", "puzzle", "survival"],
+      "twist_hint": "第 4 关首次揭示「重来的代价」——之前玩家以为免费"
+    },
+    {
+      "id": "descend_layers",
+      "name_zh": "逐层深入",
+      "premise": "往下走，每一层更暗、更危险、也更接近{核心}。没有人回来过。",
+      "why": "关卡结构 = 叙事结构，不需要额外过场。深度天然可信（越深越难）。",
+      "acts": [
+        { "act": 1, "goal": "为了某个具体目的下潜（找东西/找人）", "turn": "第一层尽头有前人留下的痕迹" },
+        { "act": 2, "goal": "沿痕迹深入，发现前人死于同一件事", "turn": "发现「核心」不是要拿的东西，是要封的东西" },
+        { "act": 3, "goal": "决定继续还是封住", "turn": "结局：封住自己，或者带着它上去" }
+      ],
+      "requires": ["fog_reveal", "threat_pressure", "boss_phase"],
+      "genres": ["tower_defense", "survival", "puzzle", "shooter"],
+      "twist_hint": "第 5 关地形反转（往上是安全，往下是深渊）"
+    },
+    {
+      "id": "collect_truth",
+      "name_zh": "收集真相",
+      "premise": "{N} 块碎片散落在{场景}里，拼起来才知道这里发生过什么。",
+      "why": "收集机制自带玩法目标。碎片即奖励即叙事，一鱼两吃，成本极低。",
+      "acts": [
+        { "act": 1, "goal": "为了赏金/生计收集碎片", "turn": "第一块碎片显示「这里曾有人」" },
+        { "act": 2, "goal": "为真相继续收集，发现拼出的是自己的过去", "turn": "主角发现自己就是那个被寻找的人" },
+        { "act": 3, "goal": "决定拼完还是停手", "turn": "结局：知道了，但再也回不去从前" }
+      ],
+      "requires": ["fog_reveal", "scan_probe", "narrative_gate"],
+      "genres": ["puzzle", "arcade", "management", "narrative"],
+      "twist_hint": "第 6 关收集到关键碎片，世界观被改写一次"
+    },
+    {
+      "id": "guard_lose",
+      "name_zh": "守护与失去",
+      "premise": "你守的东西一定会失去，你能决定的只是它怎么失去、什么时候。",
+      "why": "给防御类玩法一个必然悲剧的内核，输赢都有情绪。避免「输了只怪手慢」。",
+      "acts": [
+        { "act": 1, "goal": "建立防御，守住一切", "turn": "发现守不住全部，必须选择放弃什么" },
+        { "act": 2, "goal": "在放弃中做取舍，每次丢一样", "turn": "发现被守的东西自己也在变" },
+        { "act": 3, "goal": "最后一次选择守什么", "turn": "结局：守住了最不重要的那件，但那件最珍贵" }
+      ],
+      "requires": ["threat_pressure", "limited_slots", "survival_need"],
+      "genres": ["tower_defense", "survival", "management"],
+      "twist_hint": "第 4 关第一次强制二选一，玩家必须放弃一半地图"
+    },
+    {
+      "id": "absurd_work",
+      "name_zh": "荒诞职场",
+      "premise": "一家{荒诞机构}，你刚入职，岗位是{荒诞职位}。公司规则没人解释过。",
+      "why": "最省力的幽默来源。规则荒谬但自洽，机制可以极度抽象（玩家会自己赋予意义）。",
+      "acts": [
+        { "act": 1, "goal": "努力完成指标，被规则困惑", "turn": "发现指标本身是前一个同事编出来的" },
+        { "act": 2, "goal": "熟练之后开始利用规则漏洞", "turn": "被提拔，代价是要维护规则" },
+        { "act": 3, "goal": "决定继续维护还是掀桌", "turn": "结局：新同事入职，你成为那个不解释规则的人" }
+      ],
+      "requires": ["resource_econ", "achievement_hook", "fake_target"],
+      "genres": ["management", "idle", "puzzle", "tower_defense"],
+      "twist_hint": "第 3 关揭示「你的KPI 是上一个人写的」，从执行变成共谋"
+    },
+    {
+      "id": "anthropomorph_daily",
+      "name_zh": "拟人日常",
+      "premise": "{物件群}在天亮之前有自己的生活，天亮就忘光。",
+      "why": "美术风格可以极其统一（同材质），角色塑造便宜。适合小体量、高情绪。",
+      "acts": [
+        { "act": 1, "goal": "维持日常秩序", "turn": "发现有东西在夜里消失" },
+        { "act": 2, "goal": "追查消失的原因", "turn": "发现自己也在消失，只是忘了" },
+        { "act": 3, "goal": "选择记住还是忘记", "turn": "结局：记住了，但代价是永远不能睡" }
+      ],
+      "requires": ["dialogue_trigger", "pattern_learn", "narrative_gate"],
+      "genres": ["puzzle", "whack", "arcade", "narrative"],
+      "twist_hint": "第 3 关第一次出现「自己」的影子"
+    },
+    {
+      "id": "bargain_debt",
+      "name_zh": "交易与代价",
+      "premise": "变强要付代价，代价不是钱。每一次升级都从你身上拿走一样东西。",
+      "why": "把成长系统本身变成叙事。构筑类玩法立刻有了重量，玩家会犹豫要不要变强。",
+      "acts": [
+        { "act": 1, "goal": "为了赢不断交易", "turn": "发现拿走的东西不会回来" },
+        { "act": 2, "goal": "开始算账：值得吗", "turn": "发现自己已经不足以赢，因为代价拿走了获胜手段" },
+        { "act": 3, "goal": "赎回或者彻底交付", "turn": "结局：赢了但已经不是你，或者输了但保住了自己" }
+      ],
+      "requires": ["evolution_path", "resource_econ", "build_synergy"],
+      "genres": ["roguelite", "card", "tower_defense", "survival"],
+      "twist_hint": "第 5 关交易方要求拿走「你已经买过的能力」"
+    },
+    {
+      "id": "reverse_story",
+      "name_zh": "反向叙事",
+      "premise": "你已经输了。现在要从结局往回打，弄清是怎么输的。",
+      "why": "把教程变成悬疑。玩家边学机制边推理，机制教学与叙事推进合一。",
+      "acts": [
+        { "act": 1, "goal": "从结局战斗开始，被击败", "turn": "发现失败是因为某个早期决定" },
+        { "act": 2, "goal": "倒着经历关键节点，逐个改写", "turn": "发现「改写」会导致更坏的结局" },
+        { "act": 3, "goal": "回到起点做出真正的原因选择", "turn": "结局：还是输了，但这次知道为什么，且接受了" }
+      ],
+      "requires": ["rewind_takeback", "info_hide", "narrative_gate"],
+      "genres": ["puzzle", "card", "strategy", "narrative"],
+      "twist_hint": "第 2 关玩家发现自己在倒着走（操作提示与叙事同时反转）"
+    }
+  ]
+}

@@ -15,6 +15,31 @@ agent_created: true
 
 本技能是**单一技能包**：12 个能力环节 + 1 名审核官角色全部内置于本包，不依赖外部安装的其他技能。所有环节通过 `modules/` 下的模块说明驱动，通过 `scripts/` 下的脚本落地，通过文件契约在环节之间传递产物。
 
+## ⚠️ 第零件事：内容深度同样是一道闸（v2）
+
+v1 只保证「能出货」，v2 追加保证「值得玩」。**内容深度是可判定的**，不是审美玄学：
+
+`references/content-depth.md` 定义四维百分制（玩法 30 / 叙事 25 / 美学 25 / 音频 20），
+`scripts/richness_check.py` 执行判定，结论三档：
+
+| 结论 | 条件 | 处置 |
+|---|---|---|
+| `RICH` | 总分 ≥70 且四维均 ≥60% | 可进入 P1 写代码 |
+| `THIN` | 总分 <70 或任一维 <60% | **阻断**，退回 P0 补内容 |
+| `INCOMPLETE` | 缺内容蓝图 | 阻断，先跑 `content_forge.py` |
+
+**关键设计：文档写的必须和产物一致。** 蓝图声明 6 关，`levels.json` 就得 6 关；声明 16 个音效，
+`assets/audio/sfx/` 就得真有 16 个 mp3。交叉校验不过的项直接判 FAIL，不给分（§6）。
+
+内容由四个生成器产出，**脚本只给骨架和约束，内容必须 Agent 或人写**：
+
+| 生成器 | 做什么 | 产物 |
+|---|---|---|
+| `content_forge.py` | idea → 世界观/三幕/角色/机制组合/每关取舍/对白 | `content-blueprint.json` |
+| `asset_forge.py` | 美术需求 → 9 种 role 的素材规格 + 七槽位提示词 + 一致性锚 | `asset-spec.json` + `prompts/` |
+| `audio_forge.py` | 事件 → 四层音效 / YuE2 音乐 / TTS 对白三份方案 | `sfx-plan` `music-plan` `voice-plan` |
+| `richness_check.py` | 四维打分 + 声明 vs 产物交叉校验 | `richness.json` |
+
 ## ⚠️ 第二件事：审核官在场
 
 本技能内置一名**质量与玩法审核官**（Reviewer），唯一判据是 `references/crazygames-standard.md`，在三处硬闸介入：
@@ -82,11 +107,16 @@ agent_created: true
   ◆ 门禁 G0：用户回复平台清单（必做，绝对不可跳过）
   ↓
 [P0 立项]   modules/01-brief.md         → docs/00-platforms/ + docs/01-brief/
+            modules/01b-story.md        → content-blueprint.json + story.md（故事与设定）
   ↓
   ◆ 门禁 G1：向用户确认方向（必做）
   ↓
 [R0 审核]   modules/12-review.md        → docs/09-review/r0-plan-review.md
             ★ 审可审性与合规初筛；结论 REJECTED / INCOMPLETE 不得往下走
+  ↓
+[RC 丰富度]  scripts/richness_check.py   → docs/09-review/richness.json
+            ★ 四维打分（玩法30/叙事25/美学25/音频20）+ 交叉校验
+            ★★ 非 RICH 不得写代码 —— 这是 v2 最关键的成本控制闸
   ↓
 [P1 地基]   modules/02-scaffold.md  ∥  modules/03-art-bible.md
             （只生成目标平台需要的构建配置；模板自带全部适配器）
@@ -151,14 +181,16 @@ agent_created: true
 | 编排 | `references/pipeline.md` | 阶段定义、门禁规则、回退策略、并行关系 | — |
 | **P-1** | **`modules/00-platforms.md`** | **确认目标平台（G0）、定体积预算、写平台计划** | `docs/00-platforms/platform-plan.md` |
 | P0 | `modules/01-brief.md` | idea → 一页 GDD + 范围边界 + 素材清单 | `docs/01-brief/` |
+| **P0** | **`modules/01b-story.md`** | **故事与设定：世界观/三幕/主角弧光/每关 logline/对白** | **`docs/01-brief/content-blueprint.json`、`story.md`** |
 | **R0** | **`modules/12-review.md`** | **审核官介入①：规划预审（可审性 + 合规初筛）** | `docs/09-review/r0-plan-review.md` |
+| **RC** | **`scripts/richness_check.py`** | **丰富度门禁：四维打分 + 声明 vs 产物交叉校验（v2 新增）** | `docs/09-review/richness.json` |
 | P1 | `modules/02-scaffold.md` | 项目骨架 + 平台适配层 + 目标平台构建脚本 + **单文件版与启动看门狗** | `src/`、`package.json` |
 | P1 | `modules/03-art-bible.md` | 参考图 → 色板 + 风格规范 + 提示词模板 | `docs/02-art/` |
 | P2 | `modules/04-core-loop.md` | 灰盒玩法主循环实现 | `src/game/` |
 | **R1** | **`modules/12-review.md`** | **审核官介入②：灰盒预审（A 玩法 / B 核心循环 / C 操作引导）—— 不通过禁止生图** | `docs/09-review/r1-graybox-review.md` |
-| P2 | `modules/05-art-forge.md` | 按 Art Bible 生图（ComfyUI / RunningHub / 占位） | `assets/raw/` + `manifest.json` |
+| P2 | `modules/05-art-forge.md` | **`asset_forge` 出规格与提示词** → 按 Art Bible 生图（ComfyUI / RunningHub / 占位） | `asset-spec.json` + `assets/raw/` |
 | P2 | `modules/06-sprite-tools.md` | 切图 / 抠图 / 裁剪 / 图集打包 | `assets/processed/`、`assets/atlas/` |
-| P2 | `modules/07-audio-forge.md` | BGM + 音效 | `assets/audio/` |
+| P2 | `modules/07-audio-forge.md` | **`audio_forge` 三层方案** → 合成音效 / YuE2 音乐 / TTS 对白 | `docs/05-audio/` + `assets/audio/` |
 | P3 | `modules/08-polish.md` | 手感 juice + UI 接线 + 难度曲线 + 存档 | 优化后的 `src/` |
 | P3 | `modules/09-perf-audit.md` | 逐平台体积 / 帧率 / 内存审计 | `docs/06-perf/report.md` |
 | P4 | `modules/10-qa.md` | 自动化走查 + **file:// 启动行为回归** + 试玩链接 | `docs/07-qa/report.html` |
@@ -166,6 +198,8 @@ agent_created: true
 | P4 | `modules/11-ship.md` | 按选定平台打包 + 过审自检 + **CrazyGames 标准结论** | `dist/<平台>.zip`、`docs/08-ship/` |
 
 > `modules/12-review.md` 是**一个模块、三处介入**：审核官在 R0 / R1 / R2 分别执行不同的维度子集，判据统一为 `references/crazygames-standard.md`。文件编号 12 只是序号。
+>
+> **两套标准并行生效**：`crazygames-standard.md` 判「能不能上架」，`content-depth.md` 判「值不值得上架」。两者都不通过即阻断。
 
 ## 快速开始
 
@@ -365,6 +399,11 @@ python <skill>/scripts/gate_check.py --project <project> --stage ship
 | `references/platform-requirements.md` | 5 个平台的硬红线（已核实官方文档） | 平台确认、构建、审计、打包时 |
 | `references/genre-playbook.md` | 超休闲品类拆解与选型建议 | P0 立项时 |
 | **`assets/styles/`** | **画风预设库（5 档，已蒸馏成游戏资产向 style_tokens + 配色板 + 风险标注）** | P1 定风格时 |
+| **`references/content-depth.md`** | **内容丰富度标准（四维百分制，richness_check 的唯一判据）** | 立项、每次丰富度判定 |
+| **`references/mechanic-vocab.md`** | **机制词库使用指南（一主两副、五种非数值难度轴、反模式）** | P0 设计机制时 |
+| **`references/audio-design.md`** | **音频分层规范 + YuE2 MCP 契约 + TTS 契约 + 体积预算** | P2 音频 / 接本地工具时 |
+| `assets/data/mechanic-vocab.json` | 48 个机制的结构化数据（content_forge 的匹配池） | analyze 时自动读 |
+| `assets/data/story-frames.json` | 8 个叙事框架（content_forge 的推荐池） | analyze 时自动读 |
 | **`references/artgen-integration.md`** | **ComfyUI / RunningHub 接口细节、节点探测规则、故障排查** | 接生图通道、出图失败时 |
 | `assets/workflows/` | ComfyUI API 格式工作流（Qwen-Image 2.1 turbo 文生图/图生图 + SDXL 兜底）+ 导出/node_map 说明 | P1/P2 配 provider 时 |
 | `modules/00-…-11-*.md` | 各环节详细执行步骤 | 执行到该环节时 |
@@ -373,6 +412,10 @@ python <skill>/scripts/gate_check.py --project <project> --stage ship
 | **`scripts/review_gate.py`** | **审核执行与结论判定（自动 + 人工条目合并出 verdict）** | 每轮审核时 |
 | **`scripts/gen_assets.py`** | **资产生成：ComfyUI / RunningHub / 占位，含台账与断点续跑** | P2 生图时 |
 | `scripts/gen_prompts.py` | 从 scope.json 批量生成提示词（自带 style_tokens） | P1 收尾、P2 之前 |
+| **`scripts/content_forge.py`** | **内容蓝图：analyze / scaffold / validate（世界观·叙事·机制组合）** | P0 立项 |
+| **`scripts/richness_check.py`** | **丰富度门禁：四维打分 + 交叉校验 → RICH/THIN** | P0 末尾（RC）、交付前 |
+| **`scripts/asset_forge.py`** | **素材生成器：9 种 role + 一致性锚 + 提示词 lint** | P1 定风格后、生图前 |
+| **`scripts/audio_forge.py`** | **音频设计：三层方案 + YuE2/TTS 调用清单 + 通道探测** | P2 音频前 |
 | **`scripts/style_lib.py`** | **画风预设：list / show / apply（写入 palette.json）** | P1 定风格时 |
 | **`scripts/ship_pack.py`** | **一键构建 + 审计 + 自检 + 打 zip + 商店素材 + 自检清单** | P4 交付时 |
 | `assets/template/` | Phaser 3.90 + Vite + 5 平台适配层模板 | P1 建项目时复制 |

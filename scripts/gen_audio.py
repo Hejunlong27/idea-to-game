@@ -169,10 +169,108 @@ SFX = {
 }
 
 
-def bgm_loop(bars: int = 8, bpm: int = 96) -> np.ndarray:
-    """可循环的轻快 BGM：I–V–vi–IV 四和弦循环 + 简单琶音。
+# ------------------------------------------------- 参数化配方（audio_forge 用）
+#
+# audio_forge.py 生成的 sfx-plan.json 里，每条事件用
+#   "synth": {"recipe": "<名>", "params": {...}}
+# 指向这里的配方。增加了这几个通用配方后，任意「四层音效」都能程序化表达，
+# 不必为每个事件手写函数。
+def r_blip(freq: float = 880, dur: float = 0.06, kind: str = "sine", gain: float = 0.9):
+    """UI 点击类：极短单音。"""
+    return tone(freq, dur, kind) * gain
 
-    循环点处理：首尾各留 0 增益的 1 拍，避免接缝爆音。
+
+def r_sweep_up(f0: float = 600, f1: float = 1200, dur: float = 0.1, kind: str = "sine"):
+    """正面反馈：上行滑音（好事的听觉签名）。"""
+    return sweep(f0, f1, dur, kind)
+
+
+def r_sweep_down(f0: float = 420, f1: float = 180, dur: float = 0.22, kind: str = "tri"):
+    """负面反馈：下行滑音（坏事要克制，别刺耳）。"""
+    return sweep(f0, f1, dur, kind) * 0.85
+
+
+def r_chime(freq: float = 1320, dur: float = 0.24, spread: float = 2.0):
+    """铃音：得分/收集/金币。两三个泛音叠出"贵"的感觉。"""
+    return mix(tone(freq, dur, "sine"),
+               tone(freq * 1.5, dur * 0.8, "sine") * 0.55,
+               tone(freq * spread, dur * 0.5, "sine") * 0.28)
+
+
+def r_arp(notes: str = "659,880,1174", step: float = 0.09, kind: str = "tri", gain: float = 0.85):
+    """上行琶音：连击里程碑、升级、小号角。notes 用逗号分隔频率。"""
+    seq = [float(x) for x in str(notes).replace(" ", "").split(",") if x]
+    out = np.concatenate([tone(f, step, kind) for f in seq]) if seq else tone(660, step, kind)
+    return out / (np.max(np.abs(out)) or 1.0) * gain
+
+
+def r_noise_burst(dur: float = 0.22, cutoff: int = 22, tail: float = 0.05, seed: int = 7):
+    """噪声冲击：爆炸、受击、碎裂。低通去掉刺耳高频。"""
+    rng = np.random.default_rng(seed)
+    t = np.linspace(0, dur, int(SR * dur), endpoint=False)
+    noise = rng.uniform(-1, 1, t.size) * np.exp(-t / max(tail, 1e-3))
+    lp = np.convolve(noise, np.ones(max(2, cutoff)) / max(2, cutoff), mode="same")
+    return lp / (np.max(np.abs(lp)) or 1.0) * 0.9
+
+
+def r_thud(f0: float = 130, f1: float = 52, dur: float = 0.3, noise: float = 0.35):
+    """低频闷击：重物落地、城门、心跳。"""
+    t = np.linspace(0, dur, int(SR * dur), endpoint=False)
+    body = np.sin(2 * np.pi * np.linspace(f0, f1, t.size) * t) * np.exp(-t / (dur * 0.45))
+    if noise <= 0:
+        out = body
+    else:
+        rng = np.random.default_rng(11)
+        nz = np.convolve(rng.uniform(-1, 1, t.size), np.ones(30) / 30, mode="same") * np.exp(-t / 0.04)
+        out = body + nz * noise
+    return out / (np.max(np.abs(out)) or 1.0) * 0.9
+
+
+def r_pad_loop(freq: float = 196.0, dur: float = 4.0, bright: float = 0.25):
+    """环境底噪循环：低频铺底 + 缓慢泛音，首尾淡入淡出保证无缝。"""
+    t = np.linspace(0, dur, int(SR * dur), endpoint=False)
+    base = np.sin(2 * np.pi * freq * t) * 0.5
+    overtone = np.sin(2 * np.pi * freq * 2.005 * t) * bright
+    lfo = 0.8 + 0.2 * np.sin(2 * np.pi * 0.25 * t)
+    out = (base + overtone) * lfo
+    fade = int(SR * 0.25)
+    out[:fade] *= np.linspace(0, 1, fade)
+    out[-fade:] *= np.linspace(1, 0, fade)
+    return out / (np.max(np.abs(out)) or 1.0) * 0.5
+
+
+RECIPES = {
+    "blip": r_blip,
+    "sweep_up": r_sweep_up,
+    "sweep_down": r_sweep_down,
+    "chime": r_chime,
+    "arp": r_arp,
+    "noise_burst": r_noise_burst,
+    "thud": r_thud,
+    "pad_loop": r_pad_loop,
+    # 老配方也允许按名调用（兼容 sfx-plan 里直接引用）
+    "hit": sfx_hit, "miss": sfx_miss, "over": sfx_over, "click": sfx_click,
+    "gold": sfx_gold, "bomb": sfx_bomb, "ice": sfx_ice, "combo": sfx_combo,
+    "levelup": sfx_levelup, "fail": sfx_fail,
+}
+
+
+def render_recipe(name: str, params: dict | None):
+    fn = RECIPES.get(name)
+    if not fn:
+        return None
+    try:
+        return fn(**(params or {}))
+    except TypeError as e:
+        warn(f"配方 {name} 参数错误（{e}），忽略参数重试")
+        return fn()
+
+
+def bgm_loop(bars: int = 8, bpm: int = 96, mode: str = "major") -> np.ndarray:
+    """可循环的 BGM：四和弦循环 + 简单琶音。
+
+    mode：major 明亮（日常/胜利）／minor 阴冷（夜间/紧张）。
+    循环点处理：首尾各留 0.03s 淡入淡出，避免接缝爆音。
     """
     beat = 60.0 / bpm
     bar = beat * 4
@@ -180,8 +278,14 @@ def bgm_loop(bars: int = 8, bpm: int = 96) -> np.ndarray:
     n = int(SR * total)
     out = np.zeros(n)
 
-    # C 大调：C  G  Am F
-    chords = [(261.6, 329.6, 392.0), (196.0, 246.9, 392.0), (220.0, 261.6, 329.6), (174.6, 220.0, 349.2)]
+    if mode == "minor":
+        # A 小调：Am  F   C   G
+        chords = [(220.0, 261.6, 329.6), (174.6, 220.0, 261.6),
+                  (261.6, 329.6, 392.0), (196.0, 246.9, 392.0)]
+    else:
+        # C 大调：C  G  Am F
+        chords = [(261.6, 329.6, 392.0), (196.0, 246.9, 392.0),
+                  (220.0, 261.6, 329.6), (174.6, 220.0, 349.2)]
 
     for b in range(bars):
         root = chords[b % len(chords)]
@@ -230,12 +334,21 @@ def main() -> int:
     ap.add_argument("--sfx", default="hit,miss,over,click", help="逗号分隔；none 表示不生成音效")
     ap.add_argument("--bgm", default="loop", help="BGM 文件名（不含扩展名）；none 表示不生成")
     ap.add_argument("--bpm", type=int, default=96)
+    ap.add_argument("--mode", default="major", choices=["major", "minor"])
+    ap.add_argument("--spec", default="", help="按 docs/05-audio/sfx-plan.json 生成（audio_forge 产出）")
+    ap.add_argument("--music-spec", default="", help="按 docs/05-audio/music-plan.json 的 fallback 生成兜底 BGM")
     args = ap.parse_args()
 
     proj = project_dir(args.project)
     if not shutil.which("ffmpeg"):
         print("ERROR: 找不到 ffmpeg（PATH 里没有）。装好后重试，或把 ffmpeg 目录加进 PATH", file=sys.stderr)
         return 1
+
+    if args.spec:
+        rc = synth_from_spec(proj, Path(args.spec))
+        if rc == 0 and args.music_spec:
+            synth_music_from_spec(proj, Path(args.music_spec))
+        return finish(proj) if rc == 0 else rc
 
     names = [] if args.sfx.strip().lower() == "none" else [s.strip() for s in args.sfx.split(",") if s.strip()]
     for name in names:
@@ -247,11 +360,17 @@ def main() -> int:
         write_mp3(fn(), dst)
         ok(f"音效 {name}.mp3  {dst.stat().st_size / 1024:.1f}KB")
 
-    if args.bgm.strip().lower() != "none":
+    if args.music_spec:
+        synth_music_from_spec(proj, Path(args.music_spec))
+    elif args.bgm.strip().lower() != "none":
         dst = proj / "assets" / "audio" / "bgm" / f"{args.bgm}.mp3"
-        write_mp3(bgm_loop(bpm=args.bpm), dst)
+        write_mp3(bgm_loop(bpm=args.bpm, mode=args.mode), dst)
         ok(f"BGM {args.bgm}.mp3  {dst.stat().st_size / 1024:.1f}KB")
 
+    return finish(proj)
+
+
+def finish(proj: Path) -> int:
     # 清掉误留的 wav（gate_check 会因 .wav 判失败）
     for w in (proj / "assets" / "audio").rglob("*.wav"):
         w.unlink()
@@ -259,6 +378,61 @@ def main() -> int:
 
     total = sum(f.stat().st_size for f in (proj / "assets" / "audio").rglob("*.mp3"))
     print(f"音频合计 {total / 1024:.1f}KB（预算 2MB）")
+    return 0
+
+
+def synth_from_spec(proj: Path, spec_path: Path) -> int:
+    """按 sfx-plan.json 合成：每条事件用 synth.recipe 渲染，落到 item.file。"""
+    import json
+
+    if not spec_path.is_absolute():
+        spec_path = proj / spec_path
+    if not spec_path.exists():
+        print(f"ERROR: 找不到 sfx-plan：{spec_path}", file=sys.stderr)
+        return 1
+    plan = json.loads(spec_path.read_text(encoding="utf-8"))
+    made = skipped = 0
+    for item in plan.get("items") or []:
+        synth = item.get("synth") or {}
+        rec = synth.get("recipe")
+        target = item.get("file") or f"assets/audio/sfx/{item.get('id')}.mp3"
+        dst = Path(target) if Path(target).is_absolute() else proj / target
+        if not rec:
+            print(f"  跳过 {item.get('id')}：无 synth 配方（{item.get('manual') or 'manual'}）")
+            skipped += 1
+            continue
+        samples = render_recipe(rec, synth.get("params"))
+        if samples is None:
+            warn(f"配方 `{rec}` 不存在，跳过 {item.get('id')}")
+            skipped += 1
+            continue
+        write_mp3(samples, dst)
+        ok(f"{item.get('id')}  {dst.stat().st_size / 1024:.1f}KB  ({rec})")
+        made += 1
+    print(f"\n合成 {made} 个，跳过 {skipped} 个（需外部工具或人工）")
+    return 0
+
+
+def synth_music_from_spec(proj: Path, spec_path: Path) -> int:
+    """music-plan 兜底：YuE2 不可用时用和弦循环按 mood 生成。"""
+    import json
+
+    if not spec_path.is_absolute():
+        spec_path = proj / spec_path
+    if not spec_path.exists():
+        warn(f"找不到 music-plan：{spec_path}")
+        return 0
+    plan = json.loads(spec_path.read_text(encoding="utf-8"))
+    for item in plan.get("items") or []:
+        fb = item.get("fallback") or {}
+        if not fb.get("enabled", True):
+            continue
+        target = item.get("target_file") or f"assets/audio/bgm/{item.get('id')}.mp3"
+        dst = Path(target) if Path(target).is_absolute() else proj / target
+        write_mp3(bgm_loop(bars=int(fb.get("bars", 8)),
+                           bpm=int(fb.get("bpm", 96)),
+                           mode=str(fb.get("mode", "major"))), dst)
+        ok(f"BGM {item.get('id')}.mp3（fallback 合成）{dst.stat().st_size / 1024:.1f}KB")
     return 0
 
 

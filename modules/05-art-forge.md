@@ -24,6 +24,35 @@
 
 ## 步骤
 
+### 0. 先生成素材规格（**v2 新增，必做**）
+
+不要直接从 `scope.json` 手写提示词。先让 `asset_forge.py` 把「美术需求」变成结构化规格：
+
+```bash
+# 蓝图 → asset-spec.json（9 种 role：character/prop/tile/bg/ui/fx/cutscene/keyart/icon）
+python <skill>/scripts/asset_forge.py --project <project> --spec
+
+# 逐条填 subject（英文，这个素材长什么样）—— 这一步是创作
+# 主角类素材要保持 base=true 的那条作基准，其余姿态会自动挂 ref
+
+# 规格 → 提示词（七槽位拼装 + 一致性锚 + sidecar）
+python <skill>/scripts/asset_forge.py --project <project> --prompts
+
+# 先 lint，再花钱
+python <skill>/scripts/asset_forge.py --project <project> --lint
+```
+
+**三种 role 的特别约定**：
+
+| role | 一致性机制 | 后处理 |
+|---|---|---|
+| `character` | 基准图固定 seed，其余姿态 `ref` 指向 `assets/raw/<base>.png` 走 i2i | trim 开、抠背景 |
+| `prop` | 同类可 `sheet_group` 合并成九宫格，同笔触 | trim 开 |
+| `tile` / `bg` / `keyart` | 不抠图、不裁边 | sidecar 里 `trim: false` |
+
+lint 会拦三类致命问题：**提示词含中文**、**提示词含素材 id**（模型会把名字画出来）、**缺风格锚**。
+这些在 v1 都是靠人肉踩坑发现的。
+
 ### 1. 配 provider
 
 ```bash
@@ -203,6 +232,46 @@ python <skill>/scripts/gate_check.py --project <project> --stage art_forge
 | 不做 dry-run 直接全量 | 提示词错了，白烧一轮 | 先 `--dry-run`，再 `--max 2` |
 | 忘了抠图 | 素材带纯色底，进游戏像贴纸 | 见步骤 5 |
 | 把 `degraded` 素材当成品交付 | 过审被拒 | 报告里显式列出 |
+
+## 实测四坑（2026-10-29，`lighthouse-keep` 全链路跑出来的）
+
+### 坑 1：深色主体 + 深色背景 = 抠图把主体抠掉
+
+**症状**：出一张"深蓝雨衣的守夜人"，拿到的图只有**头、手、灯三块碎片**，身体消失。
+
+**原因**：`remove_bg: auto` 从四边取样，取到的是雨衣的深蓝。抠图把角色当背景抹了。
+
+**修法（已写进 `asset_forge.py`）**：`SOLID_BG` 固定用**亮色**（现为 light mint）。
+主体再深都能抠干净，且亮底不会污染风格（反正会被抠掉）。
+
+### 坑 2：网格模式不能「多格少物」
+
+**症状**：3×3 网格塞 4 个道具 → 模型把同一个灯柱画了三遍，第 4 个（透镜）整只丢失。
+
+**原因**：模型把"grid sheet"理解成"同一物品的多个视角"。
+
+**修法**：
+- `asset_forge` 按 item 数自适应网格（4 个 → 2×2），提示词写死
+  `exactly N DIFFERENT objects, one per cell, no duplicates` + 编号列表
+- **不同道具首选单张出图**。网格只适合"同一角色的多姿态"或"严格同类的批量小图标"
+
+### 坑 3：AI 画不出无缝地块纹理
+
+**症状**：`seamless tileable top-down texture` 连续 3 次出**纯空白图**（处理后 0.3KB）。
+
+**修法**：`tile` 类不用 AI。菱形地块直接用 `Graphics` 画（`PlayScene.drawMap`）——
+体积为零、与光照边界绝对对齐、还能随潮水实时变色。
+
+**泛化结论**：需要**像素级重复**或**绝对几何对齐**的素材，程序化永远优于生图。
+
+### 坑 4：`pointer.x/y` 不是设计坐标
+
+这不是美术坑，但会伪装成"美术/交互 bug"：FIT 缩放下点击格子静默无效，且**无任何报错**。
+
+**修法**：用 `event.clientX - canvas.getBoundingClientRect().left` 按比例换算
+（`PlayScene.toDesign()`）。`screenToGrid` 的输入必须是换算后的设计坐标。
+
+---
 
 ## 相关
 

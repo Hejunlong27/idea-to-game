@@ -37,6 +37,11 @@ REQUIRED_FILES = {
         "src/platform/gamedistribution.ts",
         "src/platform/taptap.ts",
     ],
+    "content": [
+        "docs/01-brief/content-blueprint.json",
+        "docs/01-brief/story.md",
+    ],
+    "review_richness": ["docs/09-review/richness.json", "docs/09-review/richness-report.md"],
     "art_bible": ["docs/02-art/art-bible.md", "docs/02-art/palette.json"],
     "core_loop": ["docs/04-core-loop/notes.md", "src/game"],
     "art_forge": ["assets/raw"],
@@ -95,14 +100,92 @@ def check_brief(proj: Path, errs: list, warns: list):
         if key not in data:
             errs.append(f"scope.json 缺少字段：{key}")
     mvp = data.get("mvp_features") or []
-    if len(mvp) > 5:
-        errs.append(f"MVP 功能 {len(mvp)} 项，超出上限 5 项（见 genre-playbook.md 范围控制规则）")
+    if len(mvp) > 6:
+        errs.append(f"MVP 功能 {len(mvp)} 项，超出上限 6 项（v2：每个功能应对应一个机制，机制合计 ≥5）")
     if not data.get("out_of_scope"):
         warns.append("out_of_scope 为空，说明没有做取舍，范围可能失控")
     assets = data.get("assets") or {}
     total = sum(len(v) for v in assets.values() if isinstance(v, list))
-    if total > 30:
-        warns.append(f"素材总数 {total} 个，超出建议上限 30 个")
+    if total > 40:
+        warns.append(f"素材总数 {total} 个，超出建议上限 40 个（v2 需要覆盖 6 类 role）")
+
+
+def check_content(proj: Path, errs: list, warns: list):
+    """内容蓝图完整性：必填槽位填满 + 机制 id 真实咬合。"""
+    bp_file = proj / "docs" / "01-brief" / "content-blueprint.json"
+    if not bp_file.exists():
+        errs.append("缺 content-blueprint.json（跑 content_forge.py --scaffold）")
+        return
+    try:
+        bp = json.loads(bp_file.read_text(encoding="utf-8"))
+    except Exception as e:  # noqa: BLE001
+        errs.append(f"content-blueprint.json 解析失败：{e}")
+        return
+
+    def todo_count(o) -> int:
+        if isinstance(o, dict):
+            return sum(todo_count(v) for k, v in o.items() if k != "_todo") + (1 if "_todo" in o else 0)
+        if isinstance(o, list):
+            return sum(todo_count(v) for v in o)
+        return 0
+
+    left = todo_count(bp)
+    if left:
+        warns.append(f"蓝图仍有 {left} 处 _todo 标记（说明性注释，可保留但需确认内容已填）")
+
+    w = bp.get("world") or {}
+    if len((w.get("logline") or "").strip()) < 16:
+        errs.append("world.logline 不足 16 字")
+    if len(w.get("rules") or []) < 3:
+        errs.append(f"world.rules 需 ≥3 条（当前 {len(w.get('rules') or [])}）")
+
+    s = bp.get("story") or {}
+    pr = s.get("protagonist") or {}
+    if not all((pr.get(k) or "").strip() for k in ("want", "need", "flaw", "arc")):
+        errs.append("story.protagonist 的 want/need/flaw/arc 未填全")
+    if (pr.get("want") or "").strip() and pr.get("want") == pr.get("need"):
+        errs.append("story.protagonist 的 want 与 need 相同（弧光不成立）")
+    if len(s.get("acts") or []) != 3:
+        errs.append("story.acts 必须是 3 幕")
+    if len(s.get("dialogue") or []) < 12:
+        errs.append(f"story.dialogue 需 ≥12 条（当前 {len(s.get('dialogue') or [])}）")
+
+    m = bp.get("mechanics") or {}
+    mechs = list(m.get("core") or []) + list(m.get("twists") or [])
+    if len(mechs) < 5:
+        errs.append(f"机制合计需 ≥5 个（当前 {len(mechs)}）")
+    ids = {x.get("id") for x in mechs if x.get("id")}
+    orphans = [x.get("id") for x in mechs
+               if not [r for r in (x.get("interacts") or []) if r in ids and r != x.get("id")]]
+    if orphans:
+        errs.append(f"机制咬合缺失（interacts 为空或引用无效）：{', '.join(str(o) for o in orphans)}")
+
+    lv = bp.get("levels") or []
+    bad = [x.get("level") for x in lv if not (x.get("decision") or "").strip()]
+    if bad:
+        errs.append(f"关卡缺 decision（取舍）：第 {bad} 关")
+
+
+def check_richness(proj: Path, errs: list, warns: list):
+    """丰富度门禁：读 richness.json，非 RICH 即阻断。"""
+    f = proj / "docs" / "09-review" / "richness.json"
+    if not f.exists():
+        errs.append("缺 richness.json（跑 richness_check.py）")
+        return
+    try:
+        d = json.loads(f.read_text(encoding="utf-8"))
+    except Exception as e:  # noqa: BLE001
+        errs.append(f"richness.json 解析失败：{e}")
+        return
+    v = d.get("verdict")
+    total = d.get("total", 0)
+    if v != "RICH":
+        errs.append(f"丰富度未达标：{v}（{total:.1f}/100）——见 docs/09-review/richness-report.md")
+    else:
+        warns.append(f"丰富度 {total:.1f}/100 RICH")
+    for c in d.get("cross_checks") or []:
+        if not c.get("ok"):
+            errs.append(f"交叉校验 {c.get('code')} 失败：{c.get('detail')}")
 
 
 def check_scaffold(proj: Path, errs: list, warns: list):
@@ -164,8 +247,13 @@ def check_audio(proj: Path, errs: list, warns: list):
     if total > 2 * 1024 * 1024:
         errs.append(f"音频总体积 {total / 1048576:.1f}MB，超出 2MB 预算")
     sfx = proj / "assets/audio/sfx"
-    if sfx.is_dir() and len([f for f in sfx.iterdir() if f.is_file()]) > 5:
-        warns.append("音效数量超过建议上限 5 个")
+    if sfx.is_dir():
+        n_sfx = len([f for f in sfx.iterdir() if f.is_file()])
+        # v2：音效不再是"越少越好"，四层结构要求 ≥16（content-depth.md U1）
+        if n_sfx < 16:
+            warns.append(f"音效 {n_sfx} 个，低于丰富度要求的 16 个（见 content-depth.md U1）")
+        elif n_sfx > 32:
+            warns.append(f"音效 {n_sfx} 个，超过 32 个可能超出 400KB 预算")
 
 
 def check_sprite_tools(proj: Path, errs: list, warns: list):
@@ -398,6 +486,8 @@ def check_ship(proj: Path, errs: list, warns: list):
 
 CHECKERS = {
     "brief": check_brief,
+    "content": check_content,
+    "review_richness": check_richness,
     "scaffold": check_scaffold,
     "art_bible": check_art_bible,
     "art_forge": check_art_forge,
