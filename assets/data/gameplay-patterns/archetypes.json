@@ -1,0 +1,137 @@
+{
+  "version": "3.0",
+  "license": "CC0-1.0",
+  "source": "原创整理（公开可查的品类语法归纳，不含任何商业游戏的素材、数值或关卡）",
+  "note": "玩法原型库。用途不是「选模板」，而是**相似度对照表**：新创意的结构指纹与这些原型的重合度越高，换皮风险越大。指纹维度：spatial / time / info / resource / risk / win / fail / progression。",
+  "fingerprint_keys": ["spatial", "time", "info", "resource", "risk", "win", "fail", "progression"],
+  "archetypes": [
+    {
+      "id": "whack_mole",
+      "zh": "打地鼠谱系",
+      "fingerprint": { "spatial": "free", "time": "realtime", "info": "full", "resource": "renewable", "risk": "reversible", "win": "score", "fail": "timer", "progression": "speed" },
+      "signature": ["定点出现", "限时点击", "连击计分"],
+      "reskin_risk": "极高 —— 只要核心动作是「在时限内点到出现的东西」，就是换皮",
+      "how_to_differentiate": "必须换掉「信息完全可见」或「失败=计时结束」其中一条"
+    },
+    {
+      "id": "match3",
+      "zh": "三消谱系",
+      "fingerprint": { "spatial": "grid", "time": "turn", "info": "full", "resource": "renewable", "risk": "reversible", "win": "score", "fail": "moves", "progression": "objective" },
+      "signature": ["交换相邻", "三连消除", "连锁下落"],
+      "reskin_risk": "极高 —— 交换+消除的语法已被穷尽",
+      "how_to_differentiate": "消除的结果必须改变规则层（地形、敌人、时间），而不只是分数"
+    },
+    {
+      "id": "tower_defense",
+      "zh": "塔防谱系",
+      "fingerprint": { "spatial": "grid", "time": "realtime", "info": "full", "resource": "finite", "risk": "reversible", "win": "survive", "fail": "leak", "progression": "waves" },
+      "signature": ["布点", "路径固定", "波次递增"],
+      "reskin_risk": "高 —— 布点+波次的组合非常成熟",
+      "how_to_differentiate": "让「布点」本身消耗不可再生资源，或让路径随玩家行为改变"
+    },
+    {
+      "id": "runner",
+      "zh": "跑酷谱系",
+      "fingerprint": { "spatial": "lane", "time": "realtime", "info": "full", "resource": "renewable", "risk": "irreversible", "win": "distance", "fail": "collision", "progression": "speed" },
+      "signature": ["自动前进", "变道/跳跃", "障碍密度递增"],
+      "reskin_risk": "极高",
+      "how_to_differentiate": "把「前进」换成非空间维度（时间、记忆、声音），或让障碍由玩家自己制造"
+    },
+    {
+      "id": "merge",
+      "zh": "合成谱系",
+      "fingerprint": { "spatial": "free", "time": "realtime", "info": "full", "resource": "converted", "risk": "irreversible", "win": "score", "fail": "overflow", "progression": "tier" },
+      "signature": ["同级合并", "升级", "空间耗尽"],
+      "reskin_risk": "高",
+      "how_to_differentiate": "合并的产物必须带有非数值属性（会移动、会消耗、会记忆）"
+    },
+    {
+      "id": "sokoban",
+      "zh": "推箱子谱系",
+      "fingerprint": { "spatial": "grid", "time": "turn", "info": "full", "resource": "renewable", "risk": "irreversible", "win": "target", "fail": "deadlock", "progression": "layout" },
+      "signature": ["推一格", "不可拉", "死角即失败"],
+      "reskin_risk": "中 —— 只要地形有新语法就不算换皮",
+      "how_to_differentiate": "改地形规则（会消失的地板、会推你的东西）"
+    },
+    {
+      "id": "idle",
+      "zh": "放置谱系",
+      "fingerprint": { "spatial": "none", "time": "turn", "info": "full", "resource": "renewable", "risk": "reversible", "win": "threshold", "fail": "none", "progression": "rate" },
+      "signature": ["离线收益", "指数增长", "解锁层"],
+      "reskin_risk": "高 —— 数值曲线就是全部内容",
+      "how_to_differentiate": "必须有一个需要玩家实时判断的决策点，否则不是游戏"
+    },
+    {
+      "id": "rhythm",
+      "zh": "音游谱系",
+      "fingerprint": { "spatial": "lane", "time": "rhythm", "info": "full", "resource": "renewable", "risk": "reversible", "win": "accuracy", "fail": "miss", "progression": "bpm" },
+      "signature": ["判定线", "音符下落", "准确率"],
+      "reskin_risk": "中",
+      "how_to_differentiate": "让节奏影响世界而不只是分数（节拍决定地形、敌人、光照）"
+    },
+    {
+      "id": "hidden_object",
+      "zh": "寻物/找不同谱系",
+      "fingerprint": { "spatial": "free", "time": "turn", "info": "hidden", "resource": "renewable", "risk": "reversible", "win": "all_found", "fail": "timer", "progression": "count" },
+      "signature": ["在杂乱场景中找目标", "提示有限"],
+      "reskin_risk": "高",
+      "how_to_differentiate": "把「找」的手段变成资源（光、声音、记忆），而不是放大镜"
+    },
+    {
+      "id": "survival",
+      "zh": "生存谱系",
+      "fingerprint": { "spatial": "free", "time": "realtime", "info": "partial", "resource": "finite", "risk": "irreversible", "win": "survive", "fail": "depletion", "progression": "scarcity" },
+      "signature": ["多条需求条", "采集", "夜晚压力"],
+      "reskin_risk": "中",
+      "how_to_differentiate": "让某条需求条的补充直接伤害另一条（真正的取舍）"
+    },
+    {
+      "id": "stealth",
+      "zh": "潜行谱系",
+      "fingerprint": { "spatial": "grid", "time": "realtime", "info": "hidden", "resource": "renewable", "risk": "irreversible", "win": "reach", "fail": "detected", "progression": "vision" },
+      "signature": ["视野锥", "遮蔽", "被发现即失败"],
+      "reskin_risk": "中",
+      "how_to_differentiate": "把「视野」交给玩家控制并让它有代价（光=暴露=消耗）"
+    },
+    {
+      "id": "deckbuilder",
+      "zh": "构筑谱系",
+      "fingerprint": { "spatial": "none", "time": "turn", "info": "partial", "resource": "converted", "risk": "irreversible", "win": "defeat", "fail": "hp", "progression": "deck" },
+      "signature": ["抽牌", "费用", "组合"],
+      "reskin_risk": "中",
+      "how_to_differentiate": "卡牌必须与世界状态耦合（打出的牌会改变地形/时间）"
+    },
+    {
+      "id": "physics_sling",
+      "zh": "物理弹射谱系",
+      "fingerprint": { "spatial": "free", "time": "realtime", "info": "full", "resource": "finite", "risk": "irreversible", "win": "target", "fail": "shots", "progression": "layout" },
+      "signature": ["拉弓", "抛物线", "有限次数"],
+      "reskin_risk": "中",
+      "how_to_differentiate": "改变物理常量本身作为机制（重力、摩擦、弹性）"
+    },
+    {
+      "id": "tower_stack",
+      "zh": "堆叠谱系",
+      "fingerprint": { "spatial": "free", "time": "realtime", "info": "full", "resource": "finite", "risk": "irreversible", "win": "height", "fail": "collapse", "progression": "precision" },
+      "signature": ["落点判定", "重心", "完美堆叠"],
+      "reskin_risk": "高",
+      "how_to_differentiate": "让每一块有不同属性（会腐烂、会发光、会被风吹）"
+    },
+    {
+      "id": "snake_grow",
+      "zh": "贪吃蛇谱系",
+      "fingerprint": { "spatial": "grid", "time": "realtime", "info": "full", "resource": "renewable", "risk": "irreversible", "win": "length", "fail": "self_hit", "progression": "length" },
+      "signature": ["身体变长", "自撞即死", "网格移动"],
+      "reskin_risk": "高",
+      "how_to_differentiate": "身体不是负担而是工具（可以主动切断、可以用身体当墙）"
+    },
+    {
+      "id": "escort_route",
+      "zh": "护送/引导谱系",
+      "fingerprint": { "spatial": "lane", "time": "realtime", "info": "partial", "resource": "finite", "risk": "irreversible", "win": "reach", "fail": "escort_dies", "progression": "hazard" },
+      "signature": ["目标会自己走", "玩家只能间接影响", "失败不可逆"],
+      "reskin_risk": "低 —— 天然带情感重量",
+      "how_to_differentiate": "让被护送者有自己的意志（会不听话、会害怕、会记住你）"
+    }
+  ]
+}

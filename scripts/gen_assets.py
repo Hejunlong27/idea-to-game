@@ -231,6 +231,8 @@ def asset_params(cfg: dict, item: dict) -> dict:
         "ref": o.get("ref", ""),
         "provider": o.get("provider", cfg["provider"]),
         "trim": bool(o.get("trim", cfg.get("trim"))),
+        # 只有 sidecar 显式写了才覆盖；没写就是 None，交给全局 cfg 决定
+        "remove_bg": o.get("remove_bg", None),
     }
 
 
@@ -1333,11 +1335,16 @@ def main() -> int:
                 im = make_placeholder(it["name"], p["width"], p["height"], primary, bg)
                 im.save(out, "PNG")
                 rec["provider"] = "placeholder"
-            # 后处理
-            if cfg.get("remove_bg") or p.get("trim"):
+            # 后处理。sidecar 的 remove_bg 优先于全局配置：
+            # 全屏场景图（bg / keyart / cutscene）必须关闭抠图，否则会在天际线处
+            # 被挖出一条透明带（实测踩过）。
+            rb = p.get("remove_bg", None)
+            if rb is None:
+                rb = cfg.get("remove_bg")
+            if rb or p.get("trim"):
                 im2 = Image.open(out)
-                if cfg.get("remove_bg"):
-                    im2 = remove_bg_color(im2, cfg["remove_bg"], int(cfg.get("remove_bg_tolerance") or 60))
+                if rb:
+                    im2 = remove_bg_color(im2, rb, int(cfg.get("remove_bg_tolerance") or 60))
                 if p.get("trim"):
                     im2 = trim_alpha(im2)
                 im2.save(out, "PNG")

@@ -1,0 +1,210 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/Hejunlong27/idea-to-game/references/schemas/visual-dna.schema.json",
+  "title": "Visual DNA — 一款游戏的视觉设计系统",
+  "description": "比 palette.json 高一层：不只定义颜色，还定义轮廓语言、材质、纹理、光照方向、阴影规则、镜头、景深、UI 语言、字体排版、角色比例、动画风格、特效风格。asset_forge 必须真实读取本文件拼提示词。",
+  "type": "object",
+  "required": ["version", "meta", "style", "color", "form", "light", "camera", "ui", "character", "motion", "fx"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "type": "string", "const": "3.0" },
+    "meta": {
+      "type": "object",
+      "required": ["game_title", "concept_id", "created"],
+      "additionalProperties": true,
+      "properties": {
+        "game_title": { "type": "string" },
+        "concept_id": { "type": "string" },
+        "created": { "type": "string" },
+        "chosen_proposal": { "type": "string" },
+        "creative_dna": { "type": "string", "description": "相对路径，指向 creative-dna.json" }
+      }
+    },
+    "style": {
+      "type": "object",
+      "required": ["identity", "keywords", "style_tokens", "negative"],
+      "additionalProperties": true,
+      "properties": {
+        "identity": { "type": "string", "minLength": 10 },
+        "primary_style": { "type": "string" },
+        "secondary_style": { "type": "string" },
+        "keywords": { "type": "array", "minItems": 5, "items": { "type": "string" } },
+        "style_tokens": {
+          "type": "string", "minLength": 40,
+          "description": "提示词风格锚点，≥15 词；asset_forge 会原样拼进每条提示词"
+        },
+        "negative": { "type": "string", "minLength": 10 },
+        "reference_direction": { "type": "string" },
+        "risks": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "color": {
+      "type": "object",
+      "required": ["primary", "accent", "danger", "background", "ratio", "usage_rules"],
+      "additionalProperties": true,
+      "properties": {
+        "primary": { "type": "array", "minItems": 3, "maxItems": 8, "items": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" } },
+        "accent": { "type": "array", "minItems": 1, "maxItems": 4, "items": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" } },
+        "danger": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+        "background": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+        "text": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+        "ratio": {
+          "type": "object",
+          "required": ["background", "primary", "accent"],
+          "additionalProperties": { "type": "number", "minimum": 0, "maximum": 1 }
+        },
+        "usage_rules": { "type": "array", "minItems": 2, "items": { "type": "string" } },
+        "contrast_checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["pair", "ratio", "pass"],
+            "additionalProperties": true,
+            "properties": {
+              "pair": { "type": "string" },
+              "ratio": { "type": "number" },
+              "pass": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    },
+    "form": {
+      "type": "object",
+      "required": ["outline", "shape_language", "materials", "texture_rules"],
+      "additionalProperties": true,
+      "properties": {
+        "outline": { "type": "string", "minLength": 8 },
+        "outline_width_px": { "type": "number", "minimum": 0 },
+        "shape_language": { "type": "string", "minLength": 8 },
+        "materials": { "type": "array", "minItems": 2, "items": { "type": "string" } },
+        "texture_rules": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "detail_density": { "type": "string", "enum": ["minimal", "low", "medium", "high"] }
+      }
+    },
+    "light": {
+      "type": "object",
+      "required": ["direction", "quality", "temperature", "shadow_rules"],
+      "additionalProperties": true,
+      "properties": {
+        "direction": { "type": "string", "enum": ["top_left", "top_right", "top_down", "left", "right", "backlit", "flat"] },
+        "quality": { "type": "string", "enum": ["hard", "soft", "volumetric", "flat"] },
+        "temperature": { "type": "string" },
+        "shadow_rules": { "type": "string", "minLength": 6 },
+        "contrast_target": { "type": "string" },
+        "vignette": { "type": "string" }
+      }
+    },
+    "camera": {
+      "type": "object",
+      "required": ["view", "angle", "depth_of_field"],
+      "additionalProperties": true,
+      "properties": {
+        "view": { "type": "string" },
+        "angle": { "type": "string" },
+        "depth_of_field": { "type": "string" },
+        "framing": { "type": "string" },
+        "parallax_layers": { "type": "integer", "minimum": 0, "maximum": 5 }
+      }
+    },
+    "ui": {
+      "type": "object",
+      "required": ["language", "corner_radius_px", "stroke_px", "typography"],
+      "additionalProperties": true,
+      "properties": {
+        "language": { "type": "string", "minLength": 8 },
+        "corner_radius_px": { "type": "number", "minimum": 0 },
+        "stroke_px": { "type": "number", "minimum": 0 },
+        "typography": { "type": "string", "minLength": 6 },
+        "font_sizes": { "type": "array", "minItems": 2, "items": { "type": "integer" } },
+        "text_render": { "type": "string", "description": "文字必须由 Text 对象渲染，不能画进素材" },
+        "focus_ring": { "type": "string" }
+      }
+    },
+    "character": {
+      "type": "object",
+      "required": ["ratio", "silhouette_rules", "anchor_color", "consistency"],
+      "additionalProperties": true,
+      "properties": {
+        "ratio": { "type": "string" },
+        "silhouette_rules": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "anchor_color": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+        "face_detail": { "type": "string" },
+        "consistency": {
+          "type": "object",
+          "required": ["key", "seed", "status", "refs"],
+          "additionalProperties": true,
+          "properties": {
+            "key": { "type": "string", "minLength": 4 },
+            "seed": { "type": "integer" },
+            "status": {
+              "type": "string",
+              "enum": ["full_ref_chain", "seed_only", "prompt_only", "degraded_no_ref"],
+              "description": "通道不支持 i2i 时必须如实标为 degraded_no_ref"
+            },
+            "reason": { "type": "string" },
+            "refs": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["view", "file"],
+                "additionalProperties": true,
+                "properties": {
+                  "view": { "type": "string", "enum": ["front", "side", "back", "three_quarter", "expression"] },
+                  "file": { "type": "string" },
+                  "exists": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "motion": {
+      "type": "object",
+      "required": ["style", "easing", "looping", "feedback_rules"],
+      "additionalProperties": true,
+      "properties": {
+        "style": { "type": "string", "minLength": 8 },
+        "easing": { "type": "string" },
+        "looping": { "type": "string" },
+        "feedback_rules": { "type": "array", "minItems": 1, "items": { "type": "string" } }
+      }
+    },
+    "fx": {
+      "type": "object",
+      "required": ["style", "palette", "rules"],
+      "additionalProperties": true,
+      "properties": {
+        "style": { "type": "string", "minLength": 6 },
+        "palette": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" } },
+        "rules": { "type": "array", "minItems": 1, "items": { "type": "string" } }
+      }
+    },
+    "scene_narrative": {
+      "type": "array",
+      "description": "场景承担叙事：环境如何随进度变化",
+      "items": {
+        "type": "object",
+        "required": ["trigger", "visual_change"],
+        "additionalProperties": true,
+        "properties": {
+          "trigger": { "type": "string" },
+          "visual_change": { "type": "string" },
+          "meaning": { "type": "string" }
+        }
+      }
+    },
+    "audio_link": {
+      "type": "object",
+      "description": "视觉与音频共用的语义映射，防止「画面冷、音乐热」",
+      "additionalProperties": true,
+      "properties": {
+        "note": { "type": "string" },
+        "danger_color": { "type": "string" },
+        "accent_color": { "type": "string" },
+        "mood": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

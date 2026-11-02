@@ -1,0 +1,148 @@
+{
+  "version": "3.0",
+  "license": "CC0-1.0",
+  "source": "原创整理（动画原则为公开的动画十二法则与游戏手感通用实践）",
+  "note": "动画/表现模式库。juice_forge.py 用它把「事件」映射到「效果组合」，并按事件严重度分级强度。每个效果都标注了 Phaser 实现手段与性能成本，避免「每个事件都全屏闪 + 大震动」。",
+  "effects": [
+    {
+      "id": "squash_stretch",
+      "zh": "挤压拉伸",
+      "what": "受击/落地时体积变形，回弹时轻微拉伸",
+      "impl": "Tween scaleX/scaleY 反向变化，Back.easeOut",
+      "cost": "极低",
+      "min_intensity": 0.2,
+      "a11y": "无影响"
+    },
+    {
+      "id": "anticipation",
+      "zh": "预备动作",
+      "what": "动作发生前先向反方向蓄力",
+      "impl": "前置 Tween（位移/缩放/旋转 40–80ms）",
+      "cost": "极低",
+      "min_intensity": 0.3,
+      "a11y": "可关（关闭后动作直接发生，判定不变）"
+    },
+    {
+      "id": "follow_through",
+      "zh": "跟随动作",
+      "what": "主体停下后附属物继续运动并回位",
+      "impl": "独立 Tween 延迟 60ms + Elastic.easeOut",
+      "cost": "低",
+      "min_intensity": 0.3,
+      "a11y": "无影响"
+    },
+    {
+      "id": "secondary_motion",
+      "zh": "次级运动",
+      "what": "主体之外的装饰元素（衣角、灯焰、尘埃）持续微动",
+      "impl": "持续 Tween 循环，amplitude 与主状态联动",
+      "cost": "中（对象数）",
+      "min_intensity": 0.0,
+      "a11y": "低端设备降到 1/3 对象"
+    },
+    {
+      "id": "parallax",
+      "zh": "视差",
+      "what": "多层背景按不同速率移动",
+      "impl": "scrollFactor 分层 + 相机位移",
+      "cost": "低",
+      "min_intensity": 0.0,
+      "a11y": "`prefers-reduced-motion` 时全部固定"
+    },
+    {
+      "id": "particles",
+      "zh": "粒子",
+      "what": "事件位置的短时粒子爆发",
+      "impl": "Phaser 3.60+ ParticleEmitter，emitParticleAt",
+      "cost": "中高（数量×寿命）",
+      "min_intensity": 0.25,
+      "a11y": "低端设备减半粒子数"
+    },
+    {
+      "id": "environmental",
+      "zh": "环境动画",
+      "what": "背景元素随游戏状态变化（潮水、灯光、雾）",
+      "impl": "定时插值 + 全局状态驱动",
+      "cost": "低",
+      "min_intensity": 0.0,
+      "a11y": "无影响"
+    },
+    {
+      "id": "ui_motion",
+      "zh": "UI 动效",
+      "what": "数值跳动、条状填充、按钮反馈",
+      "impl": "计数 Tween + Graphics 重绘（**只重绘变化的部分**）",
+      "cost": "低（但每帧 setText 是高成本，见已知坑）",
+      "min_intensity": 0.2,
+      "a11y": "无影响"
+    },
+    {
+      "id": "camera_shake",
+      "zh": "镜头震动",
+      "what": "短时位移抖动",
+      "impl": "camera.shake(duration, intensity)",
+      "cost": "低",
+      "min_intensity": 0.4,
+      "a11y": "**必须可关**（前庭敏感）"
+    },
+    {
+      "id": "camera_zoom",
+      "zh": "镜头缩放",
+      "what": "强调时推近，结束后回位",
+      "impl": "camera.zoomTo",
+      "cost": "低",
+      "min_intensity": 0.5,
+      "a11y": "可关"
+    },
+    {
+      "id": "hit_stop",
+      "zh": "打击停顿",
+      "what": "命中瞬间冻结 40–120ms 再继续",
+      "impl": "scene.time.timeScale=0 或 全局 tween 暂停 + 定时恢复",
+      "cost": "低",
+      "min_intensity": 0.6,
+      "a11y": "可关（不影响判定，因为是纯表现冻结）"
+    },
+    {
+      "id": "slow_motion",
+      "zh": "慢动作",
+      "what": "关键时刻全局减速",
+      "impl": "physics.timeScale / 自定义 dt 缩放（**不得改逻辑步长**）",
+      "cost": "低",
+      "min_intensity": 0.7,
+      "a11y": "可关"
+    },
+    {
+      "id": "screen_flash",
+      "zh": "闪屏",
+      "what": "全屏颜色覆盖一帧或多帧衰减",
+      "impl": "全屏 Rectangle + alpha Tween",
+      "cost": "低",
+      "min_intensity": 0.7,
+      "a11y": "**必须可关且默认限制在 1 次/秒以内**（光敏性癫痫）"
+    },
+    {
+      "id": "transition",
+      "zh": "转场",
+      "what": "场景切换的遮盖/淡入淡出",
+      "impl": "camera.fadeOut/fadeIn 或遮罩",
+      "cost": "低",
+      "min_intensity": 0.0,
+      "a11y": "可关（改为瞬切）"
+    }
+  ],
+  "intensity_tiers": [
+    { "tier": "micro", "range": [0.0, 0.3], "budget": "1–2 个效果，无镜头、无闪屏", "example": "收集小物件、UI 悬停" },
+    { "tier": "light", "range": [0.3, 0.55], "budget": "2–3 个效果，可含轻微震动", "example": "普通命中、获得分数" },
+    { "tier": "medium", "range": [0.55, 0.8], "budget": "3–4 个效果，可含 hit stop 或 zoom", "example": "暴击、连击达成、受重伤" },
+    { "tier": "heavy", "range": [0.8, 1.0], "budget": "5–6 个效果，可含闪屏 + 慢动作", "example": "Boss 击败、关卡完成、死亡" }
+  ],
+  "anti_patterns": [
+    "所有事件用同一组效果（会变成噪声，玩家分不清轻重）",
+    "闪屏频率 > 1 次/秒（光敏性风险）",
+    "震动时长 > 300ms（晕动）",
+    "hit stop 影响判定（必须只冻结表现，不冻结逻辑）",
+    "每帧无条件 setText（帧率杀手，实测 -33%）",
+    "覆盖层按钮 depth 低于面板（点不到）"
+  ]
+}

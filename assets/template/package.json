@@ -6,7 +6,7 @@
   "description": "IdeaToGame 生成的 HTML5 小游戏项目（Phaser 3 + Vite + 多平台适配层）",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build --outDir dist/preview",
     "build:cg": "vite build --mode crazygames --outDir dist/crazygames",
     "build:poki": "vite build --mode poki --outDir dist/poki",
     "build:pg": "vite build --mode playgama --outDir dist/playgama",
@@ -18,6 +18,10 @@
     "serve:cg": "node scripts/serve.mjs dist/crazygames",
     "shots": "node scripts/shots.mjs --dir dist/taptap",
     "shots:cg": "node scripts/shots.mjs --dir dist/crazygames",
+    "qa": "node scripts/qa.mjs --url http://127.0.0.1:5173 --out docs/07-qa",
+    "smoke": "node scripts/smoke.mjs --url http://127.0.0.1:5173 --out docs/07-qa",
+    "playtest": "node scripts/playtest.mjs --url http://127.0.0.1:5173 --out docs/07-qa",
+    "test": "npm run build && npm run test:standalone",
     "zip:all": "node scripts/zip-all.mjs",
     "preview:cg": "npx --yes serve dist/crazygames -l 5173"
   },

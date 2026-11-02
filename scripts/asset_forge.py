@@ -37,6 +37,43 @@ from _common import dump_json, ok, project_dir, warn  # noqa: E402
 
 CJK = re.compile(r"[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]")
 
+
+def en_only(text: str) -> str:
+    """只保留提示词可用的英文片段。
+
+    Visual DNA 里的 outline / shape_language / materials / character_ratio 是人读的中文，
+    直接拼进英文提示词会让模型忽略或乱画（lint 的 CJK 规则会报 ERROR）。
+    这里按标点切段，丢掉含中文的段，只留纯 ASCII 段。
+    """
+    if not text:
+        return ""
+    segs = re.split(r"[，,；;。、/|]+", str(text))
+    keep = [seg.strip() for seg in segs if seg.strip() and not CJK.search(seg)]
+    return ", ".join(keep)
+
+
+def light_en(direction: str, quality: str, temperature: str) -> str:
+    """把 Visual DNA 的光照描述转成英文提示词片段（中文部分不直接进提示词）。"""
+    dir_map = {
+        "top_left": "light from upper left", "top_right": "light from upper right",
+        "top_down": "top-down light", "left": "side light from left",
+        "right": "side light from right", "backlit": "strong backlight, subject in silhouette",
+        "flat": "flat even lighting, no directional shadow",
+    }
+    q_map = {
+        "hard": "hard-edged shadows", "soft": "soft diffused shadows",
+        "volumetric": "volumetric god rays", "flat": "no cast shadow",
+    }
+    bits = [dir_map.get(direction, ""), q_map.get(quality, "")]
+    t = temperature or ""
+    if "暖" in t:
+        bits.append("warm practical light")
+    if "冷" in t:
+        bits.append("cool fog ambience")
+    # 温度里可能带色温数字（2700K / 7000K），保留下来
+    bits += re.findall(r"\d{3,5}\s*K", t)
+    return ", ".join(b for b in bits if b)
+
 # ------------------------------------------------------------------ role 模板
 # view    —— 必含视角描述（lint 校验）
 # extra   —— 该 role 的补充约束
@@ -138,12 +175,50 @@ def load_json(p: Path, default=None):
 
 
 def read_style(proj: Path) -> dict:
+    """读取风格来源。
+
+    v3：**Visual DNA 优先**。palette.json 只有颜色，而颜色不是视觉身份 ——
+    轮廓、材质、光照、镜头、细节密度这些必须真的拼进提示词，否则 DNA 只是文档。
+    v2 项目没有 visual-dna.json 时自动退回 palette.json，行为不变（向后兼容）。
+    """
     pal = load_json(proj / "docs" / "02-art" / "palette.json", {}) or {}
+    vd = load_json(proj / "docs" / "02-art" / "visual-dna.json", {}) or {}
+    form = vd.get("form") or {}
+    light = vd.get("light") or {}
+    cam = vd.get("camera") or {}
+    st = vd.get("style") or {}
+    ch = vd.get("character") or {}
+
+    # 光照：方向 + 质感 + 色温，合成一句可直接进提示词的英文描述
+    light_txt = light_en(light.get("direction", ""), light.get("quality", ""),
+                         light.get("temperature", "")) if light else ""
+
+    tokens = (st.get("style_tokens") or pal.get("style_tokens") or "").strip()
+    negative = (st.get("negative") or pal.get("negative") or "").strip()
+    colors = (pal.get("primary") or []) + (pal.get("accent") or [])
+    if not colors and (vd.get("color") or {}):
+        c = vd["color"]
+        colors = (c.get("primary") or []) + (c.get("accent") or [])
+
     return {
         "style_key": pal.get("style_key", ""),
-        "style_tokens": (pal.get("style_tokens") or "").strip(),
-        "negative": (pal.get("negative") or "").strip(),
-        "colors": (pal.get("primary") or []) + (pal.get("accent") or []),
+        "style_tokens": tokens,
+        "negative": negative,
+        "colors": colors,
+        "has_vdna": bool(vd),
+        # ---- v3 新增槽位
+        "outline": (form.get("outline") or "").strip(),
+        "shape_language": (form.get("shape_language") or "").strip(),
+        "materials": [m for m in (form.get("materials") or []) if m],
+        "texture_rules": [t for t in (form.get("texture_rules") or []) if t],
+        "detail_density": (form.get("detail_density") or "").strip(),
+        "lighting": light_txt,
+        "camera": (cam.get("angle_en") or en_only(cam.get("angle") or "")
+                   or en_only(cam.get("view") or "")).strip(),
+        "character_ratio": (ch.get("ratio") or "").strip(),
+        "anchor_color": (ch.get("anchor_color") or "").strip(),
+        "ui_language": ((vd.get("ui") or {}).get("language") or "").strip(),
+        "consistency": ch.get("consistency") or {},
     }
 
 
@@ -162,19 +237,34 @@ def cmd_spec(args) -> int:
     style = read_style(proj)
     art = bp.get("art") or {}
     roles = art.get("roles_required") or ["character", "prop", "ui", "fx", "bg", "keyart"]
-    hero_key = art.get("hero_consistency_key") or ""
-    base_seed = int(art.get("seed") or 20261029)
+    # v3：一致性键与 seed 优先取 Visual DNA（它才是视觉身份的真相源）
+    con = style.get("consistency") or {}
+    hero_key = con.get("key") or art.get("hero_consistency_key") or ""
+    base_seed = int(con.get("seed") or art.get("seed") or 20261029)
+    con_status = con.get("status") or ""
 
     # 从蓝图里能自动提取的具名实体
     named = []
+    taken: set = set()
     p = (bp.get("story") or {}).get("protagonist") or {}
     if p.get("name"):
-        named.append((p["name"], "character", f"the protagonist {p['name']}", True))
+        nm = str(p["name"])
+        desc = nm if not CJK.search(nm) else ""
+        named.append((uniq_id(slug(nm) or "hero", taken), "character",
+                      f"the protagonist {desc}".strip() if desc else "", True, nm, True))
     a = (bp.get("story") or {}).get("antagonist") or {}
     if a.get("name"):
-        named.append((a["name"], "character", f"the antagonist {a['name']}", False))
+        nm = str(a["name"])
+        desc = nm if not CJK.search(nm) else ""
+        named.append((uniq_id(slug(nm) or "villain", taken), "character",
+                      f"the antagonist {desc}".strip() if desc else "", False, nm, False))
     for m in (bp.get("world") or {}).get("visual_motifs") or []:
-        named.append((slug(m), "prop", m, False))
+        # 视觉母题常是中文。**不能直接当英文提示词的主体**（模型会忽略/乱画），
+        # 所以只留下 id 与中文提示，subject 交给 Agent 翻译填写。
+        if CJK.search(str(m)):
+            named.append((uniq_id(slug(m) or "motif", taken), "prop", "", False, str(m), False))
+        else:
+            named.append((uniq_id(slug(m) or "motif", taken), "prop", str(m), False, "", False))
 
     items = []
     for role in roles:
@@ -185,19 +275,48 @@ def cmd_spec(args) -> int:
         n = int(args.per_role or tpl["count"])
         # 具名实体优先占用该 role 的名额
         mine = [x for x in named if x[1] == role]
-        for name, _r, desc, is_base in mine:
-            items.append(mk_item(name, role, desc, tpl, base_seed, is_base, hero_key))
+        for name, _r, desc, is_base, zh, is_hero in mine:
+            it = mk_item(name, role, desc, tpl, base_seed, is_base, hero_key, con_status, is_hero)
+            if zh:
+                it["subject_zh"] = zh
+            items.append(it)
+            # 主角基准图 → 自动补 side / back 两张，挂 i2i ref
+            if is_hero and is_base and hero_key:
+                for suffix, view in (
+                    ("side", "full body side view, profile, facing left, complete single figure"),
+                    ("back", "full body back view, seen from behind, complete single figure"),
+                ):
+                    extra = mk_item(f"{name}_{suffix}", role, desc, tpl, base_seed, False,
+                                    hero_key, con_status, True)
+                    extra["view"] = view
+                    extra["ref"] = f"assets/raw/{name}.png"
+                    extra["use_hero_ref"] = True
+                    extra["consistency_status"] = "ref_chain"
+                    if zh:
+                        extra["subject_zh"] = zh
+                    items.append(extra)
         for i in range(max(0, n - len(mine))):
-            items.append(mk_item(f"{role}_{i+1}", role, "", tpl, base_seed, False, hero_key))
+            items.append(mk_item(uniq_id(f"{role}_{i+1}", taken), role, "", tpl,
+                                 base_seed, False, hero_key, con_status))
 
     spec = {
-        "version": "2.0",
+        "version": "3.0",
         "style_key": style["style_key"],
         "base_seed": base_seed,
         "hero_consistency_key": hero_key,
-        "ui_language": art.get("ui_language") or "",
-        "perspective": art.get("perspective") or "",
-        "lighting": art.get("lighting") or "",
+        "consistency_status": con_status or "no_visual_dna",
+        "visual_dna": "docs/02-art/visual-dna.json" if style.get("has_vdna") else "",
+        "visual_dna_applied": {
+            "outline": bool(style.get("outline")),
+            "shape_language": bool(style.get("shape_language")),
+            "materials": bool(style.get("materials")),
+            "lighting": bool(style.get("lighting")),
+            "camera": bool(style.get("camera")),
+            "detail_density": bool(style.get("detail_density")),
+        },
+        "ui_language": style.get("ui_language") or art.get("ui_language") or "",
+        "perspective": art.get("perspective") or style.get("camera") or "",
+        "lighting": style.get("lighting") or art.get("lighting") or "",
         "sheet_enabled": bool(args.sheet),
         "total_budget_kb": int(args.budget_kb),
         "items": items,
@@ -214,12 +333,35 @@ def cmd_spec(args) -> int:
 
 
 def slug(s: str) -> str:
-    s = re.sub(r"[^0-9a-zA-Z]+", "_", s).strip("_").lower()
-    return s or "item"
+    """转成安全的 ASCII id。
+
+    ⚠ 纯中文会得到空串（v2 直接返回 "item"，导致多个中文实体**塌成同一个 id**、互相覆盖）。
+    这里返回空串，由 uniq_id() 兜底生成唯一 id。
+    """
+    return re.sub(r"[^0-9a-zA-Z]+", "_", str(s)).strip("_").lower()
+
+
+def uniq_id(base: str, taken: set) -> str:
+    """保证 id 唯一：空则用 base 的兜底名，重名则加 _2/_3。"""
+    b = base or "asset"
+    if b not in taken:
+        taken.add(b)
+        return b
+    i = 2
+    while f"{b}_{i}" in taken:
+        i += 1
+    out = f"{b}_{i}"
+    taken.add(out)
+    return out
 
 
 def mk_item(item_id: str, role: str, subject: str, tpl: dict, seed: int, is_base: bool,
-            hero_key: str) -> dict:
+            hero_key: str, consistency_status: str = "", is_hero: bool = False) -> dict:
+    # ★ v3 修复：`use_hero_ref` 过去从未被写入，导致 cmd_prompts 里的 ref 链条件
+    #   永远不成立 —— 一致性机制「看起来有，实际走不到」。这里显式写入。
+    # ⚠ 但 ref 只能用于**主角自己的姿态**：给反派挂主角的 ref，会把它画成主角换皮
+    #   （实测：雾里的东西直接继承了主角的船与灯）。
+    use_ref = bool(role == "character" and not is_base and hero_key and is_hero)
     return {
         "id": item_id,
         "role": role,
@@ -228,9 +370,11 @@ def mk_item(item_id: str, role: str, subject: str, tpl: dict, seed: int, is_base
         "extra": tpl["extra"],
         "negative_extra": tpl["neg_extra"],
         "size": [1024, 1024] if role not in ("bg", "keyart", "cutscene") else [1344, 1024],
-        "seed": seed if (role in ("character", "prop") and hero_key) else "",
+        "seed": seed if (role == "character" and hero_key) else "",
         "ref": "",
         "base": bool(is_base),
+        "use_hero_ref": use_ref,
+        "consistency_status": consistency_status or ("pending_ref" if use_ref else ""),
         "required": role in ("character", "prop", "ui", "fx"),
         "trim": bool(tpl["trim"]),
         "bg_mode": tpl["bg"],
@@ -242,21 +386,59 @@ def mk_item(item_id: str, role: str, subject: str, tpl: dict, seed: int, is_base
 
 # ------------------------------------------------------------------ prompts
 def build_prompt(item: dict, style: dict) -> tuple[str, str]:
-    """返回 (正向, 负向)。七槽位：style / subject / view / extra / lighting / bg / quality。"""
+    """返回 (正向, 负向)。七槽位 + Visual DNA 槽位。
+
+    槽位顺序：style / subject / view / dna(form) / extra / lighting / camera / bg / quality
+    —— 顺序有讲究：越靠前权重越高，风格与主体必须最前。
+    """
     tpl = ROLES.get(item.get("role"), ROLES["prop"])
     subject = (item.get("subject") or "").strip()
     if not subject:
         # 兜底：把 id 转成描述（去掉下划线数字），绝不把原始 id 写进提示词
-        subject = re.sub(r"[_\-]\d+$", "", item.get("id", "")).replace("_", " ").replace("-", " ").strip()
-        subject = f"a {subject}" if subject else "a game object"
+        raw = re.sub(r"[_\-]\d+$", "", item.get("id", ""))
+        raw = re.sub(r"_(side|back|front|pose\d*)$", "", raw)
+        subject = raw.replace("_", " ").replace("-", " ").strip()
+        # 兜底名（hero / prop / ui …）本身没有描述价值，直接给中性词，
+        # 否则 id 会原样进提示词（lint 的 ID_LEAK 会报，模型也可能把词画出来）
+        if subject.lower() in ("hero", "villain", "prop", "tile", "ui", "fx", "bg",
+                               "keyart", "icon", "cutscene", "character", "motif", "item", ""):
+            subject = "a game object"
+        else:
+            subject = f"a {subject}"
 
     parts = [style["style_tokens"], subject, item.get("view") or tpl["view"]]
     if item.get("role") == "character" and item.get("ref"):
         parts.insert(1, HERO_ANCHOR)
+
+    # ---- Visual DNA 槽位（v3）：这些是 v2 完全缺失的
+    dna_bits = []
+    outline = en_only(style.get("outline", ""))
+    if outline:
+        dna_bits.append(outline)
+    shape = en_only(style.get("shape_language", ""))
+    if shape:
+        dna_bits.append(f"{shape} shape language")
+    mats = [m for m in (en_only(m) for m in style.get("materials") or []) if m]
+    if mats:
+        dna_bits.append("materials: " + ", ".join(mats[:2]))
+    tex = [t for t in (en_only(t) for t in style.get("texture_rules") or []) if t]
+    if tex:
+        dna_bits.append("texture: " + tex[0])
+    if style.get("detail_density"):
+        dna_bits.append(f"{style['detail_density']} detail density")
+    if item.get("role") == "character":
+        ratio = en_only(style.get("character_ratio", ""))
+        if ratio:
+            dna_bits.append(f"proportions {ratio}")
+    if dna_bits:
+        parts.append(", ".join(dna_bits))
+
     parts.append(item.get("extra") or tpl["extra"])
     lighting = style.get("lighting") or ""
     if lighting:
         parts.append(lighting)
+    if style.get("camera") and item.get("role") in ("bg", "keyart", "cutscene"):
+        parts.append(f"camera: {style['camera']}")
     if (item.get("bg_mode") or tpl["bg"]) == "solid":
         parts.append(SOLID_BG)
     elif (item.get("bg_mode") or tpl["bg"]) == "scene":
@@ -294,6 +476,14 @@ def cmd_prompts(args) -> int:
     pdir.mkdir(parents=True, exist_ok=True)
 
     items = spec.get("items") or []
+    # 侧/背视图没有独立 subject 时，继承基准图的 subject（同一个角色的不同视角）
+    by_id = {i.get("id"): i for i in items}
+    for i in items:
+        if i.get("ref") and not (i.get("subject") or "").strip():
+            parent = by_id.get(str(i["ref"]).rsplit("/", 1)[-1].replace(".png", ""))
+            if parent and (parent.get("subject") or "").strip():
+                i["subject"] = parent["subject"]
+
     # 一致性锚：主角基准图的 raw 路径
     base = next((i for i in items if i.get("role") == "character" and i.get("base")), None)
     base_raw = f"assets/raw/{base['id']}.png" if base else ""
@@ -302,6 +492,7 @@ def cmd_prompts(args) -> int:
                 and not i.get("ref") and i.get("use_hero_ref")):
             i["ref"] = base_raw
             i["seed"] = base.get("seed") or ""
+            i["consistency_status"] = "ref_chain"
 
     # 网格合并
     groups: dict[str, list[dict]] = {}
@@ -322,6 +513,12 @@ def cmd_prompts(args) -> int:
             "trim": bool(i.get("trim", True)),
             "negative": neg,
         }
+        # 全屏场景图不抠背景（抠了会在天际线挖出透明带）
+        if (i.get("bg_mode") or "solid") == "scene":
+            side["remove_bg"] = False
+        # 全屏场景图不抠背景（抠了会在天际线挖出透明带）
+        if (i.get("bg_mode") or "solid") == "scene":
+            side["remove_bg"] = False
         if str(i.get("seed") or "").strip():
             side["seed"] = int(i["seed"])
         if i.get("ref"):
@@ -410,9 +607,13 @@ def cmd_lint(args) -> int:
         style_words = {w.strip().lower() for w in (style.get("style_tokens") or "").replace("-", " ").split()}
         low = txt.lower()
         is_sheet = name.startswith("_sheet_")
+        # 这些 id 本身就是常用英文词（keyart 模板里就有 "hero in center"），
+        # 出现是正常的，不算 id 泄漏
+        common_words = {"hero", "villain", "icon", "item", "prop", "tile", "ui", "fx",
+                        "bg", "keyart", "character", "motif", "cutscene"}
         for iid in ids:
             key = str(iid or "").lower()
-            if len(key) <= 3:
+            if len(key) <= 3 or key in common_words:
                 continue
             if key in style_words:
                 continue
@@ -440,6 +641,20 @@ def cmd_lint(args) -> int:
 
     errs = [p for p in problems if p["level"] == "ERROR"]
     wrns = [p for p in problems if p["level"] == "WARN"]
+
+    # v3：一致性体检 —— 「声明了 ref 链但实际没挂 ref」是 v2 的真实缺陷，必须报出来
+    items_all = spec.get("items") or []
+    want_ref = [i["id"] for i in items_all if i.get("use_hero_ref")]
+    got_ref = [i["id"] for i in items_all if i.get("use_hero_ref") and i.get("ref")]
+    if want_ref and len(got_ref) < len(want_ref):
+        problems.append({"file": "(spec)", "level": "WARN", "code": "REF_CHAIN_BROKEN",
+                         "msg": f"{len(want_ref) - len(got_ref)} 个角色素材声明要挂 ref 但 ref 为空"
+                                f"（基准图未出时属正常，出图后必须重跑 --prompts）"})
+    con_status = spec.get("consistency_status") or ""
+    if con_status in ("degraded_no_ref", "prompt_only", "seed_only"):
+        problems.append({"file": "(spec)", "level": "WARN", "code": "CONSISTENCY_DEGRADED",
+                         "msg": f"角色一致性状态为 `{con_status}` —— 交付报告必须如实标注，不得声称已解决"})
+
     print(f"提示词 lint：{len(files)} 个文件　ERROR {len(errs)}　WARN {len(wrns)}")
     for p in problems:
         print(f"  [{p['level']}] {p['file']} {p['code']} —— {p['msg']}")

@@ -1,0 +1,29 @@
+{
+  "version": "3.0",
+  "license": "CC0-1.0",
+  "source": "原创整理（角色设计通用原则：剪影识别、比例、视觉重心、色彩编码）",
+  "note": "角色设计模式库。用于保证角色在 64px 下仍可辨认，且同一角色多姿态不漂移。",
+  "silhouette_rules": [
+    { "id": "unique_outline", "zh": "剪影唯一性", "rule": "纯黑填充后，角色轮廓必须与场上任何其他单位不混淆", "test": "转灰度 + 阈值化后仍可区分" },
+    { "id": "one_readable_prop", "zh": "一个可读道具", "rule": "每个角色只带一个高辨识度道具（灯、伞、镰刀），不要堆", "test": "64px 下道具仍可辨认" },
+    { "id": "head_body_ratio", "zh": "头身比固定", "rule": "同一游戏内全部角色使用同一头身比", "test": "asset-spec 里 character_ratio 字段全一致" },
+    { "id": "anchor_color", "zh": "锚定色", "rule": "主角有且只有一个专属色，且不与危险色/UI 色重合", "test": "色相距离 ≥ 40°" }
+  ],
+  "proportion_presets": [
+    { "id": "chibi_2_5", "zh": "2.5 头身", "ratio": 2.5, "best_for": ["可爱", "移动端", "小尺寸"] },
+    { "id": "stylized_4", "zh": "4 头身", "ratio": 4, "best_for": ["通用", "叙事"] },
+    { "id": "realistic_7", "zh": "7 头身", "ratio": 7, "best_for": ["严肃题材"], "risk": "小尺寸下五官糊掉" }
+  ],
+  "consistency_protocol": {
+    "note": "任务书 §5.3 的落地流程。仅「多张图用同一 prompt」不构成一致性方案。",
+    "steps": [
+      "1. 先出**基准图**（front view），固定 seed，记录 consistency_key",
+      "2. 用基准图做 **i2i ref** 生成侧面 / 背面 / 表情，seed 与基准相同",
+      "3. 所有衍生姿态的提示词必须包含 HERO_ANCHOR 段（同角色、同服装、同配色、同脸）",
+      "4. 生成后用程序化比对：主色直方图距离 + 剪影宽高比，偏差超阈值判为漂移",
+      "5. 通道不支持 i2i 时，必须在 asset-spec 里把 consistency_status 标为 degraded 并写原因"
+    ],
+    "degradation_states": ["full_ref_chain", "seed_only", "prompt_only", "degraded_no_ref"],
+    "drift_thresholds": { "palette_distance": 0.18, "aspect_ratio_delta": 0.12 }
+  }
+}

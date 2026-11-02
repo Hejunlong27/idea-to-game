@@ -1,0 +1,200 @@
+{
+  "version": "3.0",
+  "note": "交互动词库。每个动词带结构指纹（spatial/time/info/resource/risk），用于保证 5 个创意方案在「核心交互」上真正不同，而不是换皮。这些是抽象设计原则，不含任何受版权保护的素材。",
+  "license": "CC0-1.0",
+  "source": "原创整理（基于公开的 game design 通用概念：MDA 框架、verb-based design、信息不完全博弈）",
+  "verbs": [
+    {
+      "id": "tap_timing",
+      "zh": "踩点点击",
+      "en": "tap on timing",
+      "fingerprint": { "spatial": "free", "time": "rhythm", "info": "full", "resource": "renewable", "risk": "reversible" },
+      "prompt_hint": "a hand reaching toward a glowing target",
+      "note": "最易理解，也最容易变成换皮。必须靠 twist 才能成立"
+    },
+    {
+      "id": "drag_place",
+      "zh": "拖放布置",
+      "en": "drag and place",
+      "fingerprint": { "spatial": "grid", "time": "realtime", "info": "full", "resource": "finite", "risk": "reversible" },
+      "prompt_hint": "an object being lifted and set down on a grid",
+      "note": "位置即决策，适合塔防/布置类"
+    },
+    {
+      "id": "paint_area",
+      "zh": "涂抹覆盖",
+      "en": "paint over an area",
+      "fingerprint": { "spatial": "grid", "time": "realtime", "info": "partial", "resource": "finite", "risk": "irreversible" },
+      "prompt_hint": "a brush spreading light across a surface",
+      "note": "覆盖面积天然形成「占了这里就占不了那里」的取舍"
+    },
+    {
+      "id": "aim_light",
+      "zh": "控制光/视锥",
+      "en": "aim a light or view cone",
+      "fingerprint": { "spatial": "radial", "time": "realtime", "info": "partial", "resource": "finite", "risk": "reversible" },
+      "prompt_hint": "a cone of light sweeping across darkness",
+      "note": "看得见的地方才有信息，看不见的地方是风险 —— 天然的认知资源机制"
+    },
+    {
+      "id": "listen_locate",
+      "zh": "听声定位",
+      "en": "locate by sound",
+      "fingerprint": { "spatial": "radial", "time": "realtime", "info": "hidden", "resource": "renewable", "risk": "irreversible" },
+      "prompt_hint": "concentric ripples expanding in darkness",
+      "note": "声音即玩法。视觉信息被剥夺时，音频从装饰变成接口"
+    },
+    {
+      "id": "merge_combine",
+      "zh": "合成",
+      "en": "merge two things",
+      "fingerprint": { "spatial": "grid", "time": "turn", "info": "full", "resource": "converted", "risk": "reversible" },
+      "prompt_hint": "two objects fusing into a larger one",
+      "note": "已高度饱和，必须叠加结构性 twist"
+    },
+    {
+      "id": "cut_split",
+      "zh": "切割分离",
+      "en": "cut and split",
+      "fingerprint": { "spatial": "free", "time": "realtime", "info": "full", "resource": "converted", "risk": "irreversible" },
+      "prompt_hint": "a clean cut dividing a shape in two",
+      "note": "不可逆的分离，代价感强"
+    },
+    {
+      "id": "push_pull",
+      "zh": "推拉位移",
+      "en": "push or pull",
+      "fingerprint": { "spatial": "grid", "time": "turn", "info": "full", "resource": "renewable", "risk": "reversible" },
+      "prompt_hint": "a heavy block being pushed along stone",
+      "note": "推箱子谱系，靠地形改写升级"
+    },
+    {
+      "id": "stack_balance",
+      "zh": "堆叠平衡",
+      "en": "stack and balance",
+      "fingerprint": { "spatial": "free", "time": "realtime", "info": "full", "resource": "finite", "risk": "irreversible" },
+      "prompt_hint": "objects piled precariously on each other",
+      "note": "物理直觉即规则，学习成本极低"
+    },
+    {
+      "id": "swap_switch",
+      "zh": "切换/交换",
+      "en": "swap or switch",
+      "fingerprint": { "spatial": "grid", "time": "realtime", "info": "partial", "resource": "renewable", "risk": "reversible" },
+      "prompt_hint": "two objects trading places with a flash",
+      "note": "切换成本是最容易被设计成取舍的地方"
+    },
+    {
+      "id": "path_route",
+      "zh": "规划路径",
+      "en": "route a path",
+      "fingerprint": { "spatial": "grid", "time": "turn", "info": "full", "resource": "finite", "risk": "reversible" },
+      "prompt_hint": "a dotted line threading between obstacles",
+      "note": "把「时间」变成「空间」来规划"
+    },
+    {
+      "id": "sacrifice_resource",
+      "zh": "献祭资源",
+      "en": "sacrifice a resource",
+      "fingerprint": { "spatial": "none", "time": "realtime", "info": "full", "resource": "converted", "risk": "irreversible" },
+      "prompt_hint": "a resource crumbling away as it is spent",
+      "note": "资源带情感意义时，机制自然有重量"
+    },
+    {
+      "id": "remember_recall",
+      "zh": "记忆与回忆",
+      "en": "memorize then recall",
+      "fingerprint": { "spatial": "none", "time": "turn", "info": "hidden", "resource": "finite", "risk": "irreversible" },
+      "prompt_hint": "faded images surfacing in a mind",
+      "note": "把玩家的记忆本身当资源，天然产生「不敢用」的心理张力"
+    },
+    {
+      "id": "build_grow",
+      "zh": "建造生长",
+      "en": "build and grow",
+      "fingerprint": { "spatial": "grid", "time": "turn", "info": "full", "resource": "renewable", "risk": "reversible" },
+      "prompt_hint": "structures rising from bare ground",
+      "note": "复合收益，容易滚雪球失控"
+    },
+    {
+      "id": "lure_bait",
+      "zh": "诱导/设饵",
+      "en": "lure and bait",
+      "fingerprint": { "spatial": "free", "time": "realtime", "info": "hidden", "resource": "finite", "risk": "reversible" },
+      "prompt_hint": "a decoy glowing in the dark",
+      "note": "玩家的动作会改变对手行为，而非只改变数值"
+    },
+    {
+      "id": "disguise_hide",
+      "zh": "伪装/隐藏",
+      "en": "disguise or hide",
+      "fingerprint": { "spatial": "free", "time": "realtime", "info": "hidden", "resource": "renewable", "risk": "irreversible" },
+      "prompt_hint": "a figure blending into a pattern",
+      "note": "信息不对称在玩家一侧"
+    },
+    {
+      "id": "conduct_chain",
+      "zh": "传导/连锁",
+      "en": "conduct a chain",
+      "fingerprint": { "spatial": "grid", "time": "realtime", "info": "full", "resource": "renewable", "risk": "reversible" },
+      "prompt_hint": "energy traveling along a wire",
+      "note": "一次操作引发连锁，反馈密度高"
+    },
+    {
+      "id": "rhythm_sync",
+      "zh": "节奏同步",
+      "en": "sync to a beat",
+      "fingerprint": { "spatial": "free", "time": "rhythm", "info": "full", "resource": "renewable", "risk": "reversible" },
+      "prompt_hint": "pulsing rings matching a heartbeat",
+      "note": "音频成为时钟，天然把声音变成机制"
+    },
+    {
+      "id": "aim_precision",
+      "zh": "精确瞄准",
+      "en": "precision aim",
+      "fingerprint": { "spatial": "free", "time": "realtime", "info": "full", "resource": "finite", "risk": "irreversible" },
+      "prompt_hint": "a thin line converging on a distant point",
+      "note": "技术上限高，移动端不友好"
+    },
+    {
+      "id": "sweep_clear",
+      "zh": "扫除/清理",
+      "en": "sweep and clear",
+      "fingerprint": { "spatial": "grid", "time": "realtime", "info": "full", "resource": "renewable", "risk": "reversible" },
+      "prompt_hint": "a wide arc clearing debris",
+      "note": "爽感强，深度弱"
+    },
+    {
+      "id": "trade_exchange",
+      "zh": "交换市场",
+      "en": "trade and exchange",
+      "fingerprint": { "spatial": "none", "time": "turn", "info": "partial", "resource": "converted", "risk": "irreversible" },
+      "prompt_hint": "goods passing between two hands",
+      "note": "价格与预期本身就是玩法"
+    },
+    {
+      "id": "time_rewind",
+      "zh": "时间回溯",
+      "en": "rewind time",
+      "fingerprint": { "spatial": "free", "time": "realtime", "info": "full", "resource": "finite", "risk": "reversible" },
+      "prompt_hint": "a scene rewinding backwards",
+      "note": "撤销能力会削弱失败代价，必须设限"
+    },
+    {
+      "id": "signal_transmit",
+      "zh": "发信号/通讯",
+      "en": "send a signal",
+      "fingerprint": { "spatial": "radial", "time": "realtime", "info": "hidden", "resource": "finite", "risk": "irreversible" },
+      "prompt_hint": "a beam of light answering another",
+      "note": "信息本身就是资源，天然产生「该不该回应」的取舍"
+    },
+    {
+      "id": "survive_hold",
+      "zh": "守住/撑住",
+      "en": "hold and survive",
+      "fingerprint": { "spatial": "radial", "time": "realtime", "info": "partial", "resource": "finite", "risk": "irreversible" },
+      "prompt_hint": "a small shelter under pressure",
+      "note": "压力随时间累积，节奏天然"
+    }
+  ]
+}

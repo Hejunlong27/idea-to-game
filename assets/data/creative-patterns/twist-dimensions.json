@@ -1,0 +1,89 @@
+{
+  "version": "3.0",
+  "license": "CC0-1.0",
+  "source": "原创整理（抽象设计原则，参考公开的 game design 讨论：反套路设计、信息博弈、代价设计）",
+  "note": "创意反转维度。用于 creative_forge.py --twist。每个维度给出「改什么」和「必须付出的代价」—— 反转不是加料，是换掉一个默认假设。",
+  "dimensions": [
+    {
+      "id": "invert_control",
+      "zh": "颠覆操作方式",
+      "assumption": "玩家直接控制角色/对象",
+      "rewrite": "玩家控制的是影响角色的环境（光、风、地形、时间流速）",
+      "cost": "操作与结果的因果链变长，需要更强的即时反馈来补偿",
+      "examples": ["不控制船，控制潮水", "不控制角色，控制角色脚下的地面", "不控制子弹，控制重力方向"],
+      "mechanic_hint": "indirect_control"
+    },
+    {
+      "id": "invert_win",
+      "zh": "颠覆胜利条件",
+      "assumption": "胜利 = 消灭/到达/得分最高",
+      "rewrite": "胜利 = 让某样东西消失、让某个人留下、让某个数字保持不变",
+      "cost": "需要在前 10 秒就让玩家明白「赢」是什么意思，否则会以为自己在输",
+      "examples": ["胜利是让灯彻底熄灭", "胜利是让敌人全部活着离开", "胜利是保持零分"],
+      "mechanic_hint": "inverted_goal"
+    },
+    {
+      "id": "environment_as_rules",
+      "zh": "环境成为玩法",
+      "assumption": "场景只是背景板",
+      "rewrite": "地形/天气/光照本身参与规则运算（挡住视线、传导声音、改变通行）",
+      "cost": "美术与逻辑耦合，改动成本高，必须提前定死规则表",
+      "examples": ["潮水上涨吞掉可站立格", "雾的浓度决定敌人可见半径", "影子的方向决定安全区"],
+      "mechanic_hint": "terrain_rule"
+    },
+    {
+      "id": "fail_as_play",
+      "zh": "失败成为玩法",
+      "assumption": "失败 = 重开",
+      "rewrite": "失败会留下痕迹并改变下一局（尸体成为地形、失败次数成为资源）",
+      "cost": "必须保证失败也有信息增量，否则变成惩罚循环",
+      "examples": ["每次死亡在原地留下一个可踩的残骸", "失败次数可以兑换一次作弊", "失败会永久删掉一个道具"],
+      "mechanic_hint": "failure_persists"
+    },
+    {
+      "id": "resource_with_emotion",
+      "zh": "资源具有情感意义",
+      "assumption": "资源是抽象数字（金币、血、能量）",
+      "rewrite": "资源是具体的人/记忆/名字，消耗时会有叙事后果",
+      "cost": "必须让玩家在消耗前就知道会失去什么，否则只是惩罚",
+      "examples": ["灯油是母亲的记忆", "弹药是同伴的名字", "血量是还能记住的歌词句数"],
+      "mechanic_hint": "emotional_resource"
+    },
+    {
+      "id": "narrative_rewrites_rules",
+      "zh": "叙事影响规则",
+      "assumption": "剧情在玩法之外",
+      "rewrite": "剧情推进时，某条规则被改写（原本不能做的事变得可以）",
+      "cost": "改规则的那一关必须重做教学，玩家会以为出了 bug",
+      "examples": ["知道真相后，灯不再消耗记忆", "第三幕后，敌人开始帮你", "结局前，UI 的计时器消失"],
+      "mechanic_hint": "rule_twist"
+    },
+    {
+      "id": "sound_as_mechanic",
+      "zh": "声音成为机制",
+      "assumption": "声音只是反馈",
+      "rewrite": "声音携带只有它能提供的信息（方位、距离、材质、真假）",
+      "cost": "必须提供视觉替代方案（无障碍），否则静音玩家无法通关",
+      "examples": ["闭眼听回声判断墙的位置", "不同音高触发不同机关", "节拍决定攻击窗口"],
+      "mechanic_hint": "audio_gated"
+    },
+    {
+      "id": "vision_drives_decision",
+      "zh": "视觉变化影响决策",
+      "assumption": "画面只负责好看",
+      "rewrite": "颜色/明度/构图变化本身是信息（红=危险，暗=未知，留白=可走）",
+      "cost": "色盲友好必须单独验证，不能只靠颜色区分",
+      "examples": ["场景越暗，看不见的敌人越多", "墙上的颜色暗示机关位置", "背景人物数量暗示剩余回合"],
+      "mechanic_hint": "visual_information"
+    },
+    {
+      "id": "cross_genre_borrow",
+      "zh": "跨品类借鉴",
+      "assumption": "一个游戏只有一个品类语法",
+      "rewrite": "把另一个品类的核心语法搬进来当第二层（塔防 + 推箱子、音游 + 经营）",
+      "cost": "两套语法必须共用一个资源，否则会变成两个游戏拼在一起",
+      "examples": ["塔防的布置 + 解谜的步数限制", "节奏的判定 + 卡牌的构筑", "经营的资源 + 跑酷的即时"],
+      "mechanic_hint": "hybrid_grammar"
+    }
+  ]
+}

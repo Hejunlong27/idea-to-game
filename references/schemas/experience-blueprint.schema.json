@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/Hejunlong27/idea-to-game/references/schemas/experience-blueprint.schema.json",
+  "title": "Experience Blueprint — 玩家体验设计",
+  "description": "定义玩家情绪曲线与每关体验目标。判据不是「感觉好不好」，而是每条都可被试玩或代码验证：前 10 秒能否理解、前 30 秒有无正反馈、每关只引入 0–1 个新机制、失败是否提供信息。",
+  "type": "object",
+  "required": ["version", "meta", "emotion_curve", "levels", "checks"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "type": "string", "const": "3.0" },
+    "meta": {
+      "type": "object",
+      "required": ["game_title", "created", "target_session_seconds"],
+      "additionalProperties": true,
+      "properties": {
+        "game_title": { "type": "string" },
+        "created": { "type": "string" },
+        "creative_dna": { "type": "string" },
+        "target_session_seconds": { "type": "integer", "minimum": 30 },
+        "target_emotions": { "type": "array", "items": { "type": "string" } },
+        "player_memory": { "type": "string" },
+        "first_10s": { "type": "string" },
+        "first_30s": { "type": "string" }
+      }
+    },
+    "emotion_curve": {
+      "type": "array", "minItems": 4,
+      "items": {
+        "type": "object",
+        "required": ["phase", "intensity", "player_does", "feedback"],
+        "additionalProperties": true,
+        "properties": {
+          "phase": {
+            "type": "string",
+            "enum": ["curiosity", "learning", "mastery", "challenge", "surprise", "climax", "satisfaction"]
+          },
+          "zh": { "type": "string" },
+          "intensity": { "type": "number", "minimum": 0, "maximum": 1 },
+          "at_seconds": { "type": "number", "minimum": 0 },
+          "player_does": { "type": "string", "minLength": 6, "description": "玩家在这一段实际做什么" },
+          "feedback": { "type": "string", "minLength": 4, "description": "玩家如何知道自己做对了" }
+        }
+      }
+    },
+    "levels": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["level", "emotion", "learn", "new_mechanic", "core_decision",
+                     "challenge", "feedback", "climax", "reward", "next_hook"],
+        "additionalProperties": true,
+        "properties": {
+          "level": { "type": "integer", "minimum": 1 },
+          "emotion": { "type": "string", "minLength": 2 },
+          "learn": { "type": "string", "minLength": 6, "description": "可检验：能做到 X" },
+          "new_mechanic": { "type": ["string", "null"], "description": "本关新引入的机制 id，无则 null" },
+          "core_decision": { "type": "string", "minLength": 8 },
+          "challenge": {
+            "type": "string",
+            "enum": ["information", "resource", "operation", "environment", "cost", "none"]
+          },
+          "feedback": { "type": "string", "minLength": 4 },
+          "climax": { "type": "string", "minLength": 6 },
+          "reward": { "type": "string", "minLength": 4 },
+          "next_hook": { "type": "string", "minLength": 4 },
+          "duration_seconds": { "type": "number", "minimum": 5 }
+        }
+      }
+    },
+    "checks": {
+      "type": "array", "minItems": 6,
+      "items": {
+        "type": "object",
+        "required": ["id", "question", "result", "evidence"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": "string", "pattern": "^E[0-9]+$" },
+          "question": { "type": "string" },
+          "result": { "type": "string", "enum": ["PASS", "FAIL", "UNVERIFIED"] },
+          "evidence": { "type": "string", "description": "证据：代码位置 / 试玩报告 / 截图" }
+        }
+      }
+    },
+    "signature_moments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "when", "what_happens", "event"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": "string" },
+          "when": { "type": "string" },
+          "what_happens": { "type": "string" },
+          "event": { "type": "string", "description": "由哪个游戏事件触发（必须真实存在于代码里）" },
+          "verified": { "type": "boolean" }
+        }
+      }
+    }
+  }
+}

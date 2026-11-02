@@ -16,22 +16,59 @@ TEMPLATE_DIR = SKILL_DIR / "assets" / "template"
 
 STAGES = [
     "brief",
-    "content",          # 内容蓝图（世界观/叙事/机制组合）—— v2 新增
+    "creative",         # v3 P0：创意发散（≥5 个结构不同的方向）
+    "creative_dna",     # v3 P0.5：统一创意身份
+    "content",          # 内容蓝图（世界观/叙事/机制组合）
     "review_plan",      # R0 审核官介入：规划预审
-    "review_richness",  # RC 丰富度门禁（v2 新增，R0 之后、写代码之前）
+    "review_richness",  # RC 丰富度门禁
     "scaffold",
     "art_bible",
+    "visual_dna",       # v3 P1：视觉设计系统（Visual DNA）
     "core_loop",
     "review_graybox",   # R1 审核官介入：灰盒预审（生图之前）
     "art_forge",
     "sprite_tools",
     "audio_forge",
+    "audio_director",   # v3 P2.5：自适应音乐 / 动态音效 / 音频质检
+    "juice",            # v3 P3：表现矩阵（事件 → 效果）
+    "experience",       # v3 P3：玩家体验设计
     "polish",
     "perf_audit",
     "qa",
+    "playtest",         # v3 P4：真实操作试玩
+    "review_specialist",# v3 R2 前：六项专项审核
     "review_final",     # R2 审核官介入：终审（交付之前）
     "ship",
 ]
+
+# 阶段 → 模块文件（显式映射）。
+# 以前用 STAGES.index(s)+1 推模块文件名，插一个阶段就全错 —— 这里改成显式表。
+STAGE_MODULES = {
+    "brief": "modules/01-brief.md",
+    "creative": "modules/01c-creative-director.md",
+    "creative_dna": "modules/01c-creative-director.md",
+    "content": "modules/01b-story.md",
+    "review_plan": "modules/12-review.md",
+    "review_richness": "references/content-depth.md",
+    "scaffold": "modules/02-scaffold.md",
+    "art_bible": "modules/03-art-bible.md",
+    "visual_dna": "modules/03b-art-director.md",
+    "core_loop": "modules/04-core-loop.md",
+    "review_graybox": "modules/12-review.md",
+    "art_forge": "modules/05-art-forge.md",
+    "sprite_tools": "modules/06-sprite-tools.md",
+    "audio_forge": "modules/07-audio-forge.md",
+    "audio_director": "modules/07b-audio-director.md",
+    "juice": "modules/08b-game-juice.md",
+    "experience": "modules/08c-experience-designer.md",
+    "polish": "modules/08-polish.md",
+    "perf_audit": "modules/09-perf-audit.md",
+    "qa": "modules/10-qa.md",
+    "playtest": "modules/10b-playtest-agent.md",
+    "review_specialist": "modules/12b-art-review.md",
+    "review_final": "modules/12-review.md",
+    "ship": "modules/11-ship.md",
+}
 
 # 审核官介入的三处，映射到 state.yaml 的阶段键
 REVIEW_STAGES = {
@@ -39,6 +76,11 @@ REVIEW_STAGES = {
     "r1": "review_graybox",
     "r2": "review_final",
 }
+
+# v3 新增阶段：旧项目没有这些键，按 pending 处理即可（天然向后兼容）。
+# 标记出来是为了让 gate_check 能提示「本阶段可跳过（旧项目）」。
+V3_STAGES = {"creative", "creative_dna", "visual_dna", "audio_director",
+             "juice", "experience", "playtest", "review_specialist"}
 
 # 允许进入后续阶段的审核结论（REJECTED / INCOMPLETE 均阻断）
 PASSING_VERDICTS = {"PASS", "PASS_WITH_DEVIATIONS"}

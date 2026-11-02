@@ -1,0 +1,183 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/Hejunlong27/idea-to-game/references/schemas/audio-dna.schema.json",
+  "title": "Audio DNA — 动态音频系统设计",
+  "description": "从「有音频文件」升级为「有音频系统」：stem 分轨自适应音乐、状态机、动态音效规则、情绪化声设计、声音即玩法的钩子。模板 src/game/audio.ts 按本文件驱动。",
+  "type": "object",
+  "required": ["version", "meta", "identity", "music", "sfx", "emotional_rules"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "type": "string", "const": "3.0" },
+    "meta": {
+      "type": "object",
+      "required": ["game_title", "concept_id", "created"],
+      "additionalProperties": true,
+      "properties": {
+        "game_title": { "type": "string" },
+        "concept_id": { "type": "string" },
+        "created": { "type": "string" },
+        "creative_dna": { "type": "string" },
+        "visual_dna": { "type": "string" },
+        "degraded": {
+          "type": "boolean",
+          "description": "音乐生成通道不可用、改用程序化合成时必须为 true，并在 degraded_reason 写明"
+        },
+        "degraded_reason": { "type": "string" }
+      }
+    },
+    "identity": {
+      "type": "object",
+      "required": ["audio_identity", "instrumentation", "sound_signature"],
+      "additionalProperties": true,
+      "properties": {
+        "audio_identity": { "type": "string", "minLength": 10 },
+        "instrumentation": { "type": "array", "minItems": 3, "items": { "type": "string" } },
+        "sound_signature": { "type": "array", "minItems": 2, "items": { "type": "string" } },
+        "mood_arc": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "music": {
+      "type": "object",
+      "required": ["mode", "stems", "states", "initial_state"],
+      "additionalProperties": true,
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["stems", "clips"],
+          "description": "stems=分轨独立控音量（首选）；clips=独立片段切换（降级）"
+        },
+        "stems": {
+          "type": "array", "minItems": 2,
+          "items": {
+            "type": "object",
+            "required": ["id", "file", "default_gain"],
+            "additionalProperties": true,
+            "properties": {
+              "id": { "type": "string", "enum": ["melody", "rhythm", "bass", "percussion", "atmosphere"] },
+              "file": { "type": "string" },
+              "default_gain": { "type": "number", "minimum": 0, "maximum": 1 },
+              "duck_under_sfx": { "type": "boolean" },
+              "loop": { "type": "boolean" },
+              "exists": { "type": "boolean" }
+            }
+          }
+        },
+        "states": {
+          "type": "array", "minItems": 2,
+          "items": {
+            "type": "object",
+            "required": ["id", "stem_gains", "transition_ms"],
+            "additionalProperties": true,
+            "properties": {
+              "id": { "type": "string" },
+              "zh": { "type": "string" },
+              "when": { "type": "string", "description": "进入该状态的判定条件，必须可被事件系统表达" },
+              "stem_gains": {
+                "type": "object",
+                "additionalProperties": { "type": "number", "minimum": 0, "maximum": 1 }
+              },
+              "bpm": { "type": "integer", "minimum": 40, "maximum": 200 },
+              "mode": { "type": "string", "enum": ["major", "minor", "modal"] },
+              "transition_ms": { "type": "integer", "minimum": 0, "maximum": 8000 },
+              "note": { "type": "string" }
+            }
+          }
+        },
+        "initial_state": { "type": "string" },
+        "victory_stinger": { "type": "string" },
+        "defeat_stinger": { "type": "string" },
+        "crossfade_note": { "type": "string" }
+      }
+    },
+    "sfx": {
+      "type": "object",
+      "required": ["variants", "min_interval_ms", "same_sound_cooldown_ms", "max_concurrent", "bus_gains"],
+      "additionalProperties": true,
+      "properties": {
+        "variants": { "type": "integer", "minimum": 1, "maximum": 8 },
+        "pitch_jitter_semitones": { "type": "number", "minimum": 0, "maximum": 12 },
+        "gain_jitter_db": { "type": "number", "minimum": 0, "maximum": 12 },
+        "min_interval_ms": { "type": "integer", "minimum": 0 },
+        "same_sound_cooldown_ms": { "type": "integer", "minimum": 0 },
+        "max_concurrent": { "type": "integer", "minimum": 1 },
+        "max_concurrent_per_sound": { "type": "integer", "minimum": 1 },
+        "bus_gains": {
+          "type": "object",
+          "required": ["master"],
+          "additionalProperties": { "type": "number", "minimum": 0, "maximum": 1 }
+        },
+        "distance": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "ref_distance": { "type": "number" },
+            "rolloff": { "type": "number" },
+            "max_distance": { "type": "number" }
+          }
+        },
+        "priority_rules": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "emotional_rules": {
+      "type": "array", "minItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["id", "when", "change"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": "string" },
+          "when": { "type": "string", "minLength": 4 },
+          "change": { "type": "string", "minLength": 8 },
+          "target_state": { "type": "string" }
+        }
+      }
+    },
+    "gameplay_hooks": {
+      "type": "array",
+      "description": "声音即玩法：事件 → 音频必须承担的机制职责",
+      "items": {
+        "type": "object",
+        "required": ["event", "audio_role"],
+        "additionalProperties": true,
+        "properties": {
+          "event": { "type": "string" },
+          "audio_role": { "type": "string" },
+          "visual_fallback": { "type": "string", "description": "静音玩家的替代方案（无障碍硬要求）" }
+        }
+      }
+    },
+    "qc": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "checked_at": { "type": "string" },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["file", "exists"],
+            "additionalProperties": true,
+            "properties": {
+              "file": { "type": "string" },
+              "exists": { "type": "boolean" },
+              "duration_s": { "type": "number" },
+              "sample_rate": { "type": "integer" },
+              "channels": { "type": "integer" },
+              "peak_db": { "type": "number" },
+              "rms_db": { "type": "number" },
+              "clipped": { "type": "boolean" },
+              "silent": { "type": "boolean" },
+              "loop_seam_db": { "type": "number" },
+              "size_kb": { "type": "number" },
+              "issues": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        },
+        "total_kb": { "type": "number" },
+        "budget_kb": { "type": "number" },
+        "verdict": { "type": "string", "enum": ["PASS", "WARN", "FAIL"] }
+      }
+    }
+  }
+}

@@ -37,16 +37,38 @@ REQUIRED_FILES = {
         "src/platform/gamedistribution.ts",
         "src/platform/taptap.ts",
     ],
+    "creative": [
+        "docs/01-brief/creative-concepts.json",
+        "docs/01-brief/creative-review.md",
+    ],
+    "creative_dna": [
+        "docs/01-brief/creative-dna.json",
+        "docs/01-brief/creative-validation.json",
+    ],
     "content": [
         "docs/01-brief/content-blueprint.json",
         "docs/01-brief/story.md",
     ],
     "review_richness": ["docs/09-review/richness.json", "docs/09-review/richness-report.md"],
     "art_bible": ["docs/02-art/art-bible.md", "docs/02-art/palette.json"],
+    "visual_dna": [
+        "docs/02-art/visual-dna.json",
+        "docs/02-art/style-proposals.json",
+        "docs/02-art/consistency-plan.json",
+    ],
     "core_loop": ["docs/04-core-loop/notes.md", "src/game"],
     "art_forge": ["assets/raw"],
     "sprite_tools": ["assets/processed", "assets/atlas"],
     "audio_forge": ["assets/audio/bgm", "assets/audio/sfx"],
+    "audio_director": [
+        "docs/05-audio/audio-dna.json",
+        "docs/05-audio/audio-qc.json",
+        "docs/05-audio/stem-render-plan.json",
+    ],
+    "juice": ["docs/04-core-loop/juice-plan.json"],
+    "experience": ["docs/03-experience/experience-blueprint.json"],
+    "playtest": ["docs/07-qa/playtest.json", "docs/07-qa/playtest-report.html"],
+    "review_specialist": ["docs/09-review/verdict-specialist.json"],
     "polish": ["docs/05-polish/juice-log.md"],
     "perf_audit": ["docs/06-perf/report.md"],
     "qa": ["docs/07-qa/report.html"],
@@ -186,6 +208,209 @@ def check_richness(proj: Path, errs: list, warns: list):
     for c in d.get("cross_checks") or []:
         if not c.get("ok"):
             errs.append(f"交叉校验 {c.get('code')} 失败：{c.get('detail')}")
+
+
+def _schema_errs(proj: Path, rel: str, schema_name: str) -> list[str]:
+    """用 schema_check 校验一份产物。缺文件返回空（由 REQUIRED_FILES 报）。"""
+    p = proj / rel
+    if not p.exists():
+        return []
+    from _common import SKILL_DIR
+    import schema_check
+
+    try:
+        data = json.loads(p.read_text(encoding="utf-8"))
+        schema = json.loads((SKILL_DIR / "references" / "schemas" / schema_name).read_text(encoding="utf-8"))
+    except Exception as e:  # noqa: BLE001
+        return [f"{rel} 解析失败：{e}"]
+    return [f"{rel}：{x}" for x in schema_check.validate(data, schema)]
+
+
+def check_creative(proj: Path, errs: list, warns: list):
+    """创意门禁：必须真的发散过，且结构差异达标。"""
+    f = proj / "docs/01-brief/creative-concepts.json"
+    if not f.exists():
+        errs.append("缺 creative-concepts.json（跑 creative_forge.py --diverge）")
+        return
+    try:
+        d = json.loads(f.read_text(encoding="utf-8"))
+    except Exception as e:  # noqa: BLE001
+        errs.append(f"creative-concepts.json 解析失败：{e}")
+        return
+    n = len(d.get("concepts") or [])
+    if n < 5:
+        errs.append(f"创意方案只有 {n} 个（要求 ≥5，且必须在核心交互上实质不同）")
+    sd = d.get("structural_distance") or {}
+    if not sd.get("pass"):
+        errs.append(
+            f"方案结构差异不足：最小两两距离 {sd.get('min_pairwise')}/5（要求 ≥3）—— 这是换皮的判据"
+        )
+    ev = d.get("evaluation") or []
+    if not ev:
+        warns.append("尚未跑 creative_forge.py --evaluate（没有相似度分析）")
+    else:
+        best = d.get("best") or ""
+        top = next((x for x in ev if x.get("concept_id") == best), None)
+        if top and top.get("verdict") == "REJECT":
+            errs.append(f"最佳方案 {best} 仍判 REJECT（{top.get('total')} 分）")
+
+
+def check_creative_dna(proj: Path, errs: list, warns: list):
+    errs += _schema_errs(proj, "docs/01-brief/creative-dna.json", "creative-dna.schema.json")
+    v = proj / "docs/01-brief/creative-validation.json"
+    if v.exists():
+        try:
+            d = json.loads(v.read_text(encoding="utf-8"))
+            if not d.get("ok"):
+                for e in (d.get("errors") or [])[:5]:
+                    errs.append(f"DNA 语义校验失败 {e.get('path')}：{e.get('msg')}")
+        except Exception:  # noqa: BLE001
+            warns.append("creative-validation.json 解析失败")
+    else:
+        warns.append("未跑 creative_forge.py --validate")
+
+
+def check_visual_dna(proj: Path, errs: list, warns: list):
+    errs += _schema_errs(proj, "docs/02-art/visual-dna.json", "visual-dna.schema.json")
+    v = proj / "docs/02-art/visual-dna.json"
+    if v.exists():
+        try:
+            d = json.loads(v.read_text(encoding="utf-8"))
+            bad = [c for c in (d.get("color") or {}).get("contrast_checks") or [] if not c.get("pass")]
+            if bad:
+                errs.append(f"色彩对比度不达标 {len(bad)} 组：{bad[0].get('pair')} {bad[0].get('ratio')}")
+            con = (d.get("character") or {}).get("consistency") or {}
+            if con.get("status") == "full_ref_chain":
+                refs = con.get("refs") or []
+                if not any((proj / r.get("file", "")).exists() for r in refs):
+                    errs.append("一致性状态声明 full_ref_chain 但参考图不存在（虚报）")
+            elif con.get("status") in ("degraded_no_ref", "prompt_only", "seed_only"):
+                warns.append(f"角色一致性为降级状态 `{con.get('status')}` —— 交付报告须如实列出")
+        except Exception:  # noqa: BLE001
+            pass
+    p = proj / "docs/02-art/palette.json"
+    if p.exists():
+        try:
+            pal = json.loads(p.read_text(encoding="utf-8"))
+            if not pal.get("style_tokens"):
+                errs.append("palette.json 缺 style_tokens")
+        except Exception:  # noqa: BLE001
+            pass
+
+
+def check_audio_director(proj: Path, errs: list, warns: list):
+    errs += _schema_errs(proj, "docs/05-audio/audio-dna.json", "audio-dna.schema.json")
+    q = proj / "docs/05-audio/audio-qc.json"
+    if q.exists():
+        try:
+            d = json.loads(q.read_text(encoding="utf-8"))
+            v = d.get("verdict")
+            if v == "FAIL":
+                s = d.get("summary") or {}
+                errs.append(
+                    f"音频质检 FAIL：缺失 {s.get('missing')}、削波 {s.get('clipped')}、静音 {s.get('silent')}"
+                )
+            elif v == "WARN":
+                warns.append(f"音频质检 WARN（接缝或体积）：{d.get('total_kb')}KB")
+        except Exception:  # noqa: BLE001
+            errs.append("audio-qc.json 解析失败")
+    else:
+        warns.append("未跑 audio_director.py --qc（音频审核会因缺实测判 UNVERIFIED）")
+    ad = proj / "docs/05-audio/audio-dna.json"
+    if ad.exists():
+        try:
+            d = json.loads(ad.read_text(encoding="utf-8"))
+            states = (d.get("music") or {}).get("states") or []
+            sigs = {json.dumps(st.get("stem_gains") or {}, sort_keys=True) for st in states}
+            if len(states) >= 2 and len(sigs) < len(states):
+                errs.append("有两个音乐状态的分轨配比完全相同 —— 状态切换听不出区别")
+        except Exception:  # noqa: BLE001
+            pass
+
+
+def check_juice(proj: Path, errs: list, warns: list):
+    errs += _schema_errs(proj, "docs/04-core-loop/juice-plan.json", "juice-plan.schema.json")
+    f = proj / "docs/04-core-loop/juice-plan.json"
+    if not f.exists():
+        return
+    try:
+        d = json.loads(f.read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001
+        return
+    used = {fx["type"] for r in d.get("rules") or [] for fx in r.get("effects") or []}
+    if len(used) < 8:
+        warns.append(f"表现只用了 {len(used)} 类效果（建议 ≥8）")
+    s = d.get("settings") or {}
+    if (s.get("flashMaxPerSecond") or 0) > 1:
+        errs.append("闪屏频率上限 >1 次/秒（光敏性风险，硬上限）")
+    if (s.get("shakeMaxMs") or 0) > 300:
+        errs.append("震动时长上限 >300ms（晕动风险，硬上限）")
+
+
+def check_experience(proj: Path, errs: list, warns: list):
+    errs += _schema_errs(proj, "docs/03-experience/experience-blueprint.json",
+                         "experience-blueprint.schema.json")
+    f = proj / "docs/03-experience/experience-blueprint.json"
+    if not f.exists():
+        return
+    try:
+        d = json.loads(f.read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001
+        return
+    checks = d.get("checks") or []
+    fails = [c for c in checks if c.get("result") == "FAIL"]
+    unv = [c for c in checks if c.get("result") == "UNVERIFIED"]
+    if fails:
+        errs.append(f"体验判据有 {len(fails)} 条 FAIL：{', '.join(c['id'] for c in fails)}")
+    if unv:
+        warns.append(f"体验判据有 {len(unv)} 条未验证（未验证不算通过）：{', '.join(c['id'] for c in unv)}")
+
+
+def check_playtest(proj: Path, errs: list, warns: list):
+    f = proj / "docs/07-qa/playtest.json"
+    if not f.exists():
+        errs.append("缺 playtest.json（跑 playtest.py 或 node scripts/playtest.mjs）")
+        return
+    try:
+        d = json.loads(f.read_text(encoding="utf-8"))
+    except Exception as e:  # noqa: BLE001
+        errs.append(f"playtest.json 解析失败：{e}")
+        return
+    s = d.get("summary") or {}
+    if s.get("errors"):
+        errs.append(f"试玩期间有 {len(s['errors'])} 条运行时错误：{str(s['errors'][0])[:80]}")
+    if s.get("any_stuck"):
+        errs.append("试玩检测到卡死（连续 6 秒状态不变）")
+    fp = s.get("first_positive_feedback_s")
+    if fp is not None and fp < 999 and fp > 30:
+        warns.append(f"首次正反馈在 {fp}s（要求 ≤30s）")
+    if len(d.get("strategies") or []) < 3:
+        warns.append("试玩策略少于 3 种，覆盖不足")
+
+
+def check_specialist(proj: Path, errs: list, warns: list):
+    f = proj / "docs/09-review/verdict-specialist.json"
+    if not f.exists():
+        errs.append("缺 verdict-specialist.json（跑 specialist_review.py）")
+        return
+    try:
+        d = json.loads(f.read_text(encoding="utf-8"))
+    except Exception as e:  # noqa: BLE001
+        errs.append(f"verdict-specialist.json 解析失败：{e}")
+        return
+    v = d.get("verdict")
+    if v == "FAIL":
+        bl = [b for b in d.get("blocking") or [] if b.get("result") == "FAIL"]
+        detail = "；".join(f"{b['code']} {b['title']}" for b in bl[:4])
+        errs.append(f"专项审核 FAIL，不得通过 —— 阻塞项：{detail}")
+    elif v == "INCOMPLETE":
+        bl = [b for b in d.get("blocking") or [] if b.get("result") == "UNVERIFIED"]
+        errs.append(
+            "专项审核 INCOMPLETE（有未验证项，未验证不算通过）："
+            + "；".join(f"{b['code']} {b['title']}" for b in bl[:4])
+        )
+    else:
+        warns.append(f"专项审核 PASS（{d.get('summary', {}).get('PASS')} 条证据）")
 
 
 def check_scaffold(proj: Path, errs: list, warns: list):
@@ -420,6 +645,8 @@ def check_ship(proj: Path, errs: list, warns: list):
 
     # ★ 审核官一票否决：R2 终审未通过则不得交付
     check_review(proj, errs, warns, "r2")
+    # ★ v3：六项专项审核同样一票否决（创意/美术/动画/音频/体验/试玩）
+    check_specialist(proj, errs, warns)
 
     state_file = proj / ".gamedev" / "state.yaml"
     platforms = []
@@ -486,6 +713,14 @@ def check_ship(proj: Path, errs: list, warns: list):
 
 CHECKERS = {
     "brief": check_brief,
+    "creative": check_creative,
+    "creative_dna": check_creative_dna,
+    "visual_dna": check_visual_dna,
+    "audio_director": check_audio_director,
+    "juice": check_juice,
+    "experience": check_experience,
+    "playtest": check_playtest,
+    "review_specialist": check_specialist,
     "content": check_content,
     "review_richness": check_richness,
     "scaffold": check_scaffold,

@@ -1,0 +1,87 @@
+{
+  "version": "3.0",
+  "license": "CC0-1.0",
+  "source": "原创整理（音色/乐器/调式均为通用音乐术语；不含任何乐曲片段）",
+  "note": "音频风格模式库。audio_director.py 用它生成 stem 分层与情绪映射。**mood 必须映射到具体的乐器与频段变化**，不能只写「紧张」。",
+  "stem_layers": [
+    { "id": "melody", "zh": "旋律", "role": "承载主题，识别度来源", "default_gain": 0.55, "duck_under_sfx": true },
+    { "id": "rhythm", "zh": "节奏", "role": "推进感，紧张度主要来源", "default_gain": 0.45, "duck_under_sfx": false },
+    { "id": "bass", "zh": "低频", "role": "压迫感与重量", "default_gain": 0.5, "duck_under_sfx": false },
+    { "id": "percussion", "zh": "打击", "role": "冲击与事件强调", "default_gain": 0.4, "duck_under_sfx": false },
+    { "id": "atmosphere", "zh": "氛围", "role": "空间与情绪底色", "default_gain": 0.35, "duck_under_sfx": true }
+  ],
+  "instrument_families": [
+    { "id": "felt_piano", "zh": "毡化钢琴", "character": "温柔、颗粒感、有距离", "bands": "low-mid", "best_for": ["melancholy", "calm"] },
+    { "id": "music_box", "zh": "八音盒", "character": "脆弱、怀旧、易碎", "bands": "high-mid", "best_for": ["memory", "calm"] },
+    { "id": "bowed_strings", "zh": "弓弦", "character": "持续、拉扯、不安", "bands": "mid", "best_for": ["tense", "grief"] },
+    { "id": "wood_creak", "zh": "木质结构声", "character": "重量、年代、危险", "bands": "low-mid", "best_for": ["structure", "danger"] },
+    { "id": "sea_waves", "zh": "海浪", "character": "持续、掩盖细节、呼吸感", "bands": "broadband-low", "best_for": ["ambience", "loneliness"] },
+    { "id": "glass_bell", "zh": "玻璃铃", "character": "清晰、空间定位强", "bands": "high", "best_for": ["reveal", "signal"] },
+    { "id": "sub_pulse", "zh": "次低频脉冲", "character": "身体感、威胁", "bands": "sub", "best_for": ["danger", "boss"] },
+    { "id": "breath", "zh": "呼吸/人声气声", "character": "生命感、临近", "bands": "mid", "best_for": ["panic", "intimacy"] },
+    { "id": "paper_rustle", "zh": "纸张摩擦", "character": "细微、手工感", "bands": "high", "best_for": ["ui", "craft"] },
+    { "id": "synth_pad", "zh": "合成垫", "character": "无边、冷、未来", "bands": "broadband", "best_for": ["surreal", "scifi"] }
+  ],
+  "mood_map": {
+    "exploration": {
+      "zh": "探索",
+      "stems": { "melody": 0.35, "rhythm": 0.0, "bass": 0.2, "percussion": 0.0, "atmosphere": 0.5 },
+      "change": "稀疏旋律 + 低音乐密度 + 长混响",
+      "bpm": 68, "mode": "major"
+    },
+    "danger": {
+      "zh": "危险",
+      "stems": { "melody": 0.25, "rhythm": 0.35, "bass": 0.7, "percussion": 0.1, "atmosphere": 0.4 },
+      "change": "低频增强 + 紧张节奏 + 不和谐音程（小二度）",
+      "bpm": 96, "mode": "minor"
+    },
+    "combat": {
+      "zh": "战斗",
+      "stems": { "melody": 0.5, "rhythm": 0.75, "bass": 0.65, "percussion": 0.7, "atmosphere": 0.2 },
+      "change": "加入节奏轨 + 提高能量 + 打击乐进入",
+      "bpm": 128, "mode": "minor"
+    },
+    "critical": {
+      "zh": "濒危",
+      "stems": { "melody": 0.2, "rhythm": 0.9, "bass": 0.85, "percussion": 0.5, "atmosphere": 0.15 },
+      "change": "音乐密度增强 + 低频增强 + 环境声衰减到 30%",
+      "bpm": 140, "mode": "minor"
+    },
+    "victory": {
+      "zh": "胜利",
+      "stems": { "melody": 0.85, "rhythm": 0.4, "bass": 0.5, "percussion": 0.55, "atmosphere": 0.3 },
+      "change": "转入胜利主题 + 和声解决 + 独特 stinger",
+      "bpm": 120, "mode": "major"
+    },
+    "defeat": {
+      "zh": "失败",
+      "stems": { "melody": 0.3, "rhythm": 0.0, "bass": 0.25, "percussion": 0.0, "atmosphere": 0.6 },
+      "change": "抽掉节奏与打击 + 只留钢琴与房间声",
+      "bpm": 58, "mode": "minor"
+    },
+    "memory": {
+      "zh": "回忆",
+      "stems": { "melody": 0.6, "rhythm": 0.0, "bass": 0.15, "percussion": 0.0, "atmosphere": 0.45 },
+      "change": "八音盒单音 + 高混响 + 轻微走音",
+      "bpm": 62, "mode": "major"
+    }
+  },
+  "emotional_rules": [
+    { "id": "near_death", "when": "玩家资源 ≤20%", "change": "环境声 -70%，加入心跳（60→110bpm 随资源下降加速），低频 +6dB" },
+    { "id": "safe_zone", "when": "玩家进入安全区", "change": "心跳 2 秒内淡出，环境声恢复，音乐切 exploration 并降 3dB" },
+    { "id": "reveal", "when": "叙事揭示", "change": "所有 stem 静音 0.3 秒，只留一个 glass_bell，再整体淡入" },
+    { "id": "tension_ramp", "when": "危险源接近", "change": "rhythm 与 bass 增益随距离线性上升，atmosphere 反向下降" },
+    { "id": "silence_before", "when": "Boss/高潮前 1.5 秒", "change": "全部静音，制造听觉真空" }
+  ],
+  "sfx_variant_rules": {
+    "note": "同类音效必须有多变体，否则连续触发会变成机关枪",
+    "default_variants": 3,
+    "pitch_jitter_semitones": 1.5,
+    "gain_jitter_db": 2.5,
+    "min_interval_ms": 60,
+    "same_sound_cooldown_ms": 90,
+    "max_concurrent": 12,
+    "max_concurrent_per_sound": 3,
+    "distance_attenuation": { "enabled": true, "ref_distance": 400, "rolloff": 1.2, "max_distance": 1600 }
+  }
+}

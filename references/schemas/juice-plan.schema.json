@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/Hejunlong27/idea-to-game/references/schemas/juice-plan.schema.json",
+  "title": "Juice Plan — 事件到表现的映射矩阵",
+  "description": "把「游戏事件」映射到「表现效果组合」，并按事件严重度分级强度。模板 src/game/juice.ts 按本文件执行。目的是让每个事件的表现强度与其重要程度匹配，而不是所有事件都全屏闪 + 大震动。",
+  "type": "object",
+  "required": ["version", "meta", "settings", "rules"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "type": "string", "const": "3.0" },
+    "meta": {
+      "type": "object",
+      "required": ["game_title", "created", "judged_by"],
+      "additionalProperties": true,
+      "properties": {
+        "game_title": { "type": "string" },
+        "created": { "type": "string" },
+        "judged_by": { "type": "string" },
+        "creative_dna": { "type": "string" },
+        "visual_dna": { "type": "string" }
+      }
+    },
+    "settings": {
+      "type": "object",
+      "required": ["maxParticles", "shakeCap", "flashMaxPerSecond", "shakeMaxMs", "accentColor", "dangerColor"],
+      "additionalProperties": true,
+      "properties": {
+        "maxParticles": { "type": "integer", "minimum": 8, "maximum": 400 },
+        "shakeCap": { "type": "number", "minimum": 0, "maximum": 0.03 },
+        "flashMaxPerSecond": { "type": "number", "minimum": 0, "maximum": 1 },
+        "shakeMaxMs": { "type": "integer", "minimum": 0, "maximum": 300 },
+        "accentColor": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+        "dangerColor": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+        "qualityLevels": { "type": "array", "items": { "type": "string", "enum": ["high", "medium", "low"] } }
+      }
+    },
+    "rules": {
+      "type": "array", "minItems": 3,
+      "items": {
+        "type": "object",
+        "required": ["event", "severity", "tier", "effects", "why"],
+        "additionalProperties": true,
+        "properties": {
+          "event": { "type": "string", "minLength": 3 },
+          "severity": { "type": "number", "minimum": 0, "maximum": 1 },
+          "tier": { "type": "string", "enum": ["micro", "light", "medium", "heavy"] },
+          "minIntensity": { "type": "number", "minimum": 0, "maximum": 1 },
+          "effects": {
+            "type": "array", "minItems": 1, "maxItems": 6,
+            "items": {
+              "type": "object",
+              "required": ["type"],
+              "additionalProperties": true,
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": ["squash_stretch", "anticipation", "follow_through", "secondary_motion",
+                           "parallax", "particles", "environmental", "ui_motion", "camera_shake",
+                           "camera_zoom", "hit_stop", "slow_motion", "screen_flash", "transition"]
+                },
+                "scale": { "type": "number", "minimum": 0, "maximum": 2 },
+                "durationMs": { "type": "integer", "minimum": 0, "maximum": 1200 },
+                "amount": { "type": "integer", "minimum": 0, "maximum": 200 },
+                "color": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" }
+              }
+            }
+          },
+          "why": { "type": "string", "minLength": 8, "description": "为什么这个强度 —— 必须写证据，不能只写「爽」" }
+        }
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "distinct_effects": { "type": "integer" },
+        "events": { "type": "integer" },
+        "tiers_used": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

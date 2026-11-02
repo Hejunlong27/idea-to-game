@@ -1,0 +1,56 @@
+{
+  "version": "3.0",
+  "license": "CC0-1.0",
+  "source": "原创整理（情绪曲线基于公开的体验设计讨论：张力-释放、学习曲线、峰终定律）",
+  "note": "情绪节奏模式库。experience_forge.py 用它生成玩家情绪曲线与每关体验表。曲线不是固定七段，允许按品类调整，但必须给出强度数值与证据。",
+  "base_curve": [
+    { "phase": "curiosity", "zh": "好奇", "intensity": 0.35, "job": "用画面与声音给出一个未解释的异常" },
+    { "phase": "learning", "zh": "学习", "intensity": 0.45, "job": "让玩家做对一个动作并看到后果" },
+    { "phase": "mastery", "zh": "掌握", "intensity": 0.6, "job": "同一动作在新情境下复用成功" },
+    { "phase": "challenge", "zh": "挑战", "intensity": 0.8, "job": "旧解法失效，必须换策略" },
+    { "phase": "surprise", "zh": "意外", "intensity": 0.7, "job": "规则被改写，或代价以没预料的方式出现" },
+    { "phase": "climax", "zh": "高潮", "intensity": 1.0, "job": "所有机制同时生效，玩家必须做一次不可逆选择" },
+    { "phase": "satisfaction", "zh": "满足", "intensity": 0.5, "job": "给出代价的结算与一个安静的收尾" }
+  ],
+  "curve_variants": {
+    "short_session": {
+      "zh": "短局（≤3 分钟）",
+      "keep": ["curiosity", "learning", "challenge", "climax", "satisfaction"],
+      "drop": ["mastery", "surprise"],
+      "note": "短局不能有「掌握」段，否则节奏拖沓"
+    },
+    "puzzle_chain": {
+      "zh": "解谜链",
+      "keep": ["curiosity", "learning", "mastery", "surprise", "satisfaction"],
+      "drop": ["challenge", "climax"],
+      "note": "解谜的高潮是「想通」的瞬间，不是操作峰值"
+    },
+    "endless_arcade": {
+      "zh": "无尽街机",
+      "keep": ["learning", "mastery", "challenge", "climax"],
+      "drop": ["curiosity", "satisfaction"],
+      "note": "无尽模式没有收尾，情绪靠波次起伏而非单局曲线"
+    }
+  },
+  "level_experience_schema_hint": {
+    "emotion": "本关目标情绪（一个词）",
+    "learn": "玩家本关学会什么（可检验：能做到 X）",
+    "new_mechanic": "本关新引入的机制 id（无则 null）",
+    "core_decision": "本关最重要的一个选择（A好但B坏）",
+    "challenge": "主要挑战（信息/资源/操作/环境/代价 五轴之一）",
+    "feedback": "玩家如何知道自己做对了（必须具体到感官）",
+    "climax": "本关的高潮时刻",
+    "reward": "本关给予什么（能力/信息/情感，不是分数）",
+    "next_hook": "让玩家想玩下一关的东西"
+  },
+  "experience_checks": [
+    { "id": "E1", "zh": "前 10 秒可理解", "test": "不需要文字说明，玩家能在 10 秒内做出第一个正确动作" },
+    { "id": "E2", "zh": "前 30 秒有正反馈", "test": "30 秒内至少一次明确的成功反馈（音效+视觉）" },
+    { "id": "E3", "zh": "学习曲线", "test": "每关只引入 0–1 个新机制，且与已有机制咬合" },
+    { "id": "E4", "zh": "难度递进非数值", "test": "难度轴至少 2 条非数值轴（信息/资源/操作/环境/代价）" },
+    { "id": "E5", "zh": "存在意外", "test": "至少一关出现规则改写或未预告的代价" },
+    { "id": "E6", "zh": "值得记住的瞬间", "test": "至少一个 signature_moment 在实现里可定位（代码中有对应事件）" },
+    { "id": "E7", "zh": "失败有学习价值", "test": "失败界面或失败反馈能告诉玩家下次该改什么" },
+    { "id": "E8", "zh": "无意义重复", "test": "同一操作连续执行超过 3 次而无新信息即为重复劳动" }
+  ]
+}

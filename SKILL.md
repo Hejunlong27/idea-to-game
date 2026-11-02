@@ -1,6 +1,6 @@
 ---
 name: idea-to-game
-description: "将一句游戏想法或一款同款游戏名，连同美术风格参考图，自动转化为一个完整可玩、可提交到 CrazyGames / Poki / GameDistribution / Playgama / TapTap 等平台的 HTML5 小游戏。覆盖平台确认、立项策划、项目脚手架、平台 SDK 适配、玩法实现、AI 生图、切图打包图集、配乐音效、手感打磨、性能与体积审计、自动化测试、多平台打包过审共 12 个环节，并内置一名按 CrazyGames 官方审核与质量标准（作为不可放宽的硬底线）独立把关的'质量与玩法审核官'角色，未达标必须持续修改并重新送审直至通过。收到第一个指令后必须先向用户确认目标平台（并告知支持的平台清单），交付包严格按用户选定的平台产出。This skill should be used when the user wants to make a small/browser/HTML5/casual/hyper-casual game, or says 做个游戏、做个小游戏、我要做一款游戏、照《XX》做一个、开发网页游戏、上线到 CrazyGames/Poki/TapTap、make a game like XX、build an HTML5 game。Also use when the user provides an idea plus a style reference image and expects a playable game as output, or asks whether a game meets CrazyGames quality standards."
+description: "将一句游戏想法或一款同款游戏名，连同美术风格参考图，自动转化为一个完整可玩、可提交到 CrazyGames / Poki / GameDistribution / Playgama / TapTap 等平台的 HTML5 小游戏。覆盖平台确认、立项策划、项目脚手架、平台 SDK 适配、玩法实现、AI 生图、切图打包图集、配乐音效、手感打磨、性能与体积审计、自动化测试、多平台打包过审共 12 个环节，并内置一名按 CrazyGames 官方审核与质量标准（作为不可放宽的硬底线）独立把关的'质量与玩法审核官'角色与六项专项审核（创意/美术/动画/音频/体验/试玩），未达标必须持续修改并重新送审直至通过。收到第一个指令后必须先向用户确认目标平台（并告知支持的平台清单），交付包严格按用户选定的平台产出。This skill should be used when the user wants to make a small/browser/HTML5/casual/hyper-casual game, or says 做个游戏、做个小游戏、我要做一款游戏、照《XX》做一个、开发网页游戏、上线到 CrazyGames/Poki/TapTap、make a game like XX、build an HTML5 game。Also use when the user provides an idea plus a style reference image and expects a playable game as output, or asks whether a game meets CrazyGames quality standards."
 agent_created: true
 ---
 
@@ -39,6 +39,35 @@ v1 只保证「能出货」，v2 追加保证「值得玩」。**内容深度是
 | `asset_forge.py` | 美术需求 → 9 种 role 的素材规格 + 七槽位提示词 + 一致性锚 | `asset-spec.json` + `prompts/` |
 | `audio_forge.py` | 事件 → 四层音效 / YuE2 音乐 / TTS 对白三份方案 | `sfx-plan` `music-plan` `voice-plan` |
 | `richness_check.py` | 四维打分 + 声明 vs 产物交叉校验 | `richness.json` |
+
+## ⚠️ 第 0.5 件事：创意身份是根（v3）
+
+v2 解决了「值得玩」，v3 解决「有辨识度」。**根因是创意环节缺失**：
+v2 的 `content_forge.infer_genre()` 用关键词选出**唯一**品类，系统从第一步就只有一条路 ——
+后面所有环节都在为这一个设想服务，这就是换皮的机制性原因。
+
+v3 加了「发散 → 评估 → 收敛」三步，并把身份固化成**五份契约**：
+
+| 契约 | 文件 | 谁生成 | 谁必须读 |
+|---|---|---|---|
+| **Creative DNA** | `docs/01-brief/creative-dna.json` | `creative_forge --dna` | 全部下游 |
+| **Visual DNA** | `docs/02-art/visual-dna.json` | `art_director --dna` | `asset_forge`、专项审核 |
+| **Audio DNA** | `docs/05-audio/audio-dna.json` | `audio_director --plan` | `--emit-ts` → `audio-config.ts` |
+| **Juice Plan** | `docs/04-core-loop/juice-plan.json` | `juice_forge --plan` | `--emit-ts` → `juice-config.ts` |
+| **Experience Blueprint** | `docs/03-experience/experience-blueprint.json` | `experience_forge --plan` | 专项审核、试玩 |
+
+**关键：DNA 不只是文档。** `--emit-ts` 会把 Audio DNA / Juice Plan 编译成运行时配置，
+改设计 → 重跑脚本 → 游戏行为改变，不需要改代码。
+
+三条硬约束：
+
+1. **5 个方案必须在结构上真的不同** —— 用交互动词的结构指纹（spatial/time/info/resource/risk）
+   做最远点采样，任意两个方案至少 3 项不同。只有 2 项不同 = 同一交互的换皮。
+2. **新颖度是启发式相似度，不是原创性证明** —— 只回答「像哪个原型、哪里要改」，
+   禁止写成「原创度 95 分」。
+3. **未验证不算通过** —— 体验判据、音频质检、专项审核里的 UNVERIFIED 一律视为未通过。
+
+详见 `modules/01c-creative-director.md`、`references/creative-identity.md`。
 
 ## ⚠️ 第二件事：审核官在场
 
@@ -106,6 +135,14 @@ v1 只保证「能出货」，v2 追加保证「值得玩」。**内容深度是
   ↓
   ◆ 门禁 G0：用户回复平台清单（必做，绝对不可跳过）
   ↓
+[P0 创意]   modules/01c-creative-director.md
+            creative_forge --diverge    → 5 个结构不同的方向（结构距离 ≥3）
+            --twist / --evaluate        → 9 维反转 + 7 维评分 + 相似度分析
+            ★ 不允许只有一个方向就开工 —— 这是换皮的根因
+  ↓
+[P0.5 身份] creative_forge --dna        → creative-dna.json ★ 唯一身份真相源
+            --validate --strict         → schema + 9 条语义校验
+  ↓
 [P0 立项]   modules/01-brief.md         → docs/00-platforms/ + docs/01-brief/
             modules/01b-story.md        → content-blueprint.json + story.md（故事与设定）
   ↓
@@ -120,6 +157,8 @@ v1 只保证「能出货」，v2 追加保证「值得玩」。**内容深度是
   ↓
 [P1 地基]   modules/02-scaffold.md  ∥  modules/03-art-bible.md
             （只生成目标平台需要的构建配置；模板自带全部适配器）
+[P1 视觉]   modules/03b-art-director.md → 3 套混血提案 → visual-dna.json ★
+            asset_forge 真实读取 DNA（轮廓/材质/光照/镜头/比例）
   ↓
   ◆ 门禁 G2：向用户确认风格（必做）
   ↓
@@ -130,11 +169,20 @@ v1 只保证「能出货」，v2 追加保证「值得玩」。**内容深度是
             ★★ 结论非通过 → 禁止进入生图（这是全流程成本控制的核心闸）
   ↓
 [P2 生产]   05-art-forge → 06-sprite-tools  ∥  07-audio-forge
+[P2.5 音频] modules/07b-audio-director.md → audio-dna.json + stem 分层 + 波形质检
+  ↓
+[P3 表现]   modules/05b-animation-forge.md → juice-plan.json（事件 → 14 类效果）
+            modules/08b-game-juice.md      → events.ts / juice.ts 接线
+[P3 体验]   modules/08c-experience-designer.md → 情绪曲线 + E1–E8
   ↓
 [P3 打磨]   modules/08-polish.md → modules/09-perf-audit.md
             （逐平台审计；不达标自动回退压缩，最多 3 次）
   ↓
 [P4 测试]   modules/10-qa.md            → docs/07-qa/report.html + 试玩链接
+            modules/10b-playtest-agent.md → 4 策略真玩 → playtest-report.html
+  ↓
+[R2 前]     modules/12b-art-review.md   → 六项专项审核（38 条实测证据）
+            ★ 一票否决：verdict-specialist 非 PASS 时 ship 被阻断
   ↓
 [R2 终审]   modules/12-review.md        → docs/09-review/verdict-r2.json
             ★ A–H 八维度全量判定，REQ 必须全 PASS
@@ -181,19 +229,27 @@ v1 只保证「能出货」，v2 追加保证「值得玩」。**内容深度是
 | 编排 | `references/pipeline.md` | 阶段定义、门禁规则、回退策略、并行关系 | — |
 | **P-1** | **`modules/00-platforms.md`** | **确认目标平台（G0）、定体积预算、写平台计划** | `docs/00-platforms/platform-plan.md` |
 | P0 | `modules/01-brief.md` | idea → 一页 GDD + 范围边界 + 素材清单 | `docs/01-brief/` |
-| **P0** | **`modules/01b-story.md`** | **故事与设定：世界观/三幕/主角弧光/每关 logline/对白** | **`docs/01-brief/content-blueprint.json`、`story.md`** |
+| **P0** | **`modules/01c-creative-director.md`** | **创意发散（≥5 个结构不同的方向）→ 反转 → 7 维评分 → 收敛成 DNA** | **`creative-concepts.json`、`creative-dna.json`、`creative-review.md`** |
+| P0 | `modules/01b-story.md` | 故事与设定：世界观/三幕/主角弧光/每关 logline/对白 | `docs/01-brief/content-blueprint.json`、`story.md` |
 | **R0** | **`modules/12-review.md`** | **审核官介入①：规划预审（可审性 + 合规初筛）** | `docs/09-review/r0-plan-review.md` |
 | **RC** | **`scripts/richness_check.py`** | **丰富度门禁：四维打分 + 声明 vs 产物交叉校验（v2 新增）** | `docs/09-review/richness.json` |
 | P1 | `modules/02-scaffold.md` | 项目骨架 + 平台适配层 + 目标平台构建脚本 + **单文件版与启动看门狗** | `src/`、`package.json` |
 | P1 | `modules/03-art-bible.md` | 参考图 → 色板 + 风格规范 + 提示词模板 | `docs/02-art/` |
+| **P1** | **`modules/03b-art-director.md`** | **三套混血风格提案 → Visual DNA（轮廓/材质/光照/镜头/UI/比例/动画/FX）+ 角色一致性** | **`visual-dna.json`、`style-proposals.json`、`consistency-plan.json`** |
 | P2 | `modules/04-core-loop.md` | 灰盒玩法主循环实现 | `src/game/` |
 | **R1** | **`modules/12-review.md`** | **审核官介入②：灰盒预审（A 玩法 / B 核心循环 / C 操作引导）—— 不通过禁止生图** | `docs/09-review/r1-graybox-review.md` |
 | P2 | `modules/05-art-forge.md` | **`asset_forge` 出规格与提示词** → 按 Art Bible 生图（ComfyUI / RunningHub / 占位） | `asset-spec.json` + `assets/raw/` |
 | P2 | `modules/06-sprite-tools.md` | 切图 / 抠图 / 裁剪 / 图集打包 | `assets/processed/`、`assets/atlas/` |
 | P2 | `modules/07-audio-forge.md` | **`audio_forge` 三层方案** → 合成音效 / YuE2 音乐 / TTS 对白 | `docs/05-audio/` + `assets/audio/` |
+| **P2.5** | **`modules/07b-audio-director.md`** | **自适应音乐（stem 分层）+ 动态音效规则 + 情绪声设计 + 波形质检** | **`audio-dna.json`、`audio-qc.json`、`audio-config.ts`** |
+| **P3** | **`modules/05b-animation-forge.md`** | **表现矩阵：事件 → 14 类效果，按严重度分级** | **`juice-plan.json`、`juice-config.ts`** |
+| **P3** | **`modules/08b-game-juice.md`** | **表现引擎实现说明（事件总线 + JuiceDirector 接线）** | 优化后的 `src/` |
+| **P3** | **`modules/08c-experience-designer.md`** | **情绪曲线 + 每关体验表 + E1–E8 可验证判据** | **`experience-blueprint.json`** |
 | P3 | `modules/08-polish.md` | 手感 juice + UI 接线 + 难度曲线 + 存档 | 优化后的 `src/` |
 | P3 | `modules/09-perf-audit.md` | 逐平台体积 / 帧率 / 内存审计 | `docs/06-perf/report.md` |
 | P4 | `modules/10-qa.md` | 自动化走查 + **file:// 启动行为回归** + 试玩链接 | `docs/07-qa/report.html` |
+| **P4** | **`modules/10b-playtest-agent.md`** | **真实操作试玩（4 策略）+ 卡死/反馈/重复率检测** | **`playtest.json`、`playtest-report.html`** |
+| **R2 前** | **`modules/12b-art-review.md`** | **六项专项审核（创意/美术/动画/音频/体验/试玩），每条带实测证据** | **`verdict-specialist.json`、`specialist-report.md`** |
 | **R2** | **`modules/12-review.md`** | **审核官介入③：终审（A–H 八维度全量，REQ 必须全 PASS）—— 一票否决** | `docs/09-review/verdict-r2.json` |
 | P4 | `modules/11-ship.md` | 按选定平台打包 + 过审自检 + **CrazyGames 标准结论** | `dist/<平台>.zip`、`docs/08-ship/` |
 
@@ -417,5 +473,19 @@ python <skill>/scripts/gate_check.py --project <project> --stage ship
 | **`scripts/asset_forge.py`** | **素材生成器：9 种 role + 一致性锚 + 提示词 lint** | P1 定风格后、生图前 |
 | **`scripts/audio_forge.py`** | **音频设计：三层方案 + YuE2/TTS 调用清单 + 通道探测** | P2 音频前 |
 | **`scripts/style_lib.py`** | **画风预设：list / show / apply（写入 palette.json）** | P1 定风格时 |
+| **`scripts/creative_forge.py`** | **创意：发散 / 反转 / 7 维评分 / 相似度 / DNA 生成与校验** | P0、P0.5 |
+| **`scripts/art_director.py`** | **美术：3 套混血提案 / Visual DNA / 一致性计划 / 对比度校验** | P1 |
+| **`scripts/audio_director.py`** | **音频：自适应音乐 / 动态音效 / 波形质检 / 生成 audio-config.ts** | P2.5 |
+| **`scripts/gen_stems.py`** | **程序化合成 5 条无缝 stem（无外部音乐服务时的降级通道）** | P2.5 |
+| **`scripts/juice_forge.py`** | **表现矩阵：事件 → 14 类效果 / 硬上限校验 / 生成 juice-config.ts** | P3 |
+| **`scripts/experience_forge.py`** | **体验：情绪曲线 / 每关 10 项 / E1–E8 程序化验证** | P3 |
+| **`scripts/specialist_review.py`** | **六项专项审核（创意/美术/动画/音频/体验/试玩），每条带实测证据** | R2 前 |
+| **`scripts/schema_check.py`** | **JSON Schema 校验器（零依赖）+ `--all` 校验项目内全部契约** | 任意阶段 |
+| **`scripts/playtest.py`** | **起服务 + 跑浏览器试玩 + 出 HTML 报告** | P4 |
+| **`references/schemas/`** | **5 份身份契约 schema（creative / visual / audio / juice / experience）** | 任意阶段 |
+| **`references/game-event-schema.md`** | **统一事件契约：结构、标准事件、六条硬规则、反模式** | 接事件系统时 |
+| **`references/audio-emotion-design.md`** | **音频情绪设计：stem 分层、状态配比、变体规则、质检阈值** | P2.5 |
+| **`references/creative-identity.md`** | **创意身份判据：7 维评分、相似度方法与其局限** | P0、每次创意评审 |
+| **`tests/`** | **49 个 pytest（schema / 状态机 / 契约 / 创意 / 端到端）** | 改任何脚本前后 |
 | **`scripts/ship_pack.py`** | **一键构建 + 审计 + 自检 + 打 zip + 商店素材 + 自检清单** | P4 交付时 |
 | `assets/template/` | Phaser 3.90 + Vite + 5 平台适配层模板 | P1 建项目时复制 |

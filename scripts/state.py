@@ -19,8 +19,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _common import (  # noqa: E402
     GATED_STAGES,
     PLATFORM_KEYS,
+    STAGE_MODULES,
     STAGES,
     STATUSES,
+    V3_STAGES,
     load_state,
     ok,
     project_dir,
@@ -71,7 +73,8 @@ def cmd_show(proj: Path) -> int:
             extra.append(f"retries={info['retries']}")
         if info.get("note"):
             extra.append(info["note"])
-        print(f"{MARK.get(status, '[?]')} {s:<14} {status:<12} {' '.join(extra)}")
+        tag = "v3" if s in V3_STAGES else "  "
+        print(f"{MARK.get(status, '[?]')} {tag} {s:<18} {status:<12} {' '.join(extra)}")
     print("-" * 64)
     print(f"档位: {d.get('tier') or '未评估'}")
     if d.get("platform_notes"):
@@ -164,8 +167,9 @@ def cmd_next(proj: Path) -> int:
             print(f"下一个动作：{s} —— 完成后需要人工门禁 {GATED_STAGES[s]}")
             return 0
         print(f"下一个动作：{s}（当前 {status}）")
-        idx = STAGES.index(s) + 1
-        print(f"读模块：modules/{idx:02d}-*.md")
+        mod = STAGE_MODULES.get(s)
+        if mod:
+            print(f"读模块：{mod}")
         return 0
     print("全部阶段已完成。可执行 ship 阶段产出最终交付包。")
     return 0
