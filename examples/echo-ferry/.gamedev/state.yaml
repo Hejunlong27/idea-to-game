@@ -1,0 +1,75 @@
+project:
+  name: echo-ferry
+  idea: 在雾海上摆渡灵魂：你看不见东西，只能发出声音听回声；每次发声都会被黑暗里的东西听见
+  style_ref: ''
+  genre: puzzle
+  created: '2026-11-01T17:01:33+08:00'
+stages:
+  brief:
+    status: done
+  content:
+    status: done
+  review_plan:
+    status: skipped
+    note: R0 未执行：本作是 Showcase，立项审核由人工（boss）口头确认；正式项目必须补
+  review_richness:
+    status: done
+  scaffold:
+    status: done
+  art_bible:
+    status: done
+  core_loop:
+    status: done
+  review_graybox:
+    status: skipped
+    note: R1 未执行：同上
+  art_forge:
+    status: done
+    note: provider=comfyui，1 项
+  sprite_tools:
+    status: skipped
+    note: 不适用：无位图素材，不需要切图/图集
+  audio_forge:
+    status: done
+  polish:
+    status: done
+  perf_audit:
+    status: done
+  qa:
+    status: done
+    playtest: true
+    errors: 0
+    repetition_ratio: 0.12
+  review_final:
+    status: skipped
+    note: R2 未执行：本作不提交平台，仅作能力验证
+  ship:
+    status: skipped
+    note: 未交付：不提交 CrazyGames，只产出可试玩构建
+  review_specialist:
+    status: done
+    verdict: PASS
+    pass: 38
+    fail: 0
+    unverified: 0
+  creative:
+    status: done
+  creative_dna:
+    status: done
+  visual_dna:
+    status: done
+  audio_director:
+    status: done
+  juice:
+    status: done
+  experience:
+    status: done
+  playtest:
+    status: done
+delivery:
+  tier: L2（可交付档：玩法完整、音频动画到位、自动化测试通过；未走 R2 终审）
+  platform_confirmed: true
+  platforms:
+  - crazygames
+  platform_notes:
+    crazygames: 实测 2.87MB，未提交

@@ -1,0 +1,223 @@
+{
+  "_meta": {
+    "version": "3.0",
+    "idea": "在雾海上摆渡灵魂：你看不见东西，只能发出声音听回声；每次发声都会被黑暗里的东西听见",
+    "genre": "puzzle",
+    "genre_label": "解谜",
+    "tones": ["melancholy", "tense"],
+    "created": "2026-11-01T17:40:00+08:00",
+    "judged_by": "references/content-depth.md",
+    "filled_by": "Agent（骨架来自 content_forge.py，内容按 creative-dna.json 精修）",
+    "creative_dna": "docs/01-brief/creative-dna.json"
+  },
+  "world": {
+    "logline": "雾海上没有方向，只有回声；你敲一次钟，世界亮一瞬，而黑暗也听见了你。",
+    "setting": "一座只剩一盏灯的渡口，一片吞掉光却吞不掉声音的海。",
+    "theme": "记住的代价，是不敢再确认。",
+    "rules": [
+      "这个世界的黑暗会吞掉光，却吞不掉声音。",
+      "任何发出声音的东西，都会被黑暗里的东西听见并朝它走来。",
+      "记忆只有在被用来确认世界时才会消耗，一旦用完就无法恢复。",
+      "灵魂不能自己上岸，必须被摆渡。"
+    ],
+    "visual_motifs": ["纸纤维的水面", "一圈扩散的水纹", "船头将熄的灯", "残影褪成黑的过程"],
+    "palette_hint": ["#08121C", "#1B3A4B", "#F2C14A", "#C6463C"]
+  },
+  "story": {
+    "frame": "guard_lose",
+    "frame_name": "守护与失去",
+    "frame_why": "把「守住某样东西」和「为此失去另一样东西」绑在同一动作上，天然产生取舍",
+    "protagonist": {
+      "name": "摆渡人",
+      "role": "雾海上最后一个还敢发声的人",
+      "want": "把每一个漂在海上的灵魂都送上岸",
+      "need": "承认自己不可能记住所有人，学会在黑暗里放手",
+      "flaw": "他相信只要看得足够清楚就不会失去任何人",
+      "arc": "从「靠光确认一切」到「在无光中凭声音做决定」"
+    },
+    "antagonist": {
+      "name": "雾里的东西",
+      "role": "被声音吸引的黑暗",
+      "pressure": "它们不攻击，只是朝你走来；你越确认世界，它们越近"
+    },
+    "acts": [
+      {
+        "act": 1,
+        "name": "第一片海",
+        "goal": "学会敲钟与读回声",
+        "turn": "发现影子会动 —— 残影是旧的",
+        "levels": [1]
+      },
+      {
+        "act": 2,
+        "name": "残影会骗人",
+        "goal": "学会用两次回声的差判断移动",
+        "turn": "按残影划过去，那里什么都没有",
+        "levels": [2]
+      },
+      {
+        "act": 3,
+        "name": "最后一格记忆",
+        "goal": "在完全没有地图的情况下靠岸",
+        "turn": "记忆归零，整片海熄灭，只能听见桨声",
+        "levels": [3]
+      }
+    ],
+    "ending_beats": [
+      "三盏灯都亮起，海面安静下来，摆渡人第一次没有敲钟就靠了岸。",
+      "他的记忆空了，但他记得该怎么听 —— 代价是他再也想不起那些人的名字。"
+    ],
+    "dialogue": [
+      { "speaker": "旁白", "line": "雾里没有方向，只有回声。", "cue": "lv1_start", "emotion": "calm" },
+      { "speaker": "旁白", "line": "敲一下钟，水面会亮。", "cue": "lv1_start", "emotion": "calm" },
+      { "speaker": "灵魂", "line": "……我在这里。", "cue": "lv1_start", "emotion": "weak" },
+      { "speaker": "旁白", "line": "它朝你的声音走过来了。", "cue": "lv1_twist", "emotion": "uneasy" },
+      { "speaker": "灵魂", "line": "你听见我了吗？", "cue": "lv1_end", "emotion": "hope" },
+      { "speaker": "旁白", "line": "亮过的地方会留下影子。", "cue": "lv2_start", "emotion": "calm" },
+      { "speaker": "旁白", "line": "可影子是「刚才」的位置。", "cue": "lv2_start", "emotion": "uneasy" },
+      { "speaker": "灵魂", "line": "别看影子，听我。", "cue": "lv2_twist", "emotion": "urgent" },
+      { "speaker": "旁白", "line": "你按影子划过去，那里什么都没有。", "cue": "lv2_twist", "emotion": "cold" },
+      { "speaker": "旁白", "line": "记忆不会自己回来了。", "cue": "lv3_start", "emotion": "heavy" },
+      { "speaker": "灵魂", "line": "把最后一格留给你自己吧。", "cue": "lv3_twist", "emotion": "gentle" },
+      { "speaker": "旁白", "line": "整片海同时暗了下去。", "cue": "lv3_twist", "emotion": "void" },
+      { "speaker": "旁白", "line": "你听见左前方三格处有桨声。", "cue": "lv3_end", "emotion": "quiet" },
+      { "speaker": "旁白", "line": "三盏灯都亮了。", "cue": "win", "emotion": "release" },
+      { "speaker": "旁白", "line": "你什么都没记住，除了怎么听。", "cue": "lose", "emotion": "resigned" }
+    ]
+  },
+  "mechanics": {
+    "core_verb": "listen_locate",
+    "core": [
+      {
+        "id": "listen_locate_audio_gated",
+        "name_zh": "回声残影",
+        "role": "core",
+        "why_fun": "你借来的视野会过期，所以每一次「看清」都在制造下一次的不确定",
+        "interacts": ["echo_exposure", "memory_budget", "ghost_drift"],
+        "unlock_level": 1
+      },
+      {
+        "id": "echo_exposure",
+        "name_zh": "回声暴露",
+        "role": "core",
+        "why_fun": "信息和风险是同一个动作，玩家第一次敲钟就会学到这件事",
+        "interacts": ["listen_locate_audio_gated", "hold_breath"],
+        "unlock_level": 1
+      },
+      {
+        "id": "memory_budget",
+        "name_zh": "记忆格",
+        "role": "core",
+        "why_fun": "把「确认世界」变成可耗尽的资源，玩家会开始省着看",
+        "interacts": ["listen_locate_audio_gated", "ghost_drift"],
+        "unlock_level": 1
+      }
+    ],
+    "twists": [
+      {
+        "id": "ghost_drift",
+        "name_zh": "残影漂移",
+        "why_fun": "地图本身在骗你，玩家必须用两次回声的差来推断，而不是记住一张图",
+        "changes_decision": "原本会「记住路线照走」，现在必须「每次重新验证」",
+        "interacts": ["listen_locate_audio_gated", "memory_budget"],
+        "unlock_level": 2
+      },
+      {
+        "id": "hold_breath",
+        "name_zh": "屏息",
+        "why_fun": "不发声就不被听见，但也完全看不见 —— 安全的代价是盲目",
+        "changes_decision": "危险时可以选「不动不出声」而不是「跑」",
+        "interacts": ["echo_exposure", "listen_locate_audio_gated"],
+        "unlock_level": 2
+      },
+      {
+        "id": "soul_delivery",
+        "name_zh": "摆渡结算",
+        "why_fun": "奖励同时提高风险：多送一个灵魂，黑暗就更愿意朝声音走",
+        "changes_decision": "要不要为了多送一个而把难度推高",
+        "interacts": ["memory_budget", "echo_exposure"],
+        "unlock_level": 1
+      }
+    ],
+    "progression_axis": [
+      "信息可见度：全显示 → 残影会过期 → 记忆归零后完全无地图",
+      "资源充裕度：5 格记忆会回复 → 4 格缓慢回复 → 3 格不再回复",
+      "失败代价：受击后幽影被甩远 → 甩得越来越近 → 最后一关不再甩远"
+    ],
+    "rule_twist": {
+      "level": 3,
+      "what": "记忆不再自动回复 —— 第三关把「记忆是可再生资源」这条隐含规则改写成「一次性资源」"
+    }
+  },
+  "levels": [
+    {
+      "level": 1,
+      "new": ["回声残影", "回声暴露", "记忆格"],
+      "logline": "第一次敲钟，海面亮起，你看见三个影子。",
+      "decision": "现在敲钟确认方向，还是凭上一次的回声赌一把",
+      "target": "把 1 个灵魂送上岸"
+    },
+    {
+      "level": 2,
+      "new": ["残影漂移", "屏息"],
+      "logline": "你按残影划过去，那里什么都没有。",
+      "decision": "省下记忆慢慢摸，还是敲一次钟换一个确切答案",
+      "target": "把 2 个灵魂送上岸"
+    },
+    {
+      "level": 3,
+      "new": [],
+      "logline": "记忆不会自己回来了。",
+      "decision": "把最后一格记忆留给落水者，还是留给自己靠岸",
+      "target": "把 2 个灵魂送上岸，且必须用掉最后一格记忆"
+    }
+  ],
+  "art": {
+    "style_key": "vdna:watercolor+lowpoly_3d",
+    "perspective": "俯视 45° 斜角，相机固定",
+    "lighting": "平光，唯一光源是船头灯，光源之外直接压成纯色",
+    "ui_language": "线框 + 单一暖色高亮，圆角 0，描边 2px",
+    "roles_required": ["character", "prop", "tile", "bg", "ui", "fx", "keyart"],
+    "hero_consistency_key": "C1-hero-回声摆渡",
+    "seed": 625110056
+  },
+  "audio": {
+    "mood_arc": ["exploration", "danger", "critical", "victory"],
+    "sfx_events": [
+      { "id": "ui_click", "layer": "ui", "cue": "menu_button", "desc": "按钮点击" },
+      { "id": "ui_confirm", "layer": "ui", "cue": "menu_confirm", "desc": "确认" },
+      { "id": "ui_back", "layer": "ui", "cue": "menu_back", "desc": "返回" },
+      { "id": "ui_hover", "layer": "ui", "cue": "menu_hover", "desc": "悬停" },
+      { "id": "gameplay_move", "layer": "gameplay", "cue": "move", "desc": "划船" },
+      { "id": "gameplay_cast", "layer": "gameplay", "cue": "ping", "desc": "敲钟" },
+      { "id": "gameplay_block", "layer": "gameplay", "cue": "blocked", "desc": "撞到礁石" },
+      { "id": "gameplay_action", "layer": "gameplay", "cue": "main_action", "desc": "主要动作" },
+      { "id": "gameplay_place", "layer": "gameplay", "cue": "place_object", "desc": "放下灵魂" },
+      { "id": "gameplay_action_b", "layer": "gameplay", "cue": "alt_action", "desc": "次要动作" },
+      { "id": "feedback_score", "layer": "feedback", "cue": "score", "desc": "接到灵魂" },
+      { "id": "feedback_levelup", "layer": "feedback", "cue": "levelup", "desc": "送达灵魂" },
+      { "id": "feedback_hurt", "layer": "feedback", "cue": "hurt", "desc": "被抓住" },
+      { "id": "feedback_win", "layer": "feedback", "cue": "victory", "desc": "过关" },
+      { "id": "feedback_defeat", "layer": "feedback", "cue": "defeat", "desc": "沉下去" },
+      { "id": "feedback_boss", "layer": "feedback", "cue": "boss", "desc": "记忆归零" },
+      { "id": "feedback_event", "layer": "feedback", "cue": "reveal", "desc": "叙事揭示" },
+      { "id": "feedback_combo", "layer": "feedback", "cue": "combo_up", "desc": "连续送达" },
+      { "id": "ambience_wind", "layer": "ambience", "cue": "ambient", "desc": "雾风" },
+      { "id": "ambience_water", "layer": "ambience", "cue": "ambient", "desc": "水声" },
+      { "id": "ambience_hum", "layer": "ambience", "cue": "ambient", "desc": "船体低鸣" }
+    ],
+    "music_cues": [
+      { "id": "exploration", "mood": "exploration", "when": "默认状态" },
+      { "id": "danger", "mood": "danger", "when": "威胁进入 3 格内" },
+      { "id": "critical", "mood": "critical", "when": "记忆 ≤1 或船体 ≤1" },
+      { "id": "victory", "mood": "victory", "when": "过关" }
+    ],
+    "voice": { "enabled": false, "reason": "TTS 通道未配置（.gamedev/audio.yaml 的 tts.endpoint 为空）；本作对白以字幕呈现", "voices": {} }
+  },
+  "exceptions": [
+    {
+      "code": "X3",
+      "reason": "本作美术为程序化矢量绘制（原创、非 AI 生图），不产出 assets/processed/*.png；X3 的「声明 vs 磁盘文件」比对不适用"
+    }
+  ]
+}

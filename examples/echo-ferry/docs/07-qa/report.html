@@ -1,0 +1,16 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
+<title>QA 报告</title><style>
+body{font-family:system-ui,sans-serif;max-width:900px;margin:0 auto;padding:24px;background:#0f1218;color:#e6e9f0}
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:12px}
+th,td{border:1px solid #2a3140;padding:8px;text-align:left}th{background:#1a2030}
+.ok{color:#46d17f}.bad{color:#ff6b5a}.sub{color:#8b93a8;font-size:13px}
+img{max-width:100%;border:1px solid #2a3140;border-radius:6px;margin-top:10px}
+</style></head><body>
+<h1>QA 报告 <span class="ok">PASS</span></h1>
+<div class="sub">2026-11-01T14:58:35.044Z　http://127.0.0.1:5199/index.html　帧率基线 125</div>
+<table><thead><tr><th>检查项</th><th>结果</th><th>详情</th></tr></thead><tbody>
+<tr><td>boot 完成</td><td class="ok">PASS</td><td></td></tr><tr><td>canvas 存在且尺寸合理</td><td class="ok">PASS</td><td>{"w":720,"h":1280,"cw":405,"ch":720}</td></tr><tr><td>__gameState 可读（进入玩法后）</td><td class="ok">PASS</td><td>phase,level,hull,memory,carried,delivered,soulsTotal,player,ghosts,revealed,audio,juice</td></tr><tr><td>操作后状态发生变化</td><td class="ok">PASS</td><td>{"phase":"play","level":1,"hull":3,"memory":4,"carried":0,"delivered":0,"soulsTotal":1,"player":{"c":1,"r":7},"ghosts":4,"revealed":true,"audio":{"state":"explo</td></tr><tr><td>事件系统有输出</td><td class="ok">PASS</td><td>4 条</td></tr><tr><td>帧率（无 GPU，跳过判定）</td><td class="ok">PASS</td><td>游戏 45 FPS / 基线 125 FPS　renderer=ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)　→ 必须在真机复测</td></tr><tr><td>移动端无横向溢出</td><td class="ok">PASS</td><td></td></tr><tr><td>移动端无纵向溢出</td><td class="ok">PASS</td><td></td></tr><tr><td>禁用文本选择（CrazyGames 要求）</td><td class="ok">PASS</td><td>none</td></tr><tr><td>移动端 canvas 有尺寸</td><td class="ok">PASS</td><td>{"w":390,"h":693}</td></tr><tr><td>零 pageerror / console.error</td><td class="ok">PASS</td><td></td></tr><tr><td>无资源 404</td><td class="ok">PASS</td><td></td></tr>
+</tbody></table>
+
+<h3>截图</h3><img src="screenshots/qa-desktop.png" alt="desktop">
+</body></html>

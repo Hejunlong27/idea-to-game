@@ -1,0 +1,169 @@
+{
+  "files": 33,
+  "errors": [],
+  "warnings": [
+    {
+      "file": "bg_2.txt",
+      "level": "WARN",
+      "code": "GENERIC_SUBJECT",
+      "msg": "asset-spec 的 subject 为空，提示词只是 id 兜底 → 出图内容不可控，必须填写"
+    },
+    {
+      "file": "bg_3.txt",
+      "level": "WARN",
+      "code": "GENERIC_SUBJECT",
+      "msg": "asset-spec 的 subject 为空，提示词只是 id 兜底 → 出图内容不可控，必须填写"
+    },
+    {
+      "file": "character_1.txt",
+      "level": "WARN",
+      "code": "GENERIC_SUBJECT",
+      "msg": "asset-spec 的 subject 为空，提示词只是 id 兜底 → 出图内容不可控，必须填写"
+    },
+    {
+      "file": "fx_2.txt",
+      "level": "WARN",
+      "code": "GENERIC_SUBJECT",
+      "msg": "asset-spec 的 subject 为空，提示词只是 id 兜底 → 出图内容不可控，必须填写"
+    },
+    {
+      "file": "fx_3.txt",
+      "level": "WARN",
+      "code": "GENERIC_SUBJECT",
+      "msg": "asset-spec 的 subject 为空，提示词只是 id 兜底 → 出图内容不可控，必须填写"
+    },
+    {
+      "file": "fx_4.txt",
+      "level": "WARN",
+      "code": "GENERIC_SUBJECT",
+      "msg": "asset-spec 的 subject 为空，提示词只是 id 兜底 → 出图内容不可控，必须填写"
+    },
+    {
+      "file": "hero.txt",
+      "level": "WARN",
+      "code": "TOO_LONG",
+      "msg": "144 词，过长会稀释主体"
+    },
+    {
+      "file": "hero_back.txt",
+      "level": "WARN",
+      "code": "TOO_LONG",
+      "msg": "151 词，过长会稀释主体"
+    },
+    {
+      "file": "hero_back.txt",
+      "level": "WARN",
+      "code": "NO_VIEW",
+      "msg": "缺视角槽位（建议含「full body standing upright」）"
+    },
+    {
+      "file": "hero_side.txt",
+      "level": "WARN",
+      "code": "TOO_LONG",
+      "msg": "151 词，过长会稀释主体"
+    },
+    {
+      "file": "hero_side.txt",
+      "level": "WARN",
+      "code": "NO_VIEW",
+      "msg": "缺视角槽位（建议含「full body standing upright」）"
+    },
+    {
+      "file": "keyart_1.txt",
+      "level": "WARN",
+      "code": "GENERIC_SUBJECT",
+      "msg": "asset-spec 的 subject 为空，提示词只是 id 兜底 → 出图内容不可控，必须填写"
+    },
+    {
+      "file": "motif_2.txt",
+      "level": "WARN",
+      "code": "GENERIC_SUBJECT",
+      "msg": "asset-spec 的 subject 为空，提示词只是 id 兜底 → 出图内容不可控，必须填写"
+    },
+    {
+      "file": "motif_3.txt",
+      "level": "WARN",
+      "code": "GENERIC_SUBJECT",
+      "msg": "asset-spec 的 subject 为空，提示词只是 id 兜底 → 出图内容不可控，必须填写"
+    },
+    {
+      "file": "motif_4.txt",
+      "level": "WARN",
+      "code": "GENERIC_SUBJECT",
+      "msg": "asset-spec 的 subject 为空，提示词只是 id 兜底 → 出图内容不可控，必须填写"
+    },
+    {
+      "file": "prop_4.txt",
+      "level": "WARN",
+      "code": "GENERIC_SUBJECT",
+      "msg": "asset-spec 的 subject 为空，提示词只是 id 兜底 → 出图内容不可控，必须填写"
+    },
+    {
+      "file": "tile_2.txt",
+      "level": "WARN",
+      "code": "GENERIC_SUBJECT",
+      "msg": "asset-spec 的 subject 为空，提示词只是 id 兜底 → 出图内容不可控，必须填写"
+    },
+    {
+      "file": "tile_3.txt",
+      "level": "WARN",
+      "code": "GENERIC_SUBJECT",
+      "msg": "asset-spec 的 subject 为空，提示词只是 id 兜底 → 出图内容不可控，必须填写"
+    },
+    {
+      "file": "tile_4.txt",
+      "level": "WARN",
+      "code": "GENERIC_SUBJECT",
+      "msg": "asset-spec 的 subject 为空，提示词只是 id 兜底 → 出图内容不可控，必须填写"
+    },
+    {
+      "file": "tile_5.txt",
+      "level": "WARN",
+      "code": "GENERIC_SUBJECT",
+      "msg": "asset-spec 的 subject 为空，提示词只是 id 兜底 → 出图内容不可控，必须填写"
+    },
+    {
+      "file": "tile_6.txt",
+      "level": "WARN",
+      "code": "GENERIC_SUBJECT",
+      "msg": "asset-spec 的 subject 为空，提示词只是 id 兜底 → 出图内容不可控，必须填写"
+    },
+    {
+      "file": "ui_2.txt",
+      "level": "WARN",
+      "code": "GENERIC_SUBJECT",
+      "msg": "asset-spec 的 subject 为空，提示词只是 id 兜底 → 出图内容不可控，必须填写"
+    },
+    {
+      "file": "ui_3.txt",
+      "level": "WARN",
+      "code": "GENERIC_SUBJECT",
+      "msg": "asset-spec 的 subject 为空，提示词只是 id 兜底 → 出图内容不可控，必须填写"
+    },
+    {
+      "file": "ui_4.txt",
+      "level": "WARN",
+      "code": "GENERIC_SUBJECT",
+      "msg": "asset-spec 的 subject 为空，提示词只是 id 兜底 → 出图内容不可控，必须填写"
+    },
+    {
+      "file": "ui_5.txt",
+      "level": "WARN",
+      "code": "GENERIC_SUBJECT",
+      "msg": "asset-spec 的 subject 为空，提示词只是 id 兜底 → 出图内容不可控，必须填写"
+    },
+    {
+      "file": "ui_6.txt",
+      "level": "WARN",
+      "code": "GENERIC_SUBJECT",
+      "msg": "asset-spec 的 subject 为空，提示词只是 id 兜底 → 出图内容不可控，必须填写"
+    },
+    {
+      "file": "villain.txt",
+      "level": "WARN",
+      "code": "TOO_LONG",
+      "msg": "143 词，过长会稀释主体"
+    }
+  ],
+  "ok": true
+}

@@ -1,0 +1,69 @@
+{
+  "review": "animation",
+  "zh": "动画与表现审核",
+  "generated_at": "2026-11-01T23:08:26+08:00",
+  "verdict": "PASS",
+  "summary": {
+    "PASS": 8,
+    "FAIL": 0,
+    "UNVERIFIED": 0
+  },
+  "checks": [
+    {
+      "code": "N1",
+      "title": "表现矩阵通过 schema",
+      "result": "PASS",
+      "evidence": "0 个错误",
+      "fix": ""
+    },
+    {
+      "code": "N2",
+      "title": "效果类型覆盖（≥8 类）",
+      "result": "PASS",
+      "evidence": "9 类：camera_shake, camera_zoom, environmental, hit_stop, particles, screen_flash, slow_motion, squash_stretch, ui_motion",
+      "fix": "只靠震动/粒子/形变等于把 v2 的做法包了一层"
+    },
+    {
+      "code": "N3",
+      "title": "表现强度按事件分级（不是全同一套）",
+      "result": "PASS",
+      "evidence": "21 条规则产生 13 种不同效果组合",
+      "fix": "按 severity 分档：micro/light/medium/heavy"
+    },
+    {
+      "code": "N4",
+      "title": "无障碍硬上限（闪屏 ≤1/s、震动 ≤300ms）",
+      "result": "PASS",
+      "evidence": "flashMaxPerSecond=1，shakeMaxMs=300",
+      "fix": "光敏性癫痫与晕动的硬上限，不可配置放宽"
+    },
+    {
+      "code": "N5",
+      "title": "表现引擎真实接入（不是只有配置）",
+      "result": "PASS",
+      "evidence": "源码实例化 JuiceDirector 并在 update 中调用",
+      "fix": "在场景里 new JuiceDirector 并 attach，事件才会驱动表现"
+    },
+    {
+      "code": "N6",
+      "title": "减少动态效果的无障碍支持",
+      "result": "PASS",
+      "evidence": "检测 prefers-reduced-motion 并关闭震动/闪屏",
+      "fix": "加 matchMedia('(prefers-reduced-motion: reduce)') 判断"
+    },
+    {
+      "code": "N7",
+      "title": "场景切换时清理（避免对象泄漏）",
+      "result": "PASS",
+      "evidence": "SHUTDOWN 时调用 destroy",
+      "fix": "在 SHUTDOWN 里 destroy juice/audio/bus"
+    },
+    {
+      "code": "N8",
+      "title": "动画不影响玩法确定性（只冻结表现）",
+      "result": "PASS",
+      "evidence": "只缩放 tweens.timeScale，update 的逻辑步长未变",
+      "fix": ""
+    }
+  ]
+}

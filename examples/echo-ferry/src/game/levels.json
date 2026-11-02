@@ -1,0 +1,235 @@
+{
+  "version": "1.0",
+  "note": "关卡唯一真相源：TS 直接 import，Python 的 richness_check / experience_forge 读同一份。所有数值改动只改这里。",
+  "levels": [
+    {
+      "level": 1,
+      "name": "第一片海",
+      "souls": 1,
+      "wraiths": 2,
+      "rocks": 5,
+      "memoryMax": 5,
+      "memoryRegenMs": 11000,
+      "revealMs": 1400,
+      "ghostLifeMs": 10000,
+      "wraithStepMs": 3200,
+      "hint": "按 空格 敲钟：水面会亮，影子的位置会被记住",
+      "learn": "能做到：敲一次钟，读出声源方向并划过去",
+      "decision": "现在敲钟确认方向，还是凭上一次的回声赌一把",
+      "challenge": "information",
+      "feedback": "钟响后水纹扩散 + 三个影子的方位音",
+      "climax": "第一次看见影子在动",
+      "reward": "岸边亮起第一盏灯",
+      "next_hook": "下一片海里，影子会开始动得更快",
+      "duration_seconds": 55,
+      "start": [
+        1,
+        7
+      ],
+      "soulPos": [
+        [
+          5,
+          2
+        ]
+      ],
+      "wraithPos": [
+        [
+          3,
+          1
+        ],
+        [
+          5,
+          5
+        ]
+      ],
+      "rockPos": [
+        [
+          2,
+          3
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          3,
+          6
+        ],
+        [
+          6,
+          6
+        ],
+        [
+          1,
+          2
+        ]
+      ]
+    },
+    {
+      "level": 2,
+      "name": "残影会骗人",
+      "souls": 2,
+      "wraiths": 3,
+      "rocks": 7,
+      "memoryMax": 4,
+      "memoryRegenMs": 13000,
+      "revealMs": 1100,
+      "ghostLifeMs": 8000,
+      "wraithStepMs": 2900,
+      "hint": "残影是「当时」的位置 —— 它会骗你",
+      "learn": "能做到：用两次回声之间的差判断影子往哪走",
+      "decision": "省下记忆慢慢摸，还是敲一次钟换一个确切答案",
+      "challenge": "resource",
+      "feedback": "残影逐渐褪色，褪到一半时轮廓开始抖",
+      "climax": "你按残影划过去，那里什么都没有",
+      "reward": "学会读「残影年龄」，岸边第二盏灯亮起",
+      "next_hook": "最后一关，记忆不会自己回来了",
+      "duration_seconds": 65,
+      "start": [
+        0,
+        8
+      ],
+      "soulPos": [
+        [
+          6,
+          1
+        ],
+        [
+          3,
+          4
+        ]
+      ],
+      "wraithPos": [
+        [
+          2,
+          1
+        ],
+        [
+          5,
+          3
+        ],
+        [
+          4,
+          6
+        ]
+      ],
+      "rockPos": [
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          5
+        ],
+        [
+          5,
+          5
+        ],
+        [
+          6,
+          3
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          0,
+          4
+        ]
+      ]
+    },
+    {
+      "level": 3,
+      "name": "最后一格记忆",
+      "souls": 2,
+      "wraiths": 4,
+      "rocks": 8,
+      "memoryMax": 3,
+      "memoryRegenMs": 0,
+      "revealMs": 1000,
+      "ghostLifeMs": 7000,
+      "wraithStepMs": 2500,
+      "hint": "记忆不会回来了。省着用。",
+      "learn": "能做到：在完全没有地图的情况下靠声音靠岸",
+      "decision": "把最后一格记忆留给落水者，还是留给自己靠岸",
+      "challenge": "cost",
+      "feedback": "心跳声随记忆减少变快，最后一格时全图熄灭",
+      "climax": "记忆归零，整片海同时暗下去",
+      "reward": "第三盏灯亮起，海面安静",
+      "next_hook": "（本作到此结束）",
+      "duration_seconds": 70,
+      "start": [
+        0,
+        8
+      ],
+      "soulPos": [
+        [
+          6,
+          0
+        ],
+        [
+          2,
+          2
+        ]
+      ],
+      "wraithPos": [
+        [
+          4,
+          2
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          3,
+          7
+        ]
+      ],
+      "rockPos": [
+        [
+          1,
+          1
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          5,
+          2
+        ],
+        [
+          2,
+          6
+        ],
+        [
+          6,
+          7
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          5,
+          8
+        ]
+      ]
+    }
+  ]
+}

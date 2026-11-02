@@ -1,0 +1,2899 @@
+{
+  "generated_at": "2026-11-01T15:08:14.732Z",
+  "url": "http://127.0.0.1:5199/index.html",
+  "seconds_per_strategy": 45,
+  "strategies": [
+    {
+      "strategy": "novice",
+      "label": "新手玩家",
+      "duration_s": 47,
+      "actions": 73,
+      "samples": 61,
+      "distinct_states": 61,
+      "repetition_ratio": 0.16,
+      "stuck_events": 0,
+      "max_idle_ms": 3051,
+      "first_positive_feedback_s": 10.971,
+      "events": [
+        {
+          "event": "game_start",
+          "timestamp": 0,
+          "source": "system",
+          "target": "",
+          "intensity": 0.5,
+          "context": {}
+        },
+        {
+          "event": "level_started",
+          "timestamp": 0,
+          "source": "system",
+          "target": "",
+          "intensity": 0.45,
+          "context": {
+            "level": 1,
+            "name": "第一片海"
+          }
+        },
+        {
+          "event": "echo_ping",
+          "timestamp": 2344,
+          "source": "player",
+          "target": "",
+          "intensity": 0.6,
+          "context": {
+            "x": 184,
+            "y": 874,
+            "memory": 4
+          }
+        },
+        {
+          "event": "enemy_spawn",
+          "timestamp": 2344,
+          "source": "system",
+          "target": "",
+          "intensity": 0.35,
+          "context": {
+            "exposed": 2,
+            "silent": true
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 6046,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 536,
+            "y": 786,
+            "hull": 2
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 7882,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 536,
+            "y": 786,
+            "hull": 1
+          }
+        },
+        {
+          "event": "item_collected",
+          "timestamp": 10971,
+          "source": "system",
+          "target": "",
+          "intensity": 0.5,
+          "context": {
+            "x": 536,
+            "y": 434,
+            "soul": true
+          }
+        },
+        {
+          "event": "soul_delivered",
+          "timestamp": 12815,
+          "source": "system",
+          "target": "",
+          "intensity": 0.8,
+          "context": {
+            "delivered": 1,
+            "total": 1,
+            "x": 624,
+            "y": 610
+          }
+        },
+        {
+          "event": "level_completed",
+          "timestamp": 12815,
+          "source": "system",
+          "target": "",
+          "intensity": 1,
+          "context": {
+            "final": true,
+            "delivered": 1
+          }
+        },
+        {
+          "event": "echo_ping",
+          "timestamp": 3381,
+          "source": "player",
+          "target": "",
+          "intensity": 0.6,
+          "context": {
+            "x": 96,
+            "y": 962,
+            "memory": 3
+          }
+        },
+        {
+          "event": "enemy_spawn",
+          "timestamp": 3381,
+          "source": "system",
+          "target": "",
+          "intensity": 0.35,
+          "context": {
+            "exposed": 3,
+            "silent": true
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 6018,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 360,
+            "y": 962,
+            "hull": 2
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 7862,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 360,
+            "y": 962,
+            "hull": 1
+          }
+        },
+        {
+          "event": "item_collected",
+          "timestamp": 10944,
+          "source": "system",
+          "target": "",
+          "intensity": 0.5,
+          "context": {
+            "x": 360,
+            "y": 610,
+            "soul": true
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 11549,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "caught",
+            "x": 360,
+            "y": 610,
+            "hull": 0
+          }
+        },
+        {
+          "event": "player_death",
+          "timestamp": 11549,
+          "source": "system",
+          "target": "",
+          "intensity": 1,
+          "context": {
+            "hull": 0,
+            "delivered": 0
+          }
+        },
+        {
+          "event": "echo_ping",
+          "timestamp": 2136,
+          "source": "player",
+          "target": "",
+          "intensity": 0.6,
+          "context": {
+            "x": 96,
+            "y": 962,
+            "memory": 3
+          }
+        },
+        {
+          "event": "enemy_spawn",
+          "timestamp": 2136,
+          "source": "system",
+          "target": "",
+          "intensity": 0.35,
+          "context": {
+            "exposed": 3,
+            "silent": true
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 4585,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 360,
+            "y": 962,
+            "hull": 2
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 6408,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 360,
+            "y": 962,
+            "hull": 1
+          }
+        },
+        {
+          "event": "item_collected",
+          "timestamp": 9685,
+          "source": "system",
+          "target": "",
+          "intensity": 0.5,
+          "context": {
+            "x": 360,
+            "y": 610,
+            "soul": true
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 10318,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "caught",
+            "x": 448,
+            "y": 610,
+            "hull": 0
+          }
+        },
+        {
+          "event": "player_death",
+          "timestamp": 10318,
+          "source": "system",
+          "target": "",
+          "intensity": 1,
+          "context": {
+            "hull": 0,
+            "delivered": 0
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 4592,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 360,
+            "y": 962,
+            "hull": 2
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 6415,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 360,
+            "y": 962,
+            "hull": 1
+          }
+        }
+      ],
+      "event_counts": {
+        "game_start": 1,
+        "level_started": 1,
+        "echo_ping": 3,
+        "enemy_spawn": 3,
+        "player_hit": 10,
+        "item_collected": 3,
+        "soul_delivered": 1,
+        "level_completed": 1,
+        "player_death": 2
+      },
+      "final_state": {
+        "t": 46260,
+        "phase": "play",
+        "level": 2,
+        "hull": 1,
+        "memory": 3,
+        "carried": 0,
+        "delivered": 0,
+        "soulsTotal": 2,
+        "player": {
+          "c": 3,
+          "r": 6
+        },
+        "ghosts": 4,
+        "revealed": false,
+        "audio": {
+          "state": "critical",
+          "gains": {
+            "melody": 0.2,
+            "rhythm": 0.9,
+            "bass": 0.85,
+            "percussion": 0.5,
+            "atmosphere": 0.15
+          },
+          "voices": 0,
+          "muted": false,
+          "events": [
+            "0ms game_start",
+            "0ms level_started",
+            "2136ms echo_ping",
+            "2136ms enemy_spawn",
+            "4592ms player_hit",
+            "6415ms player_hit"
+          ]
+        },
+        "juice": {
+          "quality": "high",
+          "reducedMotion": false
+        }
+      },
+      "errors": [],
+      "action_log": [
+        {
+          "t": 9762,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 10376,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 10987,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 11602,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 12214,
+          "action": "key:ArrowDown"
+        },
+        {
+          "t": 12830,
+          "action": "key:ArrowDown"
+        },
+        {
+          "t": 13442,
+          "action": "none"
+        },
+        {
+          "t": 14057,
+          "action": "click"
+        },
+        {
+          "t": 14667,
+          "action": "move"
+        },
+        {
+          "t": 15274,
+          "action": "move"
+        },
+        {
+          "t": 15887,
+          "action": "click"
+        },
+        {
+          "t": 16493,
+          "action": "ping"
+        },
+        {
+          "t": 17102,
+          "action": "ping"
+        },
+        {
+          "t": 17898,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 18517,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 19128,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 19735,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 20357,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 20984,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 21589,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 22206,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 22822,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 23437,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 24053,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 24663,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 25270,
+          "action": "none"
+        },
+        {
+          "t": 25874,
+          "action": "none"
+        },
+        {
+          "t": 26480,
+          "action": "click"
+        },
+        {
+          "t": 27087,
+          "action": "move"
+        },
+        {
+          "t": 27694,
+          "action": "ping"
+        },
+        {
+          "t": 28309,
+          "action": "ping"
+        },
+        {
+          "t": 28921,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 29529,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 30136,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 30747,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 31357,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 31971,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 32590,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 33392,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 34015,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 34622,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 35231,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 35849,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 36466,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 37074,
+          "action": "none"
+        },
+        {
+          "t": 37687,
+          "action": "click"
+        },
+        {
+          "t": 38305,
+          "action": "move"
+        },
+        {
+          "t": 38909,
+          "action": "ping"
+        },
+        {
+          "t": 39517,
+          "action": "ping"
+        },
+        {
+          "t": 40128,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 40746,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 41353,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 41974,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 42588,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 43201,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 43820,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 44424,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 45037,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 45644,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 46264,
+          "action": "key:ArrowUp"
+        }
+      ]
+    },
+    {
+      "strategy": "explorer",
+      "label": "探索玩家",
+      "duration_s": 46,
+      "actions": 83,
+      "samples": 78,
+      "distinct_states": 78,
+      "repetition_ratio": 0.06,
+      "stuck_events": 0,
+      "max_idle_ms": 1071,
+      "first_positive_feedback_s": 6.656,
+      "events": [
+        {
+          "event": "game_start",
+          "timestamp": 0,
+          "source": "system",
+          "target": "",
+          "intensity": 0.5,
+          "context": {}
+        },
+        {
+          "event": "level_started",
+          "timestamp": 0,
+          "source": "system",
+          "target": "",
+          "intensity": 0.45,
+          "context": {
+            "level": 1,
+            "name": "第一片海"
+          }
+        },
+        {
+          "event": "echo_ping",
+          "timestamp": 1827,
+          "source": "player",
+          "target": "",
+          "intensity": 0.6,
+          "context": {
+            "x": 184,
+            "y": 874,
+            "memory": 4
+          }
+        },
+        {
+          "event": "enemy_spawn",
+          "timestamp": 1827,
+          "source": "system",
+          "target": "",
+          "intensity": 0.35,
+          "context": {
+            "exposed": 2,
+            "silent": true
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 5077,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "caught",
+            "x": 536,
+            "y": 698,
+            "hull": 2
+          }
+        },
+        {
+          "event": "item_collected",
+          "timestamp": 6656,
+          "source": "system",
+          "target": "",
+          "intensity": 0.5,
+          "context": {
+            "x": 536,
+            "y": 434,
+            "soul": true
+          }
+        },
+        {
+          "event": "soul_delivered",
+          "timestamp": 8263,
+          "source": "system",
+          "target": "",
+          "intensity": 0.8,
+          "context": {
+            "delivered": 1,
+            "total": 1,
+            "x": 624,
+            "y": 610
+          }
+        },
+        {
+          "event": "level_completed",
+          "timestamp": 8263,
+          "source": "system",
+          "target": "",
+          "intensity": 1,
+          "context": {
+            "final": true,
+            "delivered": 1
+          }
+        },
+        {
+          "event": "echo_ping",
+          "timestamp": 1225,
+          "source": "player",
+          "target": "",
+          "intensity": 0.6,
+          "context": {
+            "x": 96,
+            "y": 962,
+            "memory": 3
+          }
+        },
+        {
+          "event": "enemy_spawn",
+          "timestamp": 1225,
+          "source": "system",
+          "target": "",
+          "intensity": 0.35,
+          "context": {
+            "exposed": 3,
+            "silent": true
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 3653,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "caught",
+            "x": 360,
+            "y": 874,
+            "hull": 2
+          }
+        },
+        {
+          "event": "item_collected",
+          "timestamp": 4989,
+          "source": "system",
+          "target": "",
+          "intensity": 0.5,
+          "context": {
+            "x": 360,
+            "y": 610,
+            "soul": true
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 5531,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 360,
+            "y": 610,
+            "hull": 1
+          }
+        },
+        {
+          "event": "soul_delivered",
+          "timestamp": 7862,
+          "source": "system",
+          "target": "",
+          "intensity": 0.8,
+          "context": {
+            "delivered": 1,
+            "total": 2,
+            "x": 624,
+            "y": 610
+          }
+        },
+        {
+          "event": "player_action",
+          "timestamp": 8377,
+          "source": "system",
+          "target": "",
+          "intensity": 0.2,
+          "context": {
+            "blocked": true,
+            "x": 624,
+            "y": 522
+          }
+        },
+        {
+          "event": "item_collected",
+          "timestamp": 11041,
+          "source": "system",
+          "target": "",
+          "intensity": 0.5,
+          "context": {
+            "x": 624,
+            "y": 346,
+            "soul": true
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 12649,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 536,
+            "y": 434,
+            "hull": 0
+          }
+        },
+        {
+          "event": "player_death",
+          "timestamp": 12649,
+          "source": "system",
+          "target": "",
+          "intensity": 1,
+          "context": {
+            "hull": 0,
+            "delivered": 1
+          }
+        },
+        {
+          "event": "echo_ping",
+          "timestamp": 751,
+          "source": "player",
+          "target": "",
+          "intensity": 0.6,
+          "context": {
+            "x": 96,
+            "y": 962,
+            "memory": 3
+          }
+        },
+        {
+          "event": "enemy_spawn",
+          "timestamp": 751,
+          "source": "system",
+          "target": "",
+          "intensity": 0.35,
+          "context": {
+            "exposed": 3,
+            "silent": true
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 3166,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "caught",
+            "x": 360,
+            "y": 874,
+            "hull": 2
+          }
+        },
+        {
+          "event": "item_collected",
+          "timestamp": 4481,
+          "source": "system",
+          "target": "",
+          "intensity": 0.5,
+          "context": {
+            "x": 360,
+            "y": 610,
+            "soul": true
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 5030,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 360,
+            "y": 610,
+            "hull": 1
+          }
+        },
+        {
+          "event": "soul_delivered",
+          "timestamp": 7354,
+          "source": "system",
+          "target": "",
+          "intensity": 0.8,
+          "context": {
+            "delivered": 1,
+            "total": 2,
+            "x": 624,
+            "y": 610
+          }
+        },
+        {
+          "event": "player_action",
+          "timestamp": 7897,
+          "source": "system",
+          "target": "",
+          "intensity": 0.2,
+          "context": {
+            "blocked": true,
+            "x": 624,
+            "y": 522
+          }
+        },
+        {
+          "event": "item_collected",
+          "timestamp": 10562,
+          "source": "system",
+          "target": "",
+          "intensity": 0.5,
+          "context": {
+            "x": 624,
+            "y": 346,
+            "soul": true
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 12169,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 536,
+            "y": 434,
+            "hull": 0
+          }
+        },
+        {
+          "event": "player_death",
+          "timestamp": 12169,
+          "source": "system",
+          "target": "",
+          "intensity": 1,
+          "context": {
+            "hull": 0,
+            "delivered": 1
+          }
+        },
+        {
+          "event": "echo_ping",
+          "timestamp": 731,
+          "source": "player",
+          "target": "",
+          "intensity": 0.6,
+          "context": {
+            "x": 96,
+            "y": 962,
+            "memory": 3
+          }
+        },
+        {
+          "event": "enemy_spawn",
+          "timestamp": 731,
+          "source": "system",
+          "target": "",
+          "intensity": 0.35,
+          "context": {
+            "exposed": 3,
+            "silent": true
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 3159,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "caught",
+            "x": 360,
+            "y": 874,
+            "hull": 2
+          }
+        },
+        {
+          "event": "item_collected",
+          "timestamp": 4460,
+          "source": "system",
+          "target": "",
+          "intensity": 0.5,
+          "context": {
+            "x": 360,
+            "y": 610,
+            "soul": true
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 5002,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 360,
+            "y": 610,
+            "hull": 1
+          }
+        },
+        {
+          "event": "soul_delivered",
+          "timestamp": 7298,
+          "source": "system",
+          "target": "",
+          "intensity": 0.8,
+          "context": {
+            "delivered": 1,
+            "total": 2,
+            "x": 624,
+            "y": 610
+          }
+        },
+        {
+          "event": "player_action",
+          "timestamp": 7820,
+          "source": "system",
+          "target": "",
+          "intensity": 0.2,
+          "context": {
+            "blocked": true,
+            "x": 624,
+            "y": 522
+          }
+        }
+      ],
+      "event_counts": {
+        "game_start": 1,
+        "level_started": 1,
+        "echo_ping": 4,
+        "enemy_spawn": 4,
+        "player_hit": 9,
+        "item_collected": 6,
+        "soul_delivered": 4,
+        "level_completed": 1,
+        "player_action": 3,
+        "player_death": 2
+      },
+      "final_state": {
+        "t": 45674,
+        "phase": "play",
+        "level": 2,
+        "hull": 1,
+        "memory": 4,
+        "carried": 0,
+        "delivered": 1,
+        "soulsTotal": 2,
+        "player": {
+          "c": 5,
+          "r": 2
+        },
+        "ghosts": 4,
+        "revealed": false,
+        "audio": {
+          "state": "critical",
+          "gains": {
+            "melody": 0.2,
+            "rhythm": 0.9,
+            "bass": 0.85,
+            "percussion": 0.5,
+            "atmosphere": 0.15
+          },
+          "voices": 0,
+          "muted": false,
+          "events": [
+            "0ms level_started",
+            "731ms echo_ping",
+            "731ms enemy_spawn",
+            "3159ms player_hit",
+            "4460ms item_collected",
+            "5002ms player_hit",
+            "7298ms soul_delivered",
+            "7820ms player_action"
+          ]
+        },
+        "juice": {
+          "quality": "high",
+          "reducedMotion": false
+        }
+      },
+      "errors": [],
+      "action_log": [
+        {
+          "t": 13621,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 14153,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 14699,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 15410,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 15948,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 16491,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 17024,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 17560,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 18095,
+          "action": "key:ArrowLeft"
+        },
+        {
+          "t": 18627,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 19154,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 19681,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 20211,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 20751,
+          "action": "key:ArrowLeft"
+        },
+        {
+          "t": 21289,
+          "action": "key:ArrowDown"
+        },
+        {
+          "t": 21833,
+          "action": "key:ArrowDown"
+        },
+        {
+          "t": 22361,
+          "action": "none"
+        },
+        {
+          "t": 22893,
+          "action": "ping"
+        },
+        {
+          "t": 23433,
+          "action": "ping"
+        },
+        {
+          "t": 23962,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 24498,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 25032,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 25575,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 26107,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 26641,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 27175,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 27711,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 28254,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 28974,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 29513,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 30043,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 30575,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 31115,
+          "action": "key:ArrowLeft"
+        },
+        {
+          "t": 31649,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 32177,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 32711,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 33239,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 33776,
+          "action": "key:ArrowLeft"
+        },
+        {
+          "t": 34309,
+          "action": "key:ArrowDown"
+        },
+        {
+          "t": 34848,
+          "action": "key:ArrowDown"
+        },
+        {
+          "t": 35383,
+          "action": "none"
+        },
+        {
+          "t": 35916,
+          "action": "ping"
+        },
+        {
+          "t": 36455,
+          "action": "ping"
+        },
+        {
+          "t": 36989,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 37522,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 38052,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 38580,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 39107,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 39636,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 40176,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 40719,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 41254,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 41797,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 42482,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 43015,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 43555,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 44092,
+          "action": "key:ArrowLeft"
+        },
+        {
+          "t": 44619,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 45151,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 45677,
+          "action": "key:ArrowRight"
+        }
+      ]
+    },
+    {
+      "strategy": "strategist",
+      "label": "策略玩家",
+      "duration_s": 46,
+      "actions": 112,
+      "samples": 89,
+      "distinct_states": 89,
+      "repetition_ratio": 0.21,
+      "stuck_events": 0,
+      "max_idle_ms": 3660,
+      "first_positive_feedback_s": 5.968,
+      "events": [
+        {
+          "event": "game_start",
+          "timestamp": 0,
+          "source": "system",
+          "target": "",
+          "intensity": 0.5,
+          "context": {}
+        },
+        {
+          "event": "level_started",
+          "timestamp": 0,
+          "source": "system",
+          "target": "",
+          "intensity": 0.45,
+          "context": {
+            "level": 1,
+            "name": "第一片海"
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 3241,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 536,
+            "y": 786,
+            "hull": 2
+          }
+        },
+        {
+          "event": "item_collected",
+          "timestamp": 5968,
+          "source": "system",
+          "target": "",
+          "intensity": 0.5,
+          "context": {
+            "x": 536,
+            "y": 434,
+            "soul": true
+          }
+        },
+        {
+          "event": "soul_delivered",
+          "timestamp": 7158,
+          "source": "system",
+          "target": "",
+          "intensity": 0.8,
+          "context": {
+            "delivered": 1,
+            "total": 1,
+            "x": 624,
+            "y": 610
+          }
+        },
+        {
+          "event": "level_completed",
+          "timestamp": 7158,
+          "source": "system",
+          "target": "",
+          "intensity": 1,
+          "context": {
+            "final": true,
+            "delivered": 1
+          }
+        },
+        {
+          "event": "item_collected",
+          "timestamp": 6290,
+          "source": "system",
+          "target": "",
+          "intensity": 0.5,
+          "context": {
+            "x": 360,
+            "y": 610,
+            "soul": true
+          }
+        },
+        {
+          "event": "soul_delivered",
+          "timestamp": 7472,
+          "source": "system",
+          "target": "",
+          "intensity": 0.8,
+          "context": {
+            "delivered": 1,
+            "total": 2,
+            "x": 624,
+            "y": 610
+          }
+        },
+        {
+          "event": "player_action",
+          "timestamp": 7869,
+          "source": "system",
+          "target": "",
+          "intensity": 0.2,
+          "context": {
+            "blocked": true,
+            "x": 624,
+            "y": 522
+          }
+        },
+        {
+          "event": "item_collected",
+          "timestamp": 9831,
+          "source": "system",
+          "target": "",
+          "intensity": 0.5,
+          "context": {
+            "x": 624,
+            "y": 346,
+            "soul": true
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 11007,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 536,
+            "y": 434,
+            "hull": 2
+          }
+        },
+        {
+          "event": "soul_delivered",
+          "timestamp": 13602,
+          "source": "system",
+          "target": "",
+          "intensity": 0.8,
+          "context": {
+            "delivered": 2,
+            "total": 2,
+            "x": 624,
+            "y": 610
+          }
+        },
+        {
+          "event": "level_completed",
+          "timestamp": 13602,
+          "source": "system",
+          "target": "",
+          "intensity": 1,
+          "context": {
+            "final": true,
+            "delivered": 2
+          }
+        },
+        {
+          "event": "player_action",
+          "timestamp": 5030,
+          "source": "system",
+          "target": "",
+          "intensity": 0.2,
+          "context": {
+            "blocked": true,
+            "x": 272,
+            "y": 786
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 5434,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 272,
+            "y": 874,
+            "hull": 2
+          }
+        },
+        {
+          "event": "item_collected",
+          "timestamp": 8760,
+          "source": "system",
+          "target": "",
+          "intensity": 0.5,
+          "context": {
+            "x": 272,
+            "y": 434,
+            "soul": true
+          }
+        },
+        {
+          "event": "player_action",
+          "timestamp": 9935,
+          "source": "system",
+          "target": "",
+          "intensity": 0.2,
+          "context": {
+            "blocked": true,
+            "x": 536,
+            "y": 434
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 10325,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 448,
+            "y": 434,
+            "hull": 1
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 11904,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 448,
+            "y": 522,
+            "hull": 0
+          }
+        },
+        {
+          "event": "player_death",
+          "timestamp": 11904,
+          "source": "system",
+          "target": "",
+          "intensity": 1,
+          "context": {
+            "hull": 0,
+            "delivered": 0
+          }
+        },
+        {
+          "event": "player_action",
+          "timestamp": 3054,
+          "source": "system",
+          "target": "",
+          "intensity": 0.2,
+          "context": {
+            "blocked": true,
+            "x": 272,
+            "y": 786
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 3458,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 272,
+            "y": 874,
+            "hull": 2
+          }
+        },
+        {
+          "event": "item_collected",
+          "timestamp": 6818,
+          "source": "system",
+          "target": "",
+          "intensity": 0.5,
+          "context": {
+            "x": 272,
+            "y": 434,
+            "soul": true
+          }
+        },
+        {
+          "event": "player_action",
+          "timestamp": 7973,
+          "source": "system",
+          "target": "",
+          "intensity": 0.2,
+          "context": {
+            "blocked": true,
+            "x": 536,
+            "y": 434
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 8377,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 448,
+            "y": 434,
+            "hull": 1
+          }
+        }
+      ],
+      "event_counts": {
+        "game_start": 1,
+        "level_started": 1,
+        "player_hit": 7,
+        "item_collected": 5,
+        "soul_delivered": 3,
+        "level_completed": 2,
+        "player_action": 5,
+        "player_death": 1
+      },
+      "final_state": {
+        "t": 45317,
+        "phase": "play",
+        "level": 3,
+        "hull": 1,
+        "memory": 3,
+        "carried": 1,
+        "delivered": 0,
+        "soulsTotal": 2,
+        "player": {
+          "c": 4,
+          "r": 3
+        },
+        "ghosts": 0,
+        "revealed": false,
+        "audio": {
+          "state": "critical",
+          "gains": {
+            "melody": 0.19530701063929412,
+            "rhythm": 0.88905233968175,
+            "bass": 0.8470142744586592,
+            "percussion": 0.49203806522309107,
+            "atmosphere": 0.15
+          },
+          "voices": 0,
+          "muted": false,
+          "events": [
+            "0ms game_start",
+            "0ms level_started",
+            "3054ms player_action",
+            "3458ms player_hit",
+            "6818ms item_collected",
+            "7973ms player_action",
+            "8377ms player_hit"
+          ]
+        },
+        "juice": {
+          "quality": "high",
+          "reducedMotion": false
+        }
+      },
+      "errors": [],
+      "action_log": [
+        {
+          "t": 21672,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 22064,
+          "action": "none"
+        },
+        {
+          "t": 22462,
+          "action": "none"
+        },
+        {
+          "t": 22848,
+          "action": "click"
+        },
+        {
+          "t": 23247,
+          "action": "click"
+        },
+        {
+          "t": 23638,
+          "action": "click"
+        },
+        {
+          "t": 24036,
+          "action": "move"
+        },
+        {
+          "t": 24425,
+          "action": "click"
+        },
+        {
+          "t": 24827,
+          "action": "move"
+        },
+        {
+          "t": 25219,
+          "action": "click"
+        },
+        {
+          "t": 25610,
+          "action": "click"
+        },
+        {
+          "t": 26003,
+          "action": "ping"
+        },
+        {
+          "t": 26411,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 26814,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 27211,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 27608,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 28000,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 28389,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 28790,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 29175,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 29565,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 29971,
+          "action": "key:ArrowLeft"
+        },
+        {
+          "t": 30370,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 30767,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 31335,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 31725,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 32112,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 32501,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 32888,
+          "action": "key:ArrowDown"
+        },
+        {
+          "t": 33287,
+          "action": "key:ArrowDown"
+        },
+        {
+          "t": 33684,
+          "action": "key:ArrowDown"
+        },
+        {
+          "t": 34078,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 34470,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 34860,
+          "action": "none"
+        },
+        {
+          "t": 35255,
+          "action": "none"
+        },
+        {
+          "t": 35646,
+          "action": "click"
+        },
+        {
+          "t": 36041,
+          "action": "click"
+        },
+        {
+          "t": 36443,
+          "action": "click"
+        },
+        {
+          "t": 36845,
+          "action": "ping"
+        },
+        {
+          "t": 37244,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 37632,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 38027,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 38414,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 38811,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 39208,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 39593,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 39986,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 40386,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 40778,
+          "action": "key:ArrowLeft"
+        },
+        {
+          "t": 41368,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 41769,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 42172,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 42560,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 42950,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 43349,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 43761,
+          "action": "key:ArrowDown"
+        },
+        {
+          "t": 44150,
+          "action": "key:ArrowDown"
+        },
+        {
+          "t": 44535,
+          "action": "key:ArrowDown"
+        },
+        {
+          "t": 44932,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 45320,
+          "action": "key:ArrowRight"
+        }
+      ]
+    },
+    {
+      "strategy": "extreme",
+      "label": "极限玩家",
+      "duration_s": 46,
+      "actions": 258,
+      "samples": 250,
+      "distinct_states": 250,
+      "repetition_ratio": 0.03,
+      "stuck_events": 0,
+      "max_idle_ms": 471,
+      "first_positive_feedback_s": 5.573,
+      "events": [
+        {
+          "event": "game_start",
+          "timestamp": 0,
+          "source": "system",
+          "target": "",
+          "intensity": 0.5,
+          "context": {}
+        },
+        {
+          "event": "level_started",
+          "timestamp": 0,
+          "source": "system",
+          "target": "",
+          "intensity": 0.45,
+          "context": {
+            "level": 1,
+            "name": "第一片海"
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 1899,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 536,
+            "y": 786,
+            "hull": 2
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 3395,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 536,
+            "y": 786,
+            "hull": 1
+          }
+        },
+        {
+          "event": "item_collected",
+          "timestamp": 5573,
+          "source": "system",
+          "target": "",
+          "intensity": 0.5,
+          "context": {
+            "x": 536,
+            "y": 434,
+            "soul": true
+          }
+        },
+        {
+          "event": "soul_delivered",
+          "timestamp": 6059,
+          "source": "system",
+          "target": "",
+          "intensity": 0.8,
+          "context": {
+            "delivered": 1,
+            "total": 1,
+            "x": 624,
+            "y": 610
+          }
+        },
+        {
+          "event": "level_completed",
+          "timestamp": 6059,
+          "source": "system",
+          "target": "",
+          "intensity": 1,
+          "context": {
+            "final": true,
+            "delivered": 1
+          }
+        },
+        {
+          "event": "item_collected",
+          "timestamp": 1322,
+          "source": "system",
+          "target": "",
+          "intensity": 0.5,
+          "context": {
+            "x": 360,
+            "y": 610,
+            "soul": true
+          }
+        },
+        {
+          "event": "soul_delivered",
+          "timestamp": 1844,
+          "source": "system",
+          "target": "",
+          "intensity": 0.8,
+          "context": {
+            "delivered": 1,
+            "total": 2,
+            "x": 624,
+            "y": 610
+          }
+        },
+        {
+          "event": "player_action",
+          "timestamp": 2018,
+          "source": "system",
+          "target": "",
+          "intensity": 0.2,
+          "context": {
+            "blocked": true,
+            "x": 624,
+            "y": 522
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 2345,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 536,
+            "y": 610,
+            "hull": 2
+          }
+        },
+        {
+          "event": "item_collected",
+          "timestamp": 3729,
+          "source": "system",
+          "target": "",
+          "intensity": 0.5,
+          "context": {
+            "x": 624,
+            "y": 346,
+            "soul": true
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 4397,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 536,
+            "y": 522,
+            "hull": 1
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 5935,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 536,
+            "y": 522,
+            "hull": 0
+          }
+        },
+        {
+          "event": "player_death",
+          "timestamp": 5935,
+          "source": "system",
+          "target": "",
+          "intensity": 1,
+          "context": {
+            "hull": 0,
+            "delivered": 1
+          }
+        },
+        {
+          "event": "item_collected",
+          "timestamp": 1545,
+          "source": "system",
+          "target": "",
+          "intensity": 0.5,
+          "context": {
+            "x": 360,
+            "y": 610,
+            "soul": true
+          }
+        },
+        {
+          "event": "soul_delivered",
+          "timestamp": 2046,
+          "source": "system",
+          "target": "",
+          "intensity": 0.8,
+          "context": {
+            "delivered": 1,
+            "total": 2,
+            "x": 624,
+            "y": 610
+          }
+        },
+        {
+          "event": "player_action",
+          "timestamp": 2219,
+          "source": "system",
+          "target": "",
+          "intensity": 0.2,
+          "context": {
+            "blocked": true,
+            "x": 624,
+            "y": 522
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 2560,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 536,
+            "y": 610,
+            "hull": 2
+          }
+        },
+        {
+          "event": "item_collected",
+          "timestamp": 3903,
+          "source": "system",
+          "target": "",
+          "intensity": 0.5,
+          "context": {
+            "x": 624,
+            "y": 346,
+            "soul": true
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 4759,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 536,
+            "y": 522,
+            "hull": 1
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 6241,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "caught",
+            "x": 536,
+            "y": 522,
+            "hull": 0
+          }
+        },
+        {
+          "event": "player_death",
+          "timestamp": 6241,
+          "source": "system",
+          "target": "",
+          "intensity": 1,
+          "context": {
+            "hull": 0,
+            "delivered": 1
+          }
+        },
+        {
+          "event": "item_collected",
+          "timestamp": 1231,
+          "source": "system",
+          "target": "",
+          "intensity": 0.5,
+          "context": {
+            "x": 360,
+            "y": 610,
+            "soul": true
+          }
+        },
+        {
+          "event": "soul_delivered",
+          "timestamp": 1900,
+          "source": "system",
+          "target": "",
+          "intensity": 0.8,
+          "context": {
+            "delivered": 1,
+            "total": 2,
+            "x": 624,
+            "y": 610
+          }
+        },
+        {
+          "event": "player_action",
+          "timestamp": 2066,
+          "source": "system",
+          "target": "",
+          "intensity": 0.2,
+          "context": {
+            "blocked": true,
+            "x": 624,
+            "y": 522
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 2421,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 536,
+            "y": 610,
+            "hull": 2
+          }
+        },
+        {
+          "event": "item_collected",
+          "timestamp": 3604,
+          "source": "system",
+          "target": "",
+          "intensity": 0.5,
+          "context": {
+            "x": 624,
+            "y": 346,
+            "soul": true
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 4286,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 536,
+            "y": 522,
+            "hull": 1
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 5809,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 536,
+            "y": 522,
+            "hull": 0
+          }
+        },
+        {
+          "event": "player_death",
+          "timestamp": 5809,
+          "source": "system",
+          "target": "",
+          "intensity": 1,
+          "context": {
+            "hull": 0,
+            "delivered": 1
+          }
+        },
+        {
+          "event": "item_collected",
+          "timestamp": 1364,
+          "source": "system",
+          "target": "",
+          "intensity": 0.5,
+          "context": {
+            "x": 360,
+            "y": 610,
+            "soul": true
+          }
+        },
+        {
+          "event": "soul_delivered",
+          "timestamp": 1871,
+          "source": "system",
+          "target": "",
+          "intensity": 0.8,
+          "context": {
+            "delivered": 1,
+            "total": 2,
+            "x": 624,
+            "y": 610
+          }
+        },
+        {
+          "event": "player_action",
+          "timestamp": 2038,
+          "source": "system",
+          "target": "",
+          "intensity": 0.2,
+          "context": {
+            "blocked": true,
+            "x": 624,
+            "y": 522
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 2338,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 536,
+            "y": 610,
+            "hull": 2
+          }
+        },
+        {
+          "event": "item_collected",
+          "timestamp": 3680,
+          "source": "system",
+          "target": "",
+          "intensity": 0.5,
+          "context": {
+            "x": 624,
+            "y": 346,
+            "soul": true
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 4536,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 536,
+            "y": 522,
+            "hull": 1
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 5997,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 536,
+            "y": 522,
+            "hull": 0
+          }
+        },
+        {
+          "event": "player_death",
+          "timestamp": 5997,
+          "source": "system",
+          "target": "",
+          "intensity": 1,
+          "context": {
+            "hull": 0,
+            "delivered": 1
+          }
+        },
+        {
+          "event": "item_collected",
+          "timestamp": 1440,
+          "source": "system",
+          "target": "",
+          "intensity": 0.5,
+          "context": {
+            "x": 360,
+            "y": 610,
+            "soul": true
+          }
+        },
+        {
+          "event": "soul_delivered",
+          "timestamp": 1962,
+          "source": "system",
+          "target": "",
+          "intensity": 0.8,
+          "context": {
+            "delivered": 1,
+            "total": 2,
+            "x": 624,
+            "y": 610
+          }
+        },
+        {
+          "event": "player_action",
+          "timestamp": 2143,
+          "source": "system",
+          "target": "",
+          "intensity": 0.2,
+          "context": {
+            "blocked": true,
+            "x": 624,
+            "y": 522
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 2456,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 536,
+            "y": 610,
+            "hull": 2
+          }
+        },
+        {
+          "event": "item_collected",
+          "timestamp": 3611,
+          "source": "system",
+          "target": "",
+          "intensity": 0.5,
+          "context": {
+            "x": 624,
+            "y": 346,
+            "soul": true
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 5803,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 536,
+            "y": 522,
+            "hull": 0
+          }
+        },
+        {
+          "event": "player_death",
+          "timestamp": 5803,
+          "source": "system",
+          "target": "",
+          "intensity": 1,
+          "context": {
+            "hull": 0,
+            "delivered": 1
+          }
+        },
+        {
+          "event": "item_collected",
+          "timestamp": 1224,
+          "source": "system",
+          "target": "",
+          "intensity": 0.5,
+          "context": {
+            "x": 360,
+            "y": 610,
+            "soul": true
+          }
+        },
+        {
+          "event": "soul_delivered",
+          "timestamp": 1732,
+          "source": "system",
+          "target": "",
+          "intensity": 0.8,
+          "context": {
+            "delivered": 1,
+            "total": 2,
+            "x": 624,
+            "y": 610
+          }
+        },
+        {
+          "event": "player_action",
+          "timestamp": 1899,
+          "source": "system",
+          "target": "",
+          "intensity": 0.2,
+          "context": {
+            "blocked": true,
+            "x": 624,
+            "y": 522
+          }
+        },
+        {
+          "event": "player_hit",
+          "timestamp": 2261,
+          "source": "system",
+          "target": "",
+          "intensity": 0.75,
+          "context": {
+            "reason": "walked_into",
+            "x": 536,
+            "y": 610,
+            "hull": 2
+          }
+        },
+        {
+          "event": "item_collected",
+          "timestamp": 3715,
+          "source": "system",
+          "target": "",
+          "intensity": 0.5,
+          "context": {
+            "x": 624,
+            "y": 346,
+            "soul": true
+          }
+        }
+      ],
+      "event_counts": {
+        "game_start": 1,
+        "level_started": 1,
+        "player_hit": 17,
+        "item_collected": 13,
+        "soul_delivered": 7,
+        "level_completed": 1,
+        "player_action": 6,
+        "player_death": 5
+      },
+      "final_state": {
+        "t": 45571,
+        "phase": "play",
+        "level": 2,
+        "hull": 2,
+        "memory": 4,
+        "carried": 1,
+        "delivered": 1,
+        "soulsTotal": 2,
+        "player": {
+          "c": 5,
+          "r": 3
+        },
+        "ghosts": 0,
+        "revealed": false,
+        "audio": {
+          "state": "danger",
+          "gains": {
+            "melody": 0.2475859759699079,
+            "rhythm": 0.35,
+            "bass": 0.7,
+            "percussion": 0.1,
+            "atmosphere": 0.3961328898596101
+          },
+          "voices": 0,
+          "muted": false,
+          "events": [
+            "0ms game_start",
+            "0ms level_started",
+            "1224ms item_collected",
+            "1732ms soul_delivered",
+            "1899ms player_action",
+            "2261ms player_hit",
+            "3715ms item_collected"
+          ]
+        },
+        "juice": {
+          "quality": "high",
+          "reducedMotion": false
+        }
+      },
+      "errors": [],
+      "action_log": [
+        {
+          "t": 35236,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 35400,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 35565,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 35926,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 36087,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 36257,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 36431,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 36599,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 36754,
+          "action": "key:ArrowLeft"
+        },
+        {
+          "t": 36909,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 37072,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 37232,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 37400,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 37568,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 37728,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 37898,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 38067,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 38241,
+          "action": "key:ArrowLeft"
+        },
+        {
+          "t": 38410,
+          "action": "key:ArrowDown"
+        },
+        {
+          "t": 38567,
+          "action": "key:ArrowDown"
+        },
+        {
+          "t": 38738,
+          "action": "key:ArrowDown"
+        },
+        {
+          "t": 38918,
+          "action": "key:ArrowDown"
+        },
+        {
+          "t": 39089,
+          "action": "key:ArrowDown"
+        },
+        {
+          "t": 39250,
+          "action": "key:ArrowDown"
+        },
+        {
+          "t": 39417,
+          "action": "key:ArrowDown"
+        },
+        {
+          "t": 39571,
+          "action": "key:ArrowDown"
+        },
+        {
+          "t": 39732,
+          "action": "key:ArrowDown"
+        },
+        {
+          "t": 39898,
+          "action": "key:ArrowDown"
+        },
+        {
+          "t": 40257,
+          "action": "key:ArrowDown"
+        },
+        {
+          "t": 40425,
+          "action": "none"
+        },
+        {
+          "t": 40591,
+          "action": "none"
+        },
+        {
+          "t": 40747,
+          "action": "none"
+        },
+        {
+          "t": 40921,
+          "action": "none"
+        },
+        {
+          "t": 41088,
+          "action": "none"
+        },
+        {
+          "t": 41243,
+          "action": "ping"
+        },
+        {
+          "t": 41413,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 41569,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 41738,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 41898,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 42077,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 42236,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 42405,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 42571,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 42742,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 42916,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 43083,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 43252,
+          "action": "key:ArrowLeft"
+        },
+        {
+          "t": 43420,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 43598,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 43758,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 43921,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 44083,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 44243,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 44568,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 44735,
+          "action": "key:ArrowRight"
+        },
+        {
+          "t": 44892,
+          "action": "key:ArrowUp"
+        },
+        {
+          "t": 45064,
+          "action": "key:ArrowLeft"
+        },
+        {
+          "t": 45233,
+          "action": "key:ArrowDown"
+        },
+        {
+          "t": 45401,
+          "action": "key:ArrowDown"
+        },
+        {
+          "t": 45573,
+          "action": "key:ArrowDown"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "errors": [],
+    "total_events": 136,
+    "any_stuck": false,
+    "repetition_ratio": 0.12,
+    "first_positive_feedback_s": 5.573,
+    "max_idle_ms": 3660
+  },
+  "disclaimer": "AI 模拟试玩不等于真实用户测试。程序检测结果、AI 评价、人工评价必须分开看。"
+}

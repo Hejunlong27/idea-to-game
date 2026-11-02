@@ -1,0 +1,580 @@
+{
+  "version": "3.0",
+  "meta": {
+    "game_title": "回声摆渡",
+    "created": "2026-11-01T17:10:32+08:00",
+    "judged_by": "assets/data/creative-patterns/animation-patterns.json",
+    "creative_dna": "docs/01-brief/creative-dna.json",
+    "visual_dna": "docs/02-art/visual-dna.json"
+  },
+  "settings": {
+    "maxParticles": 120,
+    "shakeCap": 0.012,
+    "flashMaxPerSecond": 1,
+    "shakeMaxMs": 300,
+    "accentColor": "#84F24A",
+    "dangerColor": "#C6463C",
+    "qualityLevels": [
+      "high",
+      "medium",
+      "low"
+    ]
+  },
+  "rules": [
+    {
+      "event": "game_start",
+      "severity": 0.5,
+      "tier": "light",
+      "minIntensity": 0.0,
+      "effects": [
+        {
+          "type": "squash_stretch",
+          "scale": 0.8
+        },
+        {
+          "type": "particles",
+          "amount": 8,
+          "color": "#84F24A"
+        },
+        {
+          "type": "ui_motion",
+          "scale": 0.5
+        }
+      ],
+      "why": "严重度 0.50 → light 档，按档位预算给 3 个效果；不加大于本档的效果，否则会和更重要的事件抢注意力"
+    },
+    {
+      "event": "game_over",
+      "severity": 0.9,
+      "tier": "heavy",
+      "minIntensity": 0.0,
+      "effects": [
+        {
+          "type": "squash_stretch",
+          "scale": 1.0
+        },
+        {
+          "type": "particles",
+          "amount": 32,
+          "color": "#C6463C"
+        },
+        {
+          "type": "camera_shake",
+          "scale": 1.0
+        },
+        {
+          "type": "hit_stop",
+          "durationMs": 90
+        },
+        {
+          "type": "camera_zoom",
+          "scale": 1.0
+        },
+        {
+          "type": "screen_flash",
+          "scale": 0.5,
+          "color": "#C6463C"
+        }
+      ],
+      "why": "严重度 0.90 → heavy 档，按档位预算给 6 个效果；不加大于本档的效果，否则会和更重要的事件抢注意力"
+    },
+    {
+      "event": "player_move",
+      "severity": 0.1,
+      "tier": "micro",
+      "minIntensity": 0.15,
+      "effects": [
+        {
+          "type": "squash_stretch",
+          "scale": 0.35
+        },
+        {
+          "type": "environmental",
+          "scale": 0.5
+        }
+      ],
+      "why": "移动是最频繁的事件（每秒可能 2 次），任何镜头效果都会变成噪声；只做形变与水纹"
+    },
+    {
+      "event": "player_action",
+      "severity": 0.35,
+      "tier": "light",
+      "minIntensity": 0.15,
+      "effects": [
+        {
+          "type": "squash_stretch",
+          "scale": 0.8
+        },
+        {
+          "type": "particles",
+          "amount": 8,
+          "color": "#84F24A"
+        },
+        {
+          "type": "ui_motion",
+          "scale": 0.5
+        }
+      ],
+      "why": "严重度 0.35 → light 档，按档位预算给 3 个效果；不加大于本档的效果，否则会和更重要的事件抢注意力"
+    },
+    {
+      "event": "player_hit",
+      "severity": 0.7,
+      "tier": "medium",
+      "minIntensity": 0.0,
+      "effects": [
+        {
+          "type": "squash_stretch",
+          "scale": 1.0
+        },
+        {
+          "type": "particles",
+          "amount": 14,
+          "color": "#84F24A"
+        },
+        {
+          "type": "camera_shake",
+          "scale": 0.6
+        },
+        {
+          "type": "hit_stop",
+          "durationMs": 60
+        }
+      ],
+      "why": "严重度 0.70 → medium 档，按档位预算给 4 个效果；不加大于本档的效果，否则会和更重要的事件抢注意力"
+    },
+    {
+      "event": "player_death",
+      "severity": 1.0,
+      "tier": "heavy",
+      "minIntensity": 0.0,
+      "effects": [
+        {
+          "type": "slow_motion",
+          "durationMs": 420
+        },
+        {
+          "type": "screen_flash",
+          "scale": 0.7,
+          "color": "#C6463C"
+        },
+        {
+          "type": "camera_shake",
+          "scale": 1.0
+        },
+        {
+          "type": "particles",
+          "amount": 24,
+          "color": "#C6463C"
+        },
+        {
+          "type": "hit_stop",
+          "durationMs": 120
+        }
+      ],
+      "why": "死亡是唯一允许慢动作的时刻 —— 慢动作给玩家「看清自己怎么输的」的时间，这是失败的教学价值"
+    },
+    {
+      "event": "enemy_spawn",
+      "severity": 0.3,
+      "tier": "light",
+      "minIntensity": 0.15,
+      "effects": [
+        {
+          "type": "particles",
+          "amount": 6,
+          "color": "#84F24A"
+        },
+        {
+          "type": "squash_stretch",
+          "scale": 0.5
+        },
+        {
+          "type": "environmental",
+          "scale": 0.6
+        }
+      ],
+      "why": "生成只是信息，不是威胁；威胁感由音频的低频负责，画面不抢"
+    },
+    {
+      "event": "enemy_defeated",
+      "severity": 0.6,
+      "tier": "medium",
+      "minIntensity": 0.0,
+      "effects": [
+        {
+          "type": "squash_stretch",
+          "scale": 1.0
+        },
+        {
+          "type": "particles",
+          "amount": 14,
+          "color": "#84F24A"
+        },
+        {
+          "type": "camera_shake",
+          "scale": 0.6
+        },
+        {
+          "type": "hit_stop",
+          "durationMs": 60
+        }
+      ],
+      "why": "严重度 0.60 → medium 档，按档位预算给 4 个效果；不加大于本档的效果，否则会和更重要的事件抢注意力"
+    },
+    {
+      "event": "item_collected",
+      "severity": 0.25,
+      "tier": "micro",
+      "minIntensity": 0.15,
+      "effects": [
+        {
+          "type": "squash_stretch",
+          "scale": 0.4
+        },
+        {
+          "type": "ui_motion",
+          "scale": 0.3
+        }
+      ],
+      "why": "严重度 0.25 → micro 档，按档位预算给 2 个效果；不加大于本档的效果，否则会和更重要的事件抢注意力"
+    },
+    {
+      "event": "level_started",
+      "severity": 0.5,
+      "tier": "light",
+      "minIntensity": 0.0,
+      "effects": [
+        {
+          "type": "squash_stretch",
+          "scale": 0.8
+        },
+        {
+          "type": "particles",
+          "amount": 8,
+          "color": "#84F24A"
+        },
+        {
+          "type": "ui_motion",
+          "scale": 0.5
+        }
+      ],
+      "why": "严重度 0.50 → light 档，按档位预算给 3 个效果；不加大于本档的效果，否则会和更重要的事件抢注意力"
+    },
+    {
+      "event": "level_completed",
+      "severity": 0.9,
+      "tier": "heavy",
+      "minIntensity": 0.0,
+      "effects": [
+        {
+          "type": "camera_zoom",
+          "scale": 1.0
+        },
+        {
+          "type": "particles",
+          "amount": 40,
+          "color": "#C6463C"
+        },
+        {
+          "type": "hit_stop",
+          "durationMs": 90
+        },
+        {
+          "type": "ui_motion",
+          "scale": 1.0
+        },
+        {
+          "type": "screen_flash",
+          "scale": 0.35,
+          "color": "#C6463C"
+        }
+      ],
+      "why": "完成用推近 + 粒子爆发 + UI 弹入，不用震动 —— 震动是「受击」的语义，混用会让玩家误判"
+    },
+    {
+      "event": "boss_appeared",
+      "severity": 0.85,
+      "tier": "heavy",
+      "minIntensity": 0.0,
+      "effects": [
+        {
+          "type": "squash_stretch",
+          "scale": 1.0
+        },
+        {
+          "type": "particles",
+          "amount": 32,
+          "color": "#C6463C"
+        },
+        {
+          "type": "camera_shake",
+          "scale": 1.0
+        },
+        {
+          "type": "hit_stop",
+          "durationMs": 90
+        },
+        {
+          "type": "camera_zoom",
+          "scale": 1.0
+        },
+        {
+          "type": "screen_flash",
+          "scale": 0.5,
+          "color": "#C6463C"
+        }
+      ],
+      "why": "严重度 0.85 → heavy 档，按档位预算给 6 个效果；不加大于本档的效果，否则会和更重要的事件抢注意力"
+    },
+    {
+      "event": "boss_defeated",
+      "severity": 1.0,
+      "tier": "heavy",
+      "minIntensity": 0.0,
+      "effects": [
+        {
+          "type": "squash_stretch",
+          "scale": 1.0
+        },
+        {
+          "type": "particles",
+          "amount": 32,
+          "color": "#C6463C"
+        },
+        {
+          "type": "camera_shake",
+          "scale": 1.0
+        },
+        {
+          "type": "hit_stop",
+          "durationMs": 90
+        },
+        {
+          "type": "camera_zoom",
+          "scale": 1.0
+        },
+        {
+          "type": "screen_flash",
+          "scale": 0.5,
+          "color": "#C6463C"
+        }
+      ],
+      "why": "严重度 1.00 → heavy 档，按档位预算给 6 个效果；不加大于本档的效果，否则会和更重要的事件抢注意力"
+    },
+    {
+      "event": "story_reveal",
+      "severity": 0.6,
+      "tier": "medium",
+      "minIntensity": 0.0,
+      "effects": [
+        {
+          "type": "hit_stop",
+          "durationMs": 220
+        },
+        {
+          "type": "particles",
+          "amount": 12,
+          "color": "#84F24A"
+        },
+        {
+          "type": "ui_motion",
+          "scale": 0.8
+        },
+        {
+          "type": "environmental",
+          "scale": 0.9
+        }
+      ],
+      "why": "叙事揭示用「时间停顿 + 环境变化」而不是震动或闪屏 —— 停顿让人安静下来听，这是听觉优先的设计；闪屏会把注意力抢回画面"
+    },
+    {
+      "event": "secret_found",
+      "severity": 0.55,
+      "tier": "medium",
+      "minIntensity": 0.0,
+      "effects": [
+        {
+          "type": "squash_stretch",
+          "scale": 1.0
+        },
+        {
+          "type": "particles",
+          "amount": 14,
+          "color": "#84F24A"
+        },
+        {
+          "type": "camera_shake",
+          "scale": 0.6
+        },
+        {
+          "type": "hit_stop",
+          "durationMs": 60
+        }
+      ],
+      "why": "严重度 0.55 → medium 档，按档位预算给 4 个效果；不加大于本档的效果，否则会和更重要的事件抢注意力"
+    },
+    {
+      "event": "resource_changed",
+      "severity": 0.2,
+      "tier": "micro",
+      "minIntensity": 0.15,
+      "effects": [
+        {
+          "type": "squash_stretch",
+          "scale": 0.4
+        },
+        {
+          "type": "ui_motion",
+          "scale": 0.3
+        }
+      ],
+      "why": "严重度 0.20 → micro 档，按档位预算给 2 个效果；不加大于本档的效果，否则会和更重要的事件抢注意力"
+    },
+    {
+      "event": "state_changed",
+      "severity": 0.3,
+      "tier": "light",
+      "minIntensity": 0.15,
+      "effects": [
+        {
+          "type": "squash_stretch",
+          "scale": 0.8
+        },
+        {
+          "type": "particles",
+          "amount": 8,
+          "color": "#84F24A"
+        },
+        {
+          "type": "ui_motion",
+          "scale": 0.5
+        }
+      ],
+      "why": "严重度 0.30 → light 档，按档位预算给 3 个效果；不加大于本档的效果，否则会和更重要的事件抢注意力"
+    },
+    {
+      "event": "memory_spent",
+      "severity": 0.55,
+      "tier": "micro",
+      "minIntensity": 0.0,
+      "effects": [
+        {
+          "type": "ui_motion",
+          "scale": 0.9
+        },
+        {
+          "type": "squash_stretch",
+          "scale": 0.25
+        }
+      ],
+      "why": "记忆消耗每几秒就发生一次，只能做 UI 层面的轻微反馈；任何镜头效果都会疲劳"
+    },
+    {
+      "event": "echo_ping",
+      "severity": 0.55,
+      "tier": "medium",
+      "minIntensity": 0.0,
+      "effects": [
+        {
+          "type": "environmental",
+          "scale": 1.0
+        },
+        {
+          "type": "particles",
+          "amount": 10,
+          "color": "#84F24A"
+        },
+        {
+          "type": "hit_stop",
+          "durationMs": 60
+        }
+      ],
+      "why": "敲钟是全局最重要的动作，但它必须「安静」：只做水纹扩散 + 极短停顿，不能震动（震动=受击语义），否则玩家会把主动发声当成被攻击"
+    },
+    {
+      "event": "memory_empty",
+      "severity": 0.55,
+      "tier": "heavy",
+      "minIntensity": 0.0,
+      "effects": [
+        {
+          "type": "slow_motion",
+          "durationMs": 500
+        },
+        {
+          "type": "hit_stop",
+          "durationMs": 180
+        },
+        {
+          "type": "camera_zoom",
+          "scale": 0.6
+        },
+        {
+          "type": "particles",
+          "amount": 20,
+          "color": "#84F24A"
+        },
+        {
+          "type": "environmental",
+          "scale": 1.0
+        }
+      ],
+      "why": "这是本作的标志性时刻（全图熄灭）。用慢动作 + 长停顿让玩家意识到「地图没了」，不用闪屏 —— 闪屏是亮，这里需要的是暗"
+    },
+    {
+      "event": "soul_delivered",
+      "severity": 0.55,
+      "tier": "medium",
+      "minIntensity": 0.0,
+      "effects": [
+        {
+          "type": "camera_zoom",
+          "scale": 0.8
+        },
+        {
+          "type": "particles",
+          "amount": 18,
+          "color": "#84F24A"
+        },
+        {
+          "type": "ui_motion",
+          "scale": 1.0
+        },
+        {
+          "type": "environmental",
+          "scale": 0.7
+        }
+      ],
+      "why": "正向事件不用震动：推近 + 粒子 + UI 弹入，与受击的语义严格区分"
+    }
+  ],
+  "coverage": {
+    "distinct_effects": 9,
+    "events": 21,
+    "tiers_used": [
+      "heavy",
+      "light",
+      "medium",
+      "micro"
+    ],
+    "effects_used": [
+      "camera_shake",
+      "camera_zoom",
+      "environmental",
+      "hit_stop",
+      "particles",
+      "screen_flash",
+      "slow_motion",
+      "squash_stretch",
+      "ui_motion"
+    ],
+    "unused_effects": [
+      "anticipation",
+      "follow_through",
+      "parallax",
+      "secondary_motion",
+      "transition"
+    ]
+  }
+}

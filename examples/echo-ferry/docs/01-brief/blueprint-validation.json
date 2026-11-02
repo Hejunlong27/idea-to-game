@@ -1,0 +1,35 @@
+{
+  "ok": true,
+  "errors": [],
+  "warnings": [
+    {
+      "path": "mechanics[0].id",
+      "msg": "`listen_locate_audio_gated` 不在词库内（允许自定义，但需在 blueprint 说明）"
+    },
+    {
+      "path": "mechanics[1].id",
+      "msg": "`echo_exposure` 不在词库内（允许自定义，但需在 blueprint 说明）"
+    },
+    {
+      "path": "mechanics[2].id",
+      "msg": "`memory_budget` 不在词库内（允许自定义，但需在 blueprint 说明）"
+    },
+    {
+      "path": "mechanics[3].id",
+      "msg": "`ghost_drift` 不在词库内（允许自定义，但需在 blueprint 说明）"
+    },
+    {
+      "path": "mechanics[4].id",
+      "msg": "`hold_breath` 不在词库内（允许自定义，但需在 blueprint 说明）"
+    },
+    {
+      "path": "mechanics[5].id",
+      "msg": "`soul_delivery` 不在词库内（允许自定义，但需在 blueprint 说明）"
+    },
+    {
+      "path": "levels[2].new",
+      "msg": "建议列本关新元素"
+    }
+  ],
+  "todo_left": 0
+}

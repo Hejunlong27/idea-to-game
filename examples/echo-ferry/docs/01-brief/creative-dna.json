@@ -1,0 +1,202 @@
+{
+  "version": "3.0",
+  "meta": {
+    "idea": "在雾海上摆渡灵魂：你看不见东西，只能发出声音听回声；每次发声都会被黑暗里的东西听见",
+    "concept_id": "C1",
+    "created": "2026-11-01T17:20:00+08:00",
+    "judged_by": "references/creative-identity.md",
+    "creative_score": 85.3,
+    "novelty_note": "启发式相似度：与 `stealth`（潜行谱系）结构重合 0.48（风险 LOW）。重合在 radial/realtime 两个维度，差异在 info=hidden 与 risk=reversible 的组合方式：视野不是被剥夺，而是被借出且会过期。",
+    "seed": 625110056
+  },
+  "identity": {
+    "game_title": "回声摆渡",
+    "core_fantasy": "我想成为雾里唯一还敢发出声音的人——用声音丈量世界，也用声音付出代价。",
+    "unique_hook": "你发出的每一声都会留下一张会腐烂的地图。",
+    "creative_promise": "你会体验到一种别处没有的紧张：不是看不见而害怕，而是明明看见过、却不敢确定它还算不算数。",
+    "signature_moment": "最后一格记忆用掉的瞬间，整片海同时熄灭，画面只剩船头一盏将熄的灯和一圈圈扩散的水纹；你听见左前方三格处有桨声，于是闭着眼划了过去。",
+    "one_line_pitch": "你发出一声，世界亮一瞬；黑暗也听见了你。"
+  },
+  "gameplay": {
+    "genre": ["解谜", "潜行"],
+    "core_verb": "listen_locate",
+    "core_mechanic": {
+      "id": "listen_locate_audio_gated",
+      "name": "回声残影",
+      "one_sentence": "你发出的每一声都会留下一张会腐烂的地图。",
+      "why_unique": "视野不是被给予的，是被借来的；借来的地图会过期，而世界不会等你。",
+      "non_numeric": true,
+      "interacts": ["echo_exposure", "memory_budget", "ghost_drift"],
+      "changes_decision": "原本你会一直敲钟保持全图可见；现在每敲一次都在烧掉你唯一的地图，你只在必须确认时才敲。",
+      "signature_moment": "最后一格记忆用掉的那一刻，全图同时熄灭，只剩心跳和远处桨声。"
+    },
+    "supporting_mechanics": [
+      {
+        "id": "echo_exposure",
+        "name": "回声暴露",
+        "role": "twist",
+        "interacts": ["listen_locate_audio_gated", "hold_breath"],
+        "note": "敲钟让半径 8 格内的东西朝你走一步：信息与风险是同一枚硬币"
+      },
+      {
+        "id": "memory_budget",
+        "name": "记忆格",
+        "role": "pressure",
+        "interacts": ["listen_locate_audio_gated", "ghost_drift"],
+        "note": "5 格，每敲一次 -1，每 12 秒回 1；耗尽时残影全灭"
+      },
+      {
+        "id": "ghost_drift",
+        "name": "残影漂移",
+        "role": "twist",
+        "interacts": ["listen_locate_audio_gated", "memory_budget"],
+        "note": "残影是「当时」的位置，敌人会移动 —— 你打的是幻影"
+      },
+      {
+        "id": "hold_breath",
+        "name": "屏息",
+        "role": "support",
+        "interacts": ["echo_exposure", "listen_locate_audio_gated"],
+        "note": "不发声则不被听见，但也完全看不见，只能听"
+      },
+      {
+        "id": "soul_delivery",
+        "name": "摆渡结算",
+        "role": "reward",
+        "interacts": ["memory_budget", "echo_exposure"],
+        "note": "每送一个灵魂上岸，黑暗里的东西更愿意朝声音走一步（奖励同时提高风险）"
+      }
+    ],
+    "player_decisions": [
+      {
+        "question": "现在敲钟确认方向，还是凭上一次的回声赌一把？",
+        "cost": "敲钟消耗一格记忆，并让半径 8 格内的东西朝你靠近一步。",
+        "cadence": "per_second"
+      },
+      {
+        "question": "把最后一格记忆留给落水者，还是留给自己靠岸？",
+        "cost": "救人多渡一个灵魂，但你可能在无光中撞上礁石。",
+        "cadence": "per_level"
+      }
+    ],
+    "progression_identity": "推进不是变快，而是你的地图越来越不可信：残影褪得更快、黑暗里的东西更愿意朝声音走、可用的记忆格不增反减。",
+    "fail_state": "被吞没时，画面只留下你最后一次敲钟的残影 —— 它告诉你你本来该往哪走。",
+    "win_condition": "把 3 个灵魂送上岸；第 3 个必须在你只剩 1 格记忆时完成。"
+  },
+  "narrative": {
+    "world_rules": [
+      "这个世界的黑暗会吞掉光，却吞不掉声音。",
+      "任何发出声音的东西，都会被黑暗里的东西听见并朝它走来。",
+      "记忆只有在被用来确认世界时才会消耗，一旦用完就无法恢复。",
+      "灵魂不能自己上岸，必须被摆渡。"
+    ],
+    "theme": "记住的代价，是不敢再确认。",
+    "emotional_arc": [
+      { "beat": "第一次敲钟", "emotion": "好奇", "level": 1 },
+      { "beat": "发现影子会动", "emotion": "不安", "level": 1 },
+      { "beat": "记忆见底", "emotion": "孤独", "level": 2 },
+      { "beat": "闭眼划向桨声", "emotion": "释然", "level": 3 }
+    ],
+    "story_frame": "guard_lose",
+    "narrative_mechanic_link": "第三条世界规则被直接写成了机制：记忆格就是「确认世界」的次数，用完就没有 —— 叙事的主题（遗忘）与玩法的资源（记忆）是同一个东西，不是贴皮。"
+  },
+  "visual": {
+    "style_identity": "水墨 × 水彩绘本（用水墨的留白与收边保证可读性，用水彩的晕染与纸纤维制造记忆感）",
+    "visual_keywords": [
+      "washi paper",
+      "ink wash",
+      "wet watercolor bleed",
+      "brass lantern",
+      "cold sea fog",
+      "fading memory"
+    ],
+    "palette": {
+      "primary": ["#0E1B2A", "#1B3A4B", "#2E5D6B", "#4A8A8C", "#E8DCC0"],
+      "accent": ["#F2B04A", "#7FD8C4"],
+      "danger": "#C6463C",
+      "background": "#08121C",
+      "ratio": { "background": 0.55, "primary": 0.25, "accent": 0.12, "danger": 0.08 }
+    },
+    "materials": ["washi paper", "ink wash", "wet watercolor", "aged brass"],
+    "lighting": "单一侧光自左上方来，色温 2700K 偏暖，衰减极快；唯一光源是船头灯，光源之外直接压成纯色而非渐变",
+    "camera": "俯视 45° 斜角（非严格等距），相机固定，只在关键事件做 1.06 倍推近",
+    "shape_language": "圆润的船体与方硬的礁石形成对比；每个可交互物都有一个明确的高光点作为视觉锚",
+    "texture_rules": [
+      "纸纤维噪点覆盖全画面 6% 不透明度",
+      "水彩边缘向外晕开 2–3px",
+      "墨线只出现在轮廓外缘，不画内部细节"
+    ],
+    "shadow_rules": "只有一层软投影，方向与船头灯一致；黑暗区域不画阴影，直接压成纯色块",
+    "depth_of_field": "只有船头灯周围 2 格清晰，其余按距离渐隐 —— 这既是美术也是玩法",
+    "ui_language": "极简线框 + 单一暖色高亮；不用渐变按钮，全部是手绘笔触的细线，圆角 0",
+    "typography": "中文用系统无衬线（Text 渲染），字号 28/18/14 三档，字重只用 normal 与 bold",
+    "character_ratio": "船与灵魂都是 1:1.2 的横向剪影，不做五官；识别靠轮廓与光点",
+    "animation_style": "慢入快出（ease-out 为主），所有循环动画都有 0.3 秒呼吸停顿；残影褪色用 alpha 线性衰减而非闪烁",
+    "fx_style": "水纹扩散圈 + 墨点飞溅；不用发光粒子，用亮度衰减表现光"
+  },
+  "audio": {
+    "audio_identity": "木质船体吱呀 + 远处海浪 + 单音毡化钢琴；所有声音比画面早半拍出现，让玩家先听见再看见",
+    "music_mood": ["exploration", "danger", "critical", "victory"],
+    "instrumentation": ["wood_creak", "sea_waves", "felt_piano", "sub_pulse", "breath"],
+    "sound_signature": [
+      "敲钟后 0.4 秒的回声三连（三下，间隔递减，暗示距离）",
+      "记忆格消耗时的一声木质轻响，音高随剩余记忆下降"
+    ],
+    "dynamic_audio_rules": [
+      { "when": "敲钟的瞬间", "change": "全部 stem 压低 6dB 让回声成为主角，0.6 秒后恢复" },
+      { "when": "记忆 ≤1 格", "change": "atmosphere 衰减 70%，加入 60→110bpm 的心跳，低频 +6dB" },
+      { "when": "黑暗里的东西进入 3 格内", "change": "bass 与 rhythm 增益随距离线性上升，atmosphere 反向下降" },
+      { "when": "送达灵魂", "change": "melody 单独浮出 2 秒，其余全部静音，然后整体淡入" }
+    ],
+    "sound_as_gameplay": {
+      "enabled": true,
+      "mechanic": "回声定位：屏幕上不会显示礁石与威胁的位置，只能靠敲钟后的回声方位与延迟判断",
+      "why": "声音携带了视觉不提供的信息（方位、距离、材质），这是机制而不是装饰"
+    }
+  },
+  "experience": {
+    "target_emotions": [
+      { "emotion": "孤独", "weight": 0.5 },
+      { "emotion": "紧张", "weight": 0.3 },
+      { "emotion": "释然", "weight": 0.2 }
+    ],
+    "pacing": [
+      { "phase": "curiosity", "intensity": 0.35, "note": "海面全黑，只有灯在晃" },
+      { "phase": "learning", "intensity": 0.45, "note": "第一次敲钟，看见三个影子" },
+      { "phase": "mastery", "intensity": 0.6, "note": "学会用回声残影规划两步" },
+      { "phase": "challenge", "intensity": 0.8, "note": "残影开始骗人，影子会动" },
+      { "phase": "surprise", "intensity": 0.75, "note": "记忆见底，全图熄灭" },
+      { "phase": "climax", "intensity": 1.0, "note": "闭眼划向桨声" },
+      { "phase": "satisfaction", "intensity": 0.5, "note": "灵魂上岸，钢琴单音" }
+    ],
+    "player_memory": "你会在关掉游戏后还记得那一声钟响之后，海面亮起来又暗下去的样子。",
+    "first_10s": "第一次敲钟，海面亮起，你看见三个影子 —— 其中一个在动。",
+    "first_30s": "你接住第一个灵魂，听到它在你船尾轻轻唱了一句。"
+  },
+  "references": [
+    {
+      "pattern_id": "listen_locate",
+      "source": "assets/data/creative-patterns/interaction-verbs.json（原创整理）",
+      "license": "CC0-1.0",
+      "how_used": "取其「信息隐藏 + 不可逆」指纹；把「听」从感官变成唯一的信息接口"
+    },
+    {
+      "pattern_id": "stealth",
+      "source": "assets/data/gameplay-patterns/archetypes.json（原创整理）",
+      "license": "CC0-1.0",
+      "how_used": "只借「视野锥」的结构；把视野从被剥夺改为被借出且会过期，避免变成潜行换皮"
+    },
+    {
+      "pattern_id": "cross_genre_borrow",
+      "source": "assets/data/creative-patterns/twist-dimensions.json（原创整理）",
+      "license": "CC0-1.0",
+      "how_used": "把解谜的「记忆翻牌」语法搬进潜行的视野系统，两套语法共用「记忆格」这一个资源"
+    },
+    {
+      "pattern_id": "paper_cutout",
+      "source": "assets/data/visual-styles/styles.json（原创整理）",
+      "license": "CC0-1.0",
+      "how_used": "只取纸纤维材质与层间投影，轮廓改用 ink_painting 的墨线收边"
+    }
+  ]
+}

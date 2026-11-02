@@ -1,0 +1,222 @@
+{
+  "version": "3.0",
+  "meta": {
+    "game_title": "回声摆渡",
+    "concept_id": "C1",
+    "created": "2026-11-01T22:20:37+08:00",
+    "chosen_proposal": "S1",
+    "creative_dna": "docs/01-brief/creative-dna.json"
+  },
+  "style": {
+    "identity": "水墨 × 水彩绘本（用水墨的留白与收边保证可读性，用水彩的晕染与纸纤维制造记忆感）",
+    "primary_style": "watercolor",
+    "secondary_style": "lowpoly_3d",
+    "keywords": [
+      "washi paper",
+      "ink wash",
+      "wet watercolor bleed",
+      "brass lantern",
+      "cold sea fog",
+      "fading memory"
+    ],
+    "style_tokens": "watercolor picture book illustration, soft pigment bleeding, cold-press paper grain, gentle washes, muted edges, children's book warmth, stone materials, clean_flat texture, flat even lighting, no directional shadow, no cast shadow, palette #0E1B2A #1B3A4B #2E5D6B with accent #F2C14A",
+    "negative": "hard outline, digital gradient, 3d render, photo, neon, hand-drawn, watercolor, pixel art, high poly, photoreal, text, letters, watermark, extra limbs",
+    "reference_direction": "水彩绘本的轮廓与收边 + 低多边形的材质与纹理",
+    "risks": [
+      "透明度容易失控，抠图会带走浅色边缘",
+      "深色主体必须换浅底",
+      "单张出图能看，成套一致性差",
+      "需要统一的相机角度否则像拼贴"
+    ]
+  },
+  "color": {
+    "primary": [
+      "#0E1B2A",
+      "#1B3A4B",
+      "#2E5D6B",
+      "#4A8A8C",
+      "#E8DCC0"
+    ],
+    "accent": [
+      "#F2C14A",
+      "#7FD8CD"
+    ],
+    "danger": "#C6463C",
+    "background": "#08121C",
+    "text": "#F2EBDD",
+    "ratio": {
+      "background": 0.55,
+      "primary": 0.25,
+      "accent": 0.12,
+      "danger": 0.08
+    },
+    "usage_rules": [
+      "背景永远占 55% 以上面积，保证「空」的感觉",
+      "强调色（#F2C14A）只用于玩家需要注意的东西，全场同时出现不超过 2 处",
+      "危险色（#C6463C）不得用于装饰，只用于威胁与不可逆操作",
+      "文字永远不用纯白，用 text 色，避免在暗背景上发光刺眼"
+    ],
+    "contrast_checks": [
+      {
+        "pair": "正文/背景",
+        "fg": "#F2EBDD",
+        "bg": "#08121C",
+        "ratio": 15.9,
+        "need": 4.5,
+        "pass": true
+      },
+      {
+        "pair": "强调/背景",
+        "fg": "#F2C14A",
+        "bg": "#08121C",
+        "ratio": 11.23,
+        "need": 3.0,
+        "pass": true
+      },
+      {
+        "pair": "主色(最亮)/背景",
+        "fg": "#E8DCC0",
+        "bg": "#08121C",
+        "ratio": 13.86,
+        "need": 3.0,
+        "pass": true
+      },
+      {
+        "pair": "危险色/背景",
+        "fg": "#C6463C",
+        "bg": "#08121C",
+        "ratio": 3.9,
+        "need": 3.0,
+        "pass": true
+      }
+    ]
+  },
+  "form": {
+    "outline": "soft_bleed，线宽随物件尺寸线性变化",
+    "outline_width_px": 2,
+    "shape_language": "round_soft",
+    "materials": [
+      "paint",
+      "stone"
+    ],
+    "texture_rules": [
+      "纸纤维噪点覆盖全画面 6% 不透明度",
+      "水彩边缘向外晕开 2–3px",
+      "墨线只出现在轮廓外缘，不画内部细节"
+    ],
+    "detail_density": "low"
+  },
+  "light": {
+    "direction": "flat",
+    "quality": "flat",
+    "temperature": "2700K 偏暖（灯）对 7000K 偏冷（雾）",
+    "shadow_rules": "只有一层软投影，方向与船头灯一致；黑暗区域不画阴影，直接压成纯色块",
+    "contrast_target": "主体与背景明度差 ≥ 25%",
+    "vignette": "四角压暗 12%，不遮玩法区域"
+  },
+  "camera": {
+    "view": "俯视",
+    "angle": "俯视 45° 斜角（非严格等距），相机固定，只在关键事件做 1.06 倍推近",
+    "angle_en": "top-down 45 degree angle, fixed camera, slight zoom-in on key events",
+    "depth_of_field": "只有船头灯周围 2 格清晰，其余按距离渐隐 —— 这既是美术也是玩法",
+    "framing": "设计分辨率 720×1280，安全区 8%",
+    "parallax_layers": 2
+  },
+  "ui": {
+    "language": "线框 + 单一强调色（#F2C14A），圆角 0，描边 2px",
+    "corner_radius_px": 0,
+    "stroke_px": 2,
+    "typography": "中文用系统无衬线（Text 渲染），字号 28/18/14 三档，字重只用 normal 与 bold",
+    "font_sizes": [
+      28,
+      18,
+      14
+    ],
+    "text_render": "全部文字用 Phaser Text 渲染，绝不画进素材（多语言与清晰度）",
+    "focus_ring": "选中态用 2px 强调色外描边，不用发光"
+  },
+  "character": {
+    "ratio": "船与灵魂都是 1:1.2 的横向剪影，不做五官；识别靠轮廓与光点",
+    "silhouette_rules": [
+      "纯黑填充后仍可与场上其他单位区分",
+      "每个角色只带一个高辨识度道具",
+      "同一游戏内全部角色同一头身比"
+    ],
+    "anchor_color": "#F2C14A",
+    "face_detail": "不做五官，靠轮廓与光点识别",
+    "consistency": {
+      "key": "C1-hero-回声摆渡",
+      "seed": 625110056,
+      "status": "prompt_only",
+      "reason": "尚未出图；--consistency 会探测通道后更新为 full_ref_chain / seed_only / degraded_no_ref",
+      "refs": [
+        {
+          "view": "front",
+          "file": "assets/raw/hero_front.png",
+          "exists": false
+        },
+        {
+          "view": "side",
+          "file": "assets/raw/hero_side.png",
+          "exists": false
+        },
+        {
+          "view": "back",
+          "file": "assets/raw/hero_back.png",
+          "exists": false
+        }
+      ]
+    }
+  },
+  "motion": {
+    "style": "慢入快出（ease-out 为主），所有循环动画都有 0.3 秒呼吸停顿；残影褪色用 alpha 线性衰减而非闪烁",
+    "easing": "ease-out 为主，强调用 Back.easeOut，不用线性",
+    "looping": "循环动画首尾帧必须可对接，且带 0.3 秒停顿",
+    "feedback_rules": [
+      "玩家动作的反馈必须在 80ms 内出现（否则感觉不到是自己的操作）",
+      "同一事件的表现强度按 severity 分级，不得所有事件同一强度",
+      "残影/衰减类效果用 alpha 线性变化，不用闪烁（闪烁会读成 bug）"
+    ]
+  },
+  "fx": {
+    "style": "水纹扩散圈 + 墨点飞溅；不用发光粒子，用亮度衰减表现光",
+    "palette": [
+      "#F2C14A",
+      "#F2EBDD",
+      "#C6463C"
+    ],
+    "rules": [
+      "特效颜色只能来自 fx.palette，不得引入新色相",
+      "特效峰值亮度不超过强调色，避免盖过玩法元素",
+      "同屏粒子数上限 120（低端设备 60）"
+    ]
+  },
+  "scene_narrative": [
+    {
+      "trigger": "记忆 ≤1 格",
+      "visual_change": "背景明度整体下降 40%，水纹消失",
+      "meaning": "世界正在失去细节 —— 这是玩家的认知状态，不是天气"
+    },
+    {
+      "trigger": "送达灵魂",
+      "visual_change": "岸边亮起一盏灯，之后永久保留",
+      "meaning": "进度可视化，同时暗示「你救的人还在」"
+    },
+    {
+      "trigger": "被威胁靠近 3 格内",
+      "visual_change": "画面边缘开始向内挤压，暗角加深",
+      "meaning": "危险不需要敌人可见也能被感知"
+    }
+  ],
+  "audio_link": {
+    "note": "视觉与音频必须共用同一套语义色/情绪映射",
+    "danger_color": "#C6463C",
+    "accent_color": "#F2C14A",
+    "mood": [
+      "exploration",
+      "danger",
+      "critical",
+      "victory"
+    ]
+  }
+}

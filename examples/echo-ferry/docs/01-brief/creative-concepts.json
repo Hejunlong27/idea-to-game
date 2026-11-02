@@ -1,0 +1,1129 @@
+{
+  "version": "3.0",
+  "idea": "在雾海上摆渡灵魂：你看不见东西，只能发出声音听回声；每次发声都会被黑暗里的东西听见",
+  "genre_hint": "puzzle",
+  "seed": 625110056,
+  "created": "2026-11-01T17:01:33+08:00",
+  "n": 5,
+  "structural_distance": {
+    "min_pairwise": 3,
+    "required": 3,
+    "pass": true
+  },
+  "concepts": [
+    {
+      "id": "C1",
+      "game_title": "回声摆渡",
+      "genre": [
+        "解谜"
+      ],
+      "one_liner": "你发出一声，世界亮一瞬；黑暗也听见了你。",
+      "core_fantasy": "我想成为雾里唯一还敢发出声音的人——用声音丈量世界，也用声音付出代价。",
+      "core_gameplay": "听声定位 + 跨品类借鉴：把另一个品类的核心语法搬进来当第二层（塔防 + 推箱子、音游 + 经营）",
+      "unique_mechanic": {
+        "id": "listen_locate_audio_gated",
+        "name": "回声残影",
+        "one_sentence": "你发出的每一声都会留下一张会腐烂的地图。",
+        "why_unique": "视野不是被给予的，是被借来的；借来的地图会过期，而世界不会等你。",
+        "non_numeric": true,
+        "interacts": [
+          "echo_exposure",
+          "memory_budget",
+          "ghost_drift"
+        ],
+        "changes_decision": "原本你会一直敲钟保持全图可见；现在每敲一次都在烧掉你唯一的地图，你只在必须确认时才敲。",
+        "signature_moment": "最后一格记忆用掉的瞬间，整片海同时熄灭，你只能听见自己的心跳和远处船桨划水的声音。"
+      },
+      "player_decisions": [
+        {
+          "question": "现在敲钟确认方向，还是凭上一次的回声赌一把？",
+          "cost": "敲钟消耗一格记忆，并让半径 8 格内的东西朝你靠近一步。",
+          "cadence": "per_second"
+        },
+        {
+          "question": "把最后一格记忆留给落水者，还是留给自己靠岸？",
+          "cost": "救人多渡一个灵魂，但你可能在无光中撞上礁石。",
+          "cadence": "per_level"
+        }
+      ],
+      "world": "雾海没有方向，只有回声。这里的黑暗会吞掉光，却吞不掉声音；听见你的东西会朝你走来；记忆是唯一的货币，用完就没有了。",
+      "main_emotion": "孤独",
+      "signature_scene": "记忆归零的那一刻，所有残影同时褪成黑，画面只剩船头一盏将熄的灯和一圈圈扩散的水纹；你听见左前方三格处有桨声，于是闭着眼划了过去。",
+      "visual_style": {
+        "id": "blend_ink_painting_watercolor",
+        "zh": "水墨 × 水彩绘本",
+        "primary_style": "ink_painting",
+        "secondary_style": "watercolor",
+        "axes": {
+          "shape": "organic_irregular",
+          "material": "paint",
+          "light": "flat_even",
+          "texture": "paper_fiber",
+          "edge": "soft_bleed"
+        },
+        "tokens": "chinese ink wash painting, sumi-e brush strokes, rice paper absorbency, large negative space, single accent color, paint materials, flat_even lighting",
+        "negative": "3d render, glossy, pixel art, dense detail, neon, hard outline, digital gradient, 3d render, photo, neon",
+        "risks": [
+          "留白多，可读性依赖构图",
+          "小元素容易糊",
+          "透明度容易失控，抠图会带走浅色边缘",
+          "深色主体必须换浅底"
+        ],
+        "why_this_blend": "用水墨的轮廓与收边保持可读性，用水彩绘本的材质与光照制造记忆点"
+      },
+      "audio_style": {
+        "mood": "exploration",
+        "identity": "木质船体吱呀 + 远处海浪 + 单音钢琴；所有声音比画面早半拍出现",
+        "instrumentation": [
+          "wood_creak",
+          "sea_waves",
+          "felt_piano",
+          "breath"
+        ],
+        "bpm": 68,
+        "mode": "major"
+      },
+      "platforms": [
+        "crazygames"
+      ],
+      "difficulty": {
+        "label": "高",
+        "score": 10
+      },
+      "innovation": "跨品类借鉴：把潜行的「视野锥」与解谜的「记忆翻牌」合成一个机制 —— 视野本身就是会过期的记忆。代价是必须给静音玩家提供视觉替代方案。",
+      "structure": {
+        "spatial": "radial",
+        "time": "realtime",
+        "info": "hidden",
+        "resource": "renewable",
+        "risk": "irreversible"
+      },
+      "twist_dimension": "cross_genre_borrow",
+      "twist_cost": "两套语法必须共用一个资源，否则会变成两个游戏拼在一起",
+      "tone": "melancholy",
+      "lighting_hint": "candle_warm",
+      "_todo": "必填：game_title / one_liner / core_fantasy / unique_mechanic 的 one_sentence+why_unique+changes_decision+signature_moment / player_decisions(≥2) / world / signature_scene / audio_style.identity",
+      "supporting_mechanics": [
+        {
+          "id": "echo_exposure",
+          "name": "回声暴露",
+          "role": "twist",
+          "interacts": [
+            "listen_locate_audio_gated",
+            "hold_breath"
+          ],
+          "note": "敲钟让半径 8 格内的东西朝你走一步：信息与风险是同一枚硬币"
+        },
+        {
+          "id": "memory_budget",
+          "name": "记忆格",
+          "role": "pressure",
+          "interacts": [
+            "listen_locate_audio_gated",
+            "ghost_drift"
+          ],
+          "note": "5 格，每敲一次 -1，缓慢回复；耗尽时残影全灭"
+        },
+        {
+          "id": "ghost_drift",
+          "name": "残影漂移",
+          "role": "twist",
+          "interacts": [
+            "listen_locate_audio_gated",
+            "memory_budget"
+          ],
+          "note": "残影是「当时」的位置，敌人会移动 —— 你打的是幻影"
+        },
+        {
+          "id": "hold_breath",
+          "name": "屏息",
+          "role": "support",
+          "interacts": [
+            "echo_exposure",
+            "listen_locate_audio_gated"
+          ],
+          "note": "不发声则不被听见，但也完全看不见，只能听"
+        }
+      ]
+    },
+    {
+      "id": "C2",
+      "game_title": "",
+      "genre": [
+        "解谜"
+      ],
+      "one_liner": "",
+      "core_fantasy": "",
+      "core_gameplay": "规划路径 + 失败成为玩法：失败会留下痕迹并改变下一局（尸体成为地形、失败次数成为资源）",
+      "unique_mechanic": {
+        "id": "path_route_failure_persists",
+        "name": "规划路径·失败成为玩法",
+        "one_sentence": "",
+        "why_unique": "",
+        "non_numeric": true,
+        "interacts": [],
+        "changes_decision": "",
+        "signature_moment": ""
+      },
+      "player_decisions": [],
+      "world": "",
+      "main_emotion": "紧张",
+      "signature_scene": "",
+      "visual_style": {
+        "id": "blend_minimal_geometric_paper_cutout",
+        "zh": "极简几何 × 纸艺剪贴",
+        "primary_style": "minimal_geometric",
+        "secondary_style": "paper_cutout",
+        "axes": {
+          "shape": "geometric_hard",
+          "material": "paper",
+          "light": "single_side",
+          "texture": "paper_fiber",
+          "edge": "crisp_ink"
+        },
+        "tokens": "minimal geometric abstraction, two-color palette, precise circles and rectangles, generous negative space, flat shading, paper materials, single_side lighting",
+        "negative": "texture, grain, organic, hand-drawn, 3d render, 3d render, glossy, digital paint, pixel art, neon",
+        "risks": [
+          "极度依赖构图，做不好就是无聊",
+          "对动画质量要求最高",
+          "层间投影必须程序化补，否则像平面贴纸",
+          "细节少，靠层次而不是细节取胜"
+        ],
+        "why_this_blend": "用极简几何的轮廓与收边保持可读性，用纸艺剪贴的材质与光照制造记忆点"
+      },
+      "audio_style": {
+        "mood": "danger",
+        "identity": "",
+        "instrumentation": [
+          "sub_pulse"
+        ],
+        "bpm": 96,
+        "mode": "minor"
+      },
+      "platforms": [
+        "crazygames"
+      ],
+      "difficulty": {
+        "label": "中",
+        "score": 5
+      },
+      "innovation": "失败成为玩法：必须保证失败也有信息增量，否则变成惩罚循环",
+      "structure": {
+        "spatial": "grid",
+        "time": "turn",
+        "info": "full",
+        "resource": "finite",
+        "risk": "reversible"
+      },
+      "twist_dimension": "fail_as_play",
+      "twist_cost": "必须保证失败也有信息增量，否则变成惩罚循环",
+      "tone": "tense",
+      "lighting_hint": "single_side",
+      "_todo": "必填：game_title / one_liner / core_fantasy / unique_mechanic 的 one_sentence+why_unique+changes_decision+signature_moment / player_decisions(≥2) / world / signature_scene / audio_style.identity"
+    },
+    {
+      "id": "C3",
+      "game_title": "",
+      "genre": [
+        "解谜"
+      ],
+      "one_liner": "",
+      "core_fantasy": "",
+      "core_gameplay": "交换市场 + 视觉变化影响决策：颜色/明度/构图变化本身是信息（红=危险，暗=未知，留白=可走）",
+      "unique_mechanic": {
+        "id": "trade_exchange_visual_information",
+        "name": "交换市场·视觉变化影响决策",
+        "one_sentence": "",
+        "why_unique": "",
+        "non_numeric": true,
+        "interacts": [],
+        "changes_decision": "",
+        "signature_moment": ""
+      },
+      "player_decisions": [],
+      "world": "",
+      "main_emotion": "好奇",
+      "signature_scene": "",
+      "visual_style": {
+        "id": "blend_pixel_art_retro_crt",
+        "zh": "像素 × 复古 CRT",
+        "primary_style": "pixel_art",
+        "secondary_style": "retro_crt",
+        "axes": {
+          "shape": "geometric_hard",
+          "material": "glass",
+          "light": "backlit",
+          "texture": "noise_film",
+          "edge": "chunky_pixel"
+        },
+        "tokens": "16-bit pixel art, limited palette, hard pixel edges, dithering shading, no anti-aliasing, glass materials, backlit lighting",
+        "negative": "smooth gradient, blurry, vector, 3d render, high resolution detail, clean modern ui, flat vector, watercolor",
+        "risks": [
+          "AI 出不了精确像素网格，必须程序化重采样",
+          "低分辨率素材与高清 UI 会打架",
+          "扫描线与 UI 文字冲突，文字必须程序化渲染",
+          "滤镜开销高，移动端需降级"
+        ],
+        "why_this_blend": "用像素的轮廓与收边保持可读性，用复古 CRT的材质与光照制造记忆点"
+      },
+      "audio_style": {
+        "mood": "exploration",
+        "identity": "",
+        "instrumentation": [
+          "glass_bell"
+        ],
+        "bpm": 68,
+        "mode": "major"
+      },
+      "platforms": [
+        "crazygames"
+      ],
+      "difficulty": {
+        "label": "中",
+        "score": 7
+      },
+      "innovation": "视觉变化影响决策：色盲友好必须单独验证，不能只靠颜色区分",
+      "structure": {
+        "spatial": "none",
+        "time": "turn",
+        "info": "partial",
+        "resource": "converted",
+        "risk": "irreversible"
+      },
+      "twist_dimension": "vision_drives_decision",
+      "twist_cost": "色盲友好必须单独验证，不能只靠颜色区分",
+      "tone": "mystery",
+      "lighting_hint": "backlit",
+      "_todo": "必填：game_title / one_liner / core_fantasy / unique_mechanic 的 one_sentence+why_unique+changes_decision+signature_moment / player_decisions(≥2) / world / signature_scene / audio_style.identity"
+    },
+    {
+      "id": "C4",
+      "game_title": "",
+      "genre": [
+        "解谜"
+      ],
+      "one_liner": "",
+      "core_fantasy": "",
+      "core_gameplay": "切割分离 + 环境成为玩法：地形/天气/光照本身参与规则运算（挡住视线、传导声音、改变通行）",
+      "unique_mechanic": {
+        "id": "cut_split_terrain_rule",
+        "name": "切割分离·环境成为玩法",
+        "one_sentence": "",
+        "why_unique": "",
+        "non_numeric": true,
+        "interacts": [],
+        "changes_decision": "",
+        "signature_moment": ""
+      },
+      "player_decisions": [],
+      "world": "",
+      "main_emotion": "温柔",
+      "signature_scene": "",
+      "visual_style": {
+        "id": "blend_clay_surreal",
+        "zh": "黏土定格 × 超现实",
+        "primary_style": "clay",
+        "secondary_style": "surreal",
+        "axes": {
+          "shape": "round_soft",
+          "material": "glass",
+          "light": "volumetric",
+          "texture": "noise_film",
+          "edge": "soft_bleed"
+        },
+        "tokens": "claymation stop-motion look, fingerprint texture, soft plasticine surfaces, warm practical lighting, shallow depth of field, glass materials, volumetric lighting",
+        "negative": "flat vector, pixel art, crisp digital, photo, cute, cartoon, flat vector, photo",
+        "risks": [
+          "指纹纹理在 128px 下变成脏点",
+          "高光容易过曝",
+          "可读性最差，玩法元素必须高对比",
+          "AI 容易画成抽象噪声"
+        ],
+        "why_this_blend": "用黏土定格的轮廓与收边保持可读性，用超现实的材质与光照制造记忆点"
+      },
+      "audio_style": {
+        "mood": "danger",
+        "identity": "",
+        "instrumentation": [
+          "music_box"
+        ],
+        "bpm": 96,
+        "mode": "minor"
+      },
+      "platforms": [
+        "crazygames"
+      ],
+      "difficulty": {
+        "label": "高",
+        "score": 10
+      },
+      "innovation": "环境成为玩法：美术与逻辑耦合，改动成本高，必须提前定死规则表",
+      "structure": {
+        "spatial": "free",
+        "time": "realtime",
+        "info": "full",
+        "resource": "converted",
+        "risk": "irreversible"
+      },
+      "twist_dimension": "environment_as_rules",
+      "twist_cost": "美术与逻辑耦合，改动成本高，必须提前定死规则表",
+      "tone": "warm",
+      "lighting_hint": "flat_even",
+      "_todo": "必填：game_title / one_liner / core_fantasy / unique_mechanic 的 one_sentence+why_unique+changes_decision+signature_moment / player_decisions(≥2) / world / signature_scene / audio_style.identity"
+    },
+    {
+      "id": "C5",
+      "game_title": "",
+      "genre": [
+        "解谜"
+      ],
+      "one_liner": "",
+      "core_fantasy": "",
+      "core_gameplay": "涂抹覆盖 + 声音成为机制：声音携带只有它能提供的信息（方位、距离、材质、真假）",
+      "unique_mechanic": {
+        "id": "paint_area_audio_gated",
+        "name": "涂抹覆盖·声音成为机制",
+        "one_sentence": "",
+        "why_unique": "",
+        "non_numeric": true,
+        "interacts": [],
+        "changes_decision": "",
+        "signature_moment": ""
+      },
+      "player_decisions": [],
+      "world": "",
+      "main_emotion": "荒诞",
+      "signature_scene": "",
+      "visual_style": {
+        "id": "blend_ink_painting_watercolor",
+        "zh": "水墨 × 水彩绘本",
+        "primary_style": "ink_painting",
+        "secondary_style": "watercolor",
+        "axes": {
+          "shape": "organic_irregular",
+          "material": "paint",
+          "light": "flat_even",
+          "texture": "paper_fiber",
+          "edge": "soft_bleed"
+        },
+        "tokens": "chinese ink wash painting, sumi-e brush strokes, rice paper absorbency, large negative space, single accent color, paint materials, flat_even lighting",
+        "negative": "3d render, glossy, pixel art, dense detail, neon, hard outline, digital gradient, 3d render, photo, neon",
+        "risks": [
+          "留白多，可读性依赖构图",
+          "小元素容易糊",
+          "透明度容易失控，抠图会带走浅色边缘",
+          "深色主体必须换浅底"
+        ],
+        "why_this_blend": "用水墨的轮廓与收边保持可读性，用水彩绘本的材质与光照制造记忆点"
+      },
+      "audio_style": {
+        "mood": "exploration",
+        "identity": "",
+        "instrumentation": [
+          "paper_rustle"
+        ],
+        "bpm": 68,
+        "mode": "major"
+      },
+      "platforms": [
+        "crazygames"
+      ],
+      "difficulty": {
+        "label": "高",
+        "score": 11
+      },
+      "innovation": "声音成为机制：必须提供视觉替代方案（无障碍），否则静音玩家无法通关",
+      "structure": {
+        "spatial": "grid",
+        "time": "realtime",
+        "info": "partial",
+        "resource": "finite",
+        "risk": "irreversible"
+      },
+      "twist_dimension": "sound_as_mechanic",
+      "twist_cost": "必须提供视觉替代方案（无障碍），否则静音玩家无法通关",
+      "tone": "funny",
+      "lighting_hint": "top_down",
+      "_todo": "必填：game_title / one_liner / core_fantasy / unique_mechanic 的 one_sentence+why_unique+changes_decision+signature_moment / player_decisions(≥2) / world / signature_scene / audio_style.identity"
+    }
+  ],
+  "how_to_choose": "先看 structural_distance 是否 pass；再看 --evaluate 的相似度；最后由人（G1）拍板",
+  "evaluation": [
+    {
+      "concept_id": "C1",
+      "title": "回声摆渡",
+      "total": 85.32,
+      "dims": {
+        "novelty": 12.32,
+        "uniqueness": 20.0,
+        "comprehensible": 15.0,
+        "interaction_depth": 15.0,
+        "narrative_link": 10.0,
+        "feasibility": 7.5,
+        "memorability": 5.5
+      },
+      "items": [
+        {
+          "code": "C1",
+          "dim": "novelty",
+          "got": 12.32,
+          "max": 20,
+          "note": "最相似原型 `stealth`（潜行谱系）结构重合 0.48 → 换皮风险 LOW；重合维度 time,info,resource,risk；反转维度 cross_genre_borrow",
+          "fix": "已低于换皮阈值，不必改动；若想再拉开差距，可换一条结构维度（信息可见度或失败代价）"
+        },
+        {
+          "code": "C2",
+          "dim": "uniqueness",
+          "got": 20.0,
+          "max": 20,
+          "note": "6 条条件达成 6/6：一句话可解释、非数值变化、与≥2机制互动、改变策略选择、能形成标志时刻、有独特性论证",
+          "fix": ""
+        },
+        {
+          "code": "C3",
+          "dim": "comprehensible",
+          "got": 15.0,
+          "max": 15,
+          "note": "动词可识别=True；决策 2 个（2–4 为佳）；品类=有；一句话=有",
+          "fix": ""
+        },
+        {
+          "code": "C4",
+          "dim": "interaction_depth",
+          "got": 15.0,
+          "max": 15,
+          "note": "机制节点 5 个，引用边 11 条，存在环（互相增强）",
+          "fix": ""
+        },
+        {
+          "code": "C5",
+          "dim": "narrative_link",
+          "got": 10.0,
+          "max": 10,
+          "note": "世界观关键词 ['记忆', '光', '声音']，其中 ['记忆', '光', '声音'] 出现在机制/决策描述里",
+          "fix": ""
+        },
+        {
+          "code": "C6",
+          "dim": "feasibility",
+          "got": 7.5,
+          "max": 10,
+          "note": "结构复杂度 10/13；机制 5 个（≤6）；平台 1 个；视觉提案=有",
+          "fix": "降低结构复杂度（去掉 free 空间或 hidden 信息）或减少机制数"
+        },
+        {
+          "code": "C7",
+          "dim": "memorability",
+          "got": 5.5,
+          "max": 10,
+          "note": "标志场景 64 字，感官词 1 个：听见",
+          "fix": "signature_scene 要写清「发生条件 + 玩家动作 + 至少两种感官反馈」"
+        }
+      ],
+      "similarity": {
+        "top_archetype": "stealth",
+        "top_archetype_zh": "潜行谱系",
+        "score": 0.48,
+        "matched_dims": [
+          "time",
+          "info",
+          "resource",
+          "risk"
+        ],
+        "reskin_risk": "LOW",
+        "top3": [
+          {
+            "archetype": "stealth",
+            "zh": "潜行谱系",
+            "score": 0.48
+          },
+          {
+            "archetype": "runner",
+            "zh": "跑酷谱系",
+            "score": 0.36
+          },
+          {
+            "archetype": "snake_grow",
+            "zh": "贪吃蛇谱系",
+            "score": 0.36
+          }
+        ]
+      },
+      "verdict": "ACCEPT",
+      "fixes": [
+        {
+          "code": "C1",
+          "dim": "novelty",
+          "got": 12.32,
+          "max": 20,
+          "note": "最相似原型 `stealth`（潜行谱系）结构重合 0.48 → 换皮风险 LOW；重合维度 time,info,resource,risk；反转维度 cross_genre_borrow",
+          "fix": "已低于换皮阈值，不必改动；若想再拉开差距，可换一条结构维度（信息可见度或失败代价）"
+        },
+        {
+          "code": "C7",
+          "dim": "memorability",
+          "got": 5.5,
+          "max": 10,
+          "note": "标志场景 64 字，感官词 1 个：听见",
+          "fix": "signature_scene 要写清「发生条件 + 玩家动作 + 至少两种感官反馈」"
+        },
+        {
+          "code": "C6",
+          "dim": "feasibility",
+          "got": 7.5,
+          "max": 10,
+          "note": "结构复杂度 10/13；机制 5 个（≤6）；平台 1 个；视觉提案=有",
+          "fix": "降低结构复杂度（去掉 free 空间或 hidden 信息）或减少机制数"
+        }
+      ]
+    },
+    {
+      "concept_id": "C2",
+      "title": "",
+      "total": 38.15,
+      "dims": {
+        "novelty": 12.32,
+        "uniqueness": 3.33,
+        "comprehensible": 7.5,
+        "interaction_depth": 0.0,
+        "narrative_link": 5.0,
+        "feasibility": 10.0,
+        "memorability": 0.0
+      },
+      "items": [
+        {
+          "code": "C1",
+          "dim": "novelty",
+          "got": 12.32,
+          "max": 20,
+          "note": "最相似原型 `match3`（三消谱系）结构重合 0.48 → 换皮风险 LOW；重合维度 spatial,time,info,risk；反转维度 fail_as_play",
+          "fix": "已低于换皮阈值，不必改动；若想再拉开差距，可换一条结构维度（信息可见度或失败代价）"
+        },
+        {
+          "code": "C2",
+          "dim": "uniqueness",
+          "got": 3.33,
+          "max": 20,
+          "note": "6 条条件达成 1/6：非数值变化；缺：一句话可解释、与≥2机制互动、改变策略选择、能形成标志时刻、有独特性论证",
+          "fix": "逐条补齐 unique_mechanic 的缺失条件（一句话/非数值/互动/策略/时刻/论证）"
+        },
+        {
+          "code": "C3",
+          "dim": "comprehensible",
+          "got": 7.5,
+          "max": 15,
+          "note": "动词可识别=True；决策 0 个（2–4 为佳）；品类=有；一句话=无",
+          "fix": "补 one_liner（玩家看完就知道要做什么）并把决策收敛到 2–4 个"
+        },
+        {
+          "code": "C4",
+          "dim": "interaction_depth",
+          "got": 0.0,
+          "max": 15,
+          "note": "机制节点 1 个，引用边 0 条，不存在环（互相增强）",
+          "fix": "至少补 3 条互动边，并让两个机制互相增强（形成环）"
+        },
+        {
+          "code": "C5",
+          "dim": "narrative_link",
+          "got": 5.0,
+          "max": 10,
+          "note": "世界观关键词 无，其中 无 出现在机制/决策描述里",
+          "fix": "把世界观里的核心词写进机制命名与决策代价（否则叙事只是贴皮）"
+        },
+        {
+          "code": "C6",
+          "dim": "feasibility",
+          "got": 10.0,
+          "max": 10,
+          "note": "结构复杂度 5/13；机制 1 个（≤6）；平台 1 个；视觉提案=有",
+          "fix": ""
+        },
+        {
+          "code": "C7",
+          "dim": "memorability",
+          "got": 0.0,
+          "max": 10,
+          "note": "标志场景 0 字，感官词 0 个：无",
+          "fix": "signature_scene 要写清「发生条件 + 玩家动作 + 至少两种感官反馈」"
+        }
+      ],
+      "similarity": {
+        "top_archetype": "match3",
+        "top_archetype_zh": "三消谱系",
+        "score": 0.48,
+        "matched_dims": [
+          "spatial",
+          "time",
+          "info",
+          "risk"
+        ],
+        "reskin_risk": "LOW",
+        "top3": [
+          {
+            "archetype": "match3",
+            "zh": "三消谱系",
+            "score": 0.48
+          },
+          {
+            "archetype": "tower_defense",
+            "zh": "塔防谱系",
+            "score": 0.48
+          },
+          {
+            "archetype": "sokoban",
+            "zh": "推箱子谱系",
+            "score": 0.36
+          }
+        ]
+      },
+      "verdict": "REJECT",
+      "fixes": [
+        {
+          "code": "C2",
+          "dim": "uniqueness",
+          "got": 3.33,
+          "max": 20,
+          "note": "6 条条件达成 1/6：非数值变化；缺：一句话可解释、与≥2机制互动、改变策略选择、能形成标志时刻、有独特性论证",
+          "fix": "逐条补齐 unique_mechanic 的缺失条件（一句话/非数值/互动/策略/时刻/论证）"
+        },
+        {
+          "code": "C4",
+          "dim": "interaction_depth",
+          "got": 0.0,
+          "max": 15,
+          "note": "机制节点 1 个，引用边 0 条，不存在环（互相增强）",
+          "fix": "至少补 3 条互动边，并让两个机制互相增强（形成环）"
+        },
+        {
+          "code": "C7",
+          "dim": "memorability",
+          "got": 0.0,
+          "max": 10,
+          "note": "标志场景 0 字，感官词 0 个：无",
+          "fix": "signature_scene 要写清「发生条件 + 玩家动作 + 至少两种感官反馈」"
+        },
+        {
+          "code": "C1",
+          "dim": "novelty",
+          "got": 12.32,
+          "max": 20,
+          "note": "最相似原型 `match3`（三消谱系）结构重合 0.48 → 换皮风险 LOW；重合维度 spatial,time,info,risk；反转维度 fail_as_play",
+          "fix": "已低于换皮阈值，不必改动；若想再拉开差距，可换一条结构维度（信息可见度或失败代价）"
+        }
+      ]
+    },
+    {
+      "concept_id": "C3",
+      "title": "",
+      "total": 36.23,
+      "dims": {
+        "novelty": 10.4,
+        "uniqueness": 3.33,
+        "comprehensible": 7.5,
+        "interaction_depth": 0.0,
+        "narrative_link": 5.0,
+        "feasibility": 10.0,
+        "memorability": 0.0
+      },
+      "items": [
+        {
+          "code": "C1",
+          "dim": "novelty",
+          "got": 10.4,
+          "max": 20,
+          "note": "最相似原型 `deckbuilder`（构筑谱系）结构重合 0.60 → 换皮风险 LOW；重合维度 spatial,time,info,resource,risk；反转维度 vision_drives_decision",
+          "fix": "已低于换皮阈值，不必改动；若想再拉开差距，可换一条结构维度（信息可见度或失败代价）"
+        },
+        {
+          "code": "C2",
+          "dim": "uniqueness",
+          "got": 3.33,
+          "max": 20,
+          "note": "6 条条件达成 1/6：非数值变化；缺：一句话可解释、与≥2机制互动、改变策略选择、能形成标志时刻、有独特性论证",
+          "fix": "逐条补齐 unique_mechanic 的缺失条件（一句话/非数值/互动/策略/时刻/论证）"
+        },
+        {
+          "code": "C3",
+          "dim": "comprehensible",
+          "got": 7.5,
+          "max": 15,
+          "note": "动词可识别=True；决策 0 个（2–4 为佳）；品类=有；一句话=无",
+          "fix": "补 one_liner（玩家看完就知道要做什么）并把决策收敛到 2–4 个"
+        },
+        {
+          "code": "C4",
+          "dim": "interaction_depth",
+          "got": 0.0,
+          "max": 15,
+          "note": "机制节点 1 个，引用边 0 条，不存在环（互相增强）",
+          "fix": "至少补 3 条互动边，并让两个机制互相增强（形成环）"
+        },
+        {
+          "code": "C5",
+          "dim": "narrative_link",
+          "got": 5.0,
+          "max": 10,
+          "note": "世界观关键词 无，其中 无 出现在机制/决策描述里",
+          "fix": "把世界观里的核心词写进机制命名与决策代价（否则叙事只是贴皮）"
+        },
+        {
+          "code": "C6",
+          "dim": "feasibility",
+          "got": 10.0,
+          "max": 10,
+          "note": "结构复杂度 7/13；机制 1 个（≤6）；平台 1 个；视觉提案=有",
+          "fix": ""
+        },
+        {
+          "code": "C7",
+          "dim": "memorability",
+          "got": 0.0,
+          "max": 10,
+          "note": "标志场景 0 字，感官词 0 个：无",
+          "fix": "signature_scene 要写清「发生条件 + 玩家动作 + 至少两种感官反馈」"
+        }
+      ],
+      "similarity": {
+        "top_archetype": "deckbuilder",
+        "top_archetype_zh": "构筑谱系",
+        "score": 0.6,
+        "matched_dims": [
+          "spatial",
+          "time",
+          "info",
+          "resource",
+          "risk"
+        ],
+        "reskin_risk": "LOW",
+        "top3": [
+          {
+            "archetype": "deckbuilder",
+            "zh": "构筑谱系",
+            "score": 0.6
+          },
+          {
+            "archetype": "merge",
+            "zh": "合成谱系",
+            "score": 0.24
+          },
+          {
+            "archetype": "sokoban",
+            "zh": "推箱子谱系",
+            "score": 0.24
+          }
+        ]
+      },
+      "verdict": "REJECT",
+      "fixes": [
+        {
+          "code": "C2",
+          "dim": "uniqueness",
+          "got": 3.33,
+          "max": 20,
+          "note": "6 条条件达成 1/6：非数值变化；缺：一句话可解释、与≥2机制互动、改变策略选择、能形成标志时刻、有独特性论证",
+          "fix": "逐条补齐 unique_mechanic 的缺失条件（一句话/非数值/互动/策略/时刻/论证）"
+        },
+        {
+          "code": "C4",
+          "dim": "interaction_depth",
+          "got": 0.0,
+          "max": 15,
+          "note": "机制节点 1 个，引用边 0 条，不存在环（互相增强）",
+          "fix": "至少补 3 条互动边，并让两个机制互相增强（形成环）"
+        },
+        {
+          "code": "C7",
+          "dim": "memorability",
+          "got": 0.0,
+          "max": 10,
+          "note": "标志场景 0 字，感官词 0 个：无",
+          "fix": "signature_scene 要写清「发生条件 + 玩家动作 + 至少两种感官反馈」"
+        },
+        {
+          "code": "C1",
+          "dim": "novelty",
+          "got": 10.4,
+          "max": 20,
+          "note": "最相似原型 `deckbuilder`（构筑谱系）结构重合 0.60 → 换皮风险 LOW；重合维度 spatial,time,info,resource,risk；反转维度 vision_drives_decision",
+          "fix": "已低于换皮阈值，不必改动；若想再拉开差距，可换一条结构维度（信息可见度或失败代价）"
+        }
+      ]
+    },
+    {
+      "concept_id": "C5",
+      "title": "",
+      "total": 35.65,
+      "dims": {
+        "novelty": 12.32,
+        "uniqueness": 3.33,
+        "comprehensible": 7.5,
+        "interaction_depth": 0.0,
+        "narrative_link": 5.0,
+        "feasibility": 7.5,
+        "memorability": 0.0
+      },
+      "items": [
+        {
+          "code": "C1",
+          "dim": "novelty",
+          "got": 12.32,
+          "max": 20,
+          "note": "最相似原型 `survival`（生存谱系）结构重合 0.48 → 换皮风险 LOW；重合维度 time,info,resource,risk；反转维度 sound_as_mechanic",
+          "fix": "已低于换皮阈值，不必改动；若想再拉开差距，可换一条结构维度（信息可见度或失败代价）"
+        },
+        {
+          "code": "C2",
+          "dim": "uniqueness",
+          "got": 3.33,
+          "max": 20,
+          "note": "6 条条件达成 1/6：非数值变化；缺：一句话可解释、与≥2机制互动、改变策略选择、能形成标志时刻、有独特性论证",
+          "fix": "逐条补齐 unique_mechanic 的缺失条件（一句话/非数值/互动/策略/时刻/论证）"
+        },
+        {
+          "code": "C3",
+          "dim": "comprehensible",
+          "got": 7.5,
+          "max": 15,
+          "note": "动词可识别=True；决策 0 个（2–4 为佳）；品类=有；一句话=无",
+          "fix": "补 one_liner（玩家看完就知道要做什么）并把决策收敛到 2–4 个"
+        },
+        {
+          "code": "C4",
+          "dim": "interaction_depth",
+          "got": 0.0,
+          "max": 15,
+          "note": "机制节点 1 个，引用边 0 条，不存在环（互相增强）",
+          "fix": "至少补 3 条互动边，并让两个机制互相增强（形成环）"
+        },
+        {
+          "code": "C5",
+          "dim": "narrative_link",
+          "got": 5.0,
+          "max": 10,
+          "note": "世界观关键词 无，其中 无 出现在机制/决策描述里",
+          "fix": "把世界观里的核心词写进机制命名与决策代价（否则叙事只是贴皮）"
+        },
+        {
+          "code": "C6",
+          "dim": "feasibility",
+          "got": 7.5,
+          "max": 10,
+          "note": "结构复杂度 11/13；机制 1 个（≤6）；平台 1 个；视觉提案=有",
+          "fix": "降低结构复杂度（去掉 free 空间或 hidden 信息）或减少机制数"
+        },
+        {
+          "code": "C7",
+          "dim": "memorability",
+          "got": 0.0,
+          "max": 10,
+          "note": "标志场景 0 字，感官词 0 个：无",
+          "fix": "signature_scene 要写清「发生条件 + 玩家动作 + 至少两种感官反馈」"
+        }
+      ],
+      "similarity": {
+        "top_archetype": "survival",
+        "top_archetype_zh": "生存谱系",
+        "score": 0.48,
+        "matched_dims": [
+          "time",
+          "info",
+          "resource",
+          "risk"
+        ],
+        "reskin_risk": "LOW",
+        "top3": [
+          {
+            "archetype": "survival",
+            "zh": "生存谱系",
+            "score": 0.48
+          },
+          {
+            "archetype": "escort_route",
+            "zh": "护送/引导谱系",
+            "score": 0.48
+          },
+          {
+            "archetype": "tower_defense",
+            "zh": "塔防谱系",
+            "score": 0.36
+          }
+        ]
+      },
+      "verdict": "REJECT",
+      "fixes": [
+        {
+          "code": "C2",
+          "dim": "uniqueness",
+          "got": 3.33,
+          "max": 20,
+          "note": "6 条条件达成 1/6：非数值变化；缺：一句话可解释、与≥2机制互动、改变策略选择、能形成标志时刻、有独特性论证",
+          "fix": "逐条补齐 unique_mechanic 的缺失条件（一句话/非数值/互动/策略/时刻/论证）"
+        },
+        {
+          "code": "C4",
+          "dim": "interaction_depth",
+          "got": 0.0,
+          "max": 15,
+          "note": "机制节点 1 个，引用边 0 条，不存在环（互相增强）",
+          "fix": "至少补 3 条互动边，并让两个机制互相增强（形成环）"
+        },
+        {
+          "code": "C7",
+          "dim": "memorability",
+          "got": 0.0,
+          "max": 10,
+          "note": "标志场景 0 字，感官词 0 个：无",
+          "fix": "signature_scene 要写清「发生条件 + 玩家动作 + 至少两种感官反馈」"
+        },
+        {
+          "code": "C1",
+          "dim": "novelty",
+          "got": 12.32,
+          "max": 20,
+          "note": "最相似原型 `survival`（生存谱系）结构重合 0.48 → 换皮风险 LOW；重合维度 time,info,resource,risk；反转维度 sound_as_mechanic",
+          "fix": "已低于换皮阈值，不必改动；若想再拉开差距，可换一条结构维度（信息可见度或失败代价）"
+        }
+      ]
+    },
+    {
+      "concept_id": "C4",
+      "title": "",
+      "total": 33.73,
+      "dims": {
+        "novelty": 10.4,
+        "uniqueness": 3.33,
+        "comprehensible": 7.5,
+        "interaction_depth": 0.0,
+        "narrative_link": 5.0,
+        "feasibility": 7.5,
+        "memorability": 0.0
+      },
+      "items": [
+        {
+          "code": "C1",
+          "dim": "novelty",
+          "got": 10.4,
+          "max": 20,
+          "note": "最相似原型 `merge`（合成谱系）结构重合 0.60 → 换皮风险 LOW；重合维度 spatial,time,info,resource,risk；反转维度 environment_as_rules",
+          "fix": "已低于换皮阈值，不必改动；若想再拉开差距，可换一条结构维度（信息可见度或失败代价）"
+        },
+        {
+          "code": "C2",
+          "dim": "uniqueness",
+          "got": 3.33,
+          "max": 20,
+          "note": "6 条条件达成 1/6：非数值变化；缺：一句话可解释、与≥2机制互动、改变策略选择、能形成标志时刻、有独特性论证",
+          "fix": "逐条补齐 unique_mechanic 的缺失条件（一句话/非数值/互动/策略/时刻/论证）"
+        },
+        {
+          "code": "C3",
+          "dim": "comprehensible",
+          "got": 7.5,
+          "max": 15,
+          "note": "动词可识别=True；决策 0 个（2–4 为佳）；品类=有；一句话=无",
+          "fix": "补 one_liner（玩家看完就知道要做什么）并把决策收敛到 2–4 个"
+        },
+        {
+          "code": "C4",
+          "dim": "interaction_depth",
+          "got": 0.0,
+          "max": 15,
+          "note": "机制节点 1 个，引用边 0 条，不存在环（互相增强）",
+          "fix": "至少补 3 条互动边，并让两个机制互相增强（形成环）"
+        },
+        {
+          "code": "C5",
+          "dim": "narrative_link",
+          "got": 5.0,
+          "max": 10,
+          "note": "世界观关键词 无，其中 无 出现在机制/决策描述里",
+          "fix": "把世界观里的核心词写进机制命名与决策代价（否则叙事只是贴皮）"
+        },
+        {
+          "code": "C6",
+          "dim": "feasibility",
+          "got": 7.5,
+          "max": 10,
+          "note": "结构复杂度 10/13；机制 1 个（≤6）；平台 1 个；视觉提案=有",
+          "fix": "降低结构复杂度（去掉 free 空间或 hidden 信息）或减少机制数"
+        },
+        {
+          "code": "C7",
+          "dim": "memorability",
+          "got": 0.0,
+          "max": 10,
+          "note": "标志场景 0 字，感官词 0 个：无",
+          "fix": "signature_scene 要写清「发生条件 + 玩家动作 + 至少两种感官反馈」"
+        }
+      ],
+      "similarity": {
+        "top_archetype": "merge",
+        "top_archetype_zh": "合成谱系",
+        "score": 0.6,
+        "matched_dims": [
+          "spatial",
+          "time",
+          "info",
+          "resource",
+          "risk"
+        ],
+        "reskin_risk": "LOW",
+        "top3": [
+          {
+            "archetype": "merge",
+            "zh": "合成谱系",
+            "score": 0.6
+          },
+          {
+            "archetype": "physics_sling",
+            "zh": "物理弹射谱系",
+            "score": 0.48
+          },
+          {
+            "archetype": "tower_stack",
+            "zh": "堆叠谱系",
+            "score": 0.48
+          }
+        ]
+      },
+      "verdict": "REJECT",
+      "fixes": [
+        {
+          "code": "C2",
+          "dim": "uniqueness",
+          "got": 3.33,
+          "max": 20,
+          "note": "6 条条件达成 1/6：非数值变化；缺：一句话可解释、与≥2机制互动、改变策略选择、能形成标志时刻、有独特性论证",
+          "fix": "逐条补齐 unique_mechanic 的缺失条件（一句话/非数值/互动/策略/时刻/论证）"
+        },
+        {
+          "code": "C4",
+          "dim": "interaction_depth",
+          "got": 0.0,
+          "max": 15,
+          "note": "机制节点 1 个，引用边 0 条，不存在环（互相增强）",
+          "fix": "至少补 3 条互动边，并让两个机制互相增强（形成环）"
+        },
+        {
+          "code": "C7",
+          "dim": "memorability",
+          "got": 0.0,
+          "max": 10,
+          "note": "标志场景 0 字，感官词 0 个：无",
+          "fix": "signature_scene 要写清「发生条件 + 玩家动作 + 至少两种感官反馈」"
+        },
+        {
+          "code": "C1",
+          "dim": "novelty",
+          "got": 10.4,
+          "max": 20,
+          "note": "最相似原型 `merge`（合成谱系）结构重合 0.60 → 换皮风险 LOW；重合维度 spatial,time,info,resource,risk；反转维度 environment_as_rules",
+          "fix": "已低于换皮阈值，不必改动；若想再拉开差距，可换一条结构维度（信息可见度或失败代价）"
+        }
+      ]
+    }
+  ],
+  "evaluated_at": "2026-11-01T17:02:31+08:00",
+  "best": "C1"
+}

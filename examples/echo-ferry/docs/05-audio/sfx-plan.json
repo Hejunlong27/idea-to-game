@@ -1,0 +1,383 @@
+{
+  "version": "2.0",
+  "total_budget_kb": 400,
+  "layers_required": [
+    "ui",
+    "gameplay",
+    "feedback",
+    "ambience"
+  ],
+  "items": [
+    {
+      "id": "ui_click",
+      "layer": "ui",
+      "cue": "menu_button",
+      "desc": "按钮点击，极短",
+      "duration_ms": 120,
+      "pitch_dir": "flat",
+      "priority": "high",
+      "synth": {
+        "recipe": "blip",
+        "params": {
+          "freq": 1320,
+          "dur": 0.04
+        }
+      },
+      "file": "assets/audio/sfx/ui_click.mp3"
+    },
+    {
+      "id": "ui_hover",
+      "layer": "ui",
+      "cue": "menu_hover",
+      "desc": "悬停提示，比点击更轻",
+      "duration_ms": 120,
+      "pitch_dir": "flat",
+      "priority": "low",
+      "synth": {
+        "recipe": "blip",
+        "params": {
+          "freq": 1760,
+          "dur": 0.03,
+          "gain": 0.5
+        }
+      },
+      "file": "assets/audio/sfx/ui_hover.mp3"
+    },
+    {
+      "id": "ui_back",
+      "layer": "ui",
+      "cue": "menu_back",
+      "desc": "返回，下行两音",
+      "duration_ms": 120,
+      "pitch_dir": "down",
+      "priority": "low",
+      "synth": {
+        "recipe": "sweep_down",
+        "params": {
+          "f0": 660,
+          "f1": 440,
+          "dur": 0.08
+        }
+      },
+      "file": "assets/audio/sfx/ui_back.mp3"
+    },
+    {
+      "id": "ui_confirm",
+      "layer": "ui",
+      "cue": "menu_confirm",
+      "desc": "确认，上行两音",
+      "duration_ms": 120,
+      "pitch_dir": "flat",
+      "priority": "low",
+      "synth": {
+        "recipe": "arp",
+        "params": {
+          "notes": "784,1046",
+          "step": 0.07
+        }
+      },
+      "file": "assets/audio/sfx/ui_confirm.mp3"
+    },
+    {
+      "id": "gameplay_action",
+      "layer": "gameplay",
+      "cue": "main_action",
+      "desc": "主行为（攻击/敲击）",
+      "duration_ms": 120,
+      "pitch_dir": "flat",
+      "priority": "high",
+      "synth": {
+        "recipe": "hit",
+        "params": {}
+      },
+      "file": "assets/audio/sfx/gameplay_action.mp3"
+    },
+    {
+      "id": "gameplay_action_b",
+      "layer": "gameplay",
+      "cue": "alt_action",
+      "desc": "次要行为",
+      "duration_ms": 120,
+      "pitch_dir": "flat",
+      "priority": "low",
+      "synth": {
+        "recipe": "blip",
+        "params": {
+          "freq": 660,
+          "dur": 0.08,
+          "kind": "tri"
+        }
+      },
+      "file": "assets/audio/sfx/gameplay_action_b.mp3"
+    },
+    {
+      "id": "gameplay_place",
+      "layer": "gameplay",
+      "cue": "place_object",
+      "desc": "放置/建造，有重量感",
+      "duration_ms": 120,
+      "pitch_dir": "flat",
+      "priority": "high",
+      "synth": {
+        "recipe": "thud",
+        "params": {
+          "f0": 160,
+          "f1": 100,
+          "dur": 0.14,
+          "noise": 0.2
+        }
+      },
+      "file": "assets/audio/sfx/gameplay_place.mp3"
+    },
+    {
+      "id": "gameplay_cast",
+      "layer": "gameplay",
+      "cue": "cast_skill",
+      "desc": "施法/触发",
+      "duration_ms": 120,
+      "pitch_dir": "up",
+      "priority": "low",
+      "synth": {
+        "recipe": "sweep_up",
+        "params": {
+          "f0": 400,
+          "f1": 900,
+          "dur": 0.14
+        }
+      },
+      "file": "assets/audio/sfx/gameplay_cast.mp3"
+    },
+    {
+      "id": "gameplay_move",
+      "layer": "gameplay",
+      "cue": "move",
+      "desc": "移动/切换",
+      "duration_ms": 120,
+      "pitch_dir": "flat",
+      "priority": "low",
+      "synth": {
+        "recipe": "blip",
+        "params": {
+          "freq": 520,
+          "dur": 0.04
+        }
+      },
+      "file": "assets/audio/sfx/gameplay_move.mp3"
+    },
+    {
+      "id": "gameplay_block",
+      "layer": "gameplay",
+      "cue": "blocked",
+      "desc": "被挡住/无效操作",
+      "duration_ms": 120,
+      "pitch_dir": "flat",
+      "priority": "low",
+      "synth": {
+        "recipe": "noise_burst",
+        "params": {
+          "dur": 0.1,
+          "cutoff": 40
+        }
+      },
+      "file": "assets/audio/sfx/gameplay_block.mp3"
+    },
+    {
+      "id": "feedback_score",
+      "layer": "feedback",
+      "cue": "score",
+      "desc": "得分（小）",
+      "duration_ms": 120,
+      "pitch_dir": "flat",
+      "priority": "high",
+      "synth": {
+        "recipe": "chime",
+        "params": {
+          "freq": 1320,
+          "dur": 0.2
+        }
+      },
+      "file": "assets/audio/sfx/feedback_score.mp3"
+    },
+    {
+      "id": "feedback_score_big",
+      "layer": "feedback",
+      "cue": "score_big",
+      "desc": "得分（大/暴击）",
+      "duration_ms": 120,
+      "pitch_dir": "flat",
+      "priority": "high",
+      "synth": {
+        "recipe": "arp",
+        "params": {
+          "notes": "988,1318,1760",
+          "step": 0.08
+        }
+      },
+      "file": "assets/audio/sfx/feedback_score_big.mp3"
+    },
+    {
+      "id": "feedback_combo",
+      "layer": "feedback",
+      "cue": "combo_up",
+      "desc": "连击上升",
+      "duration_ms": 120,
+      "pitch_dir": "flat",
+      "priority": "high",
+      "synth": {
+        "recipe": "combo",
+        "params": {}
+      },
+      "file": "assets/audio/sfx/feedback_combo.mp3"
+    },
+    {
+      "id": "feedback_hurt",
+      "layer": "feedback",
+      "cue": "hurt",
+      "desc": "受伤/受损，下行",
+      "duration_ms": 120,
+      "pitch_dir": "down",
+      "priority": "high",
+      "synth": {
+        "recipe": "sweep_down",
+        "params": {
+          "f0": 300,
+          "f1": 150,
+          "dur": 0.18
+        }
+      },
+      "file": "assets/audio/sfx/feedback_hurt.mp3"
+    },
+    {
+      "id": "feedback_levelup",
+      "layer": "feedback",
+      "cue": "levelup",
+      "desc": "升级/过关",
+      "duration_ms": 120,
+      "pitch_dir": "up",
+      "priority": "high",
+      "synth": {
+        "recipe": "levelup",
+        "params": {}
+      },
+      "file": "assets/audio/sfx/feedback_levelup.mp3"
+    },
+    {
+      "id": "feedback_win",
+      "layer": "feedback",
+      "cue": "victory",
+      "desc": "胜利 stinger",
+      "duration_ms": 120,
+      "pitch_dir": "up",
+      "priority": "high",
+      "synth": {
+        "recipe": "levelup",
+        "params": {}
+      },
+      "file": "assets/audio/sfx/feedback_win.mp3"
+    },
+    {
+      "id": "feedback_defeat",
+      "layer": "feedback",
+      "cue": "defeat",
+      "desc": "失败 stinger（克制）",
+      "duration_ms": 120,
+      "pitch_dir": "flat",
+      "priority": "high",
+      "synth": {
+        "recipe": "fail",
+        "params": {}
+      },
+      "file": "assets/audio/sfx/feedback_defeat.mp3"
+    },
+    {
+      "id": "feedback_boss",
+      "layer": "feedback",
+      "cue": "boss",
+      "desc": "首领登场 stinger",
+      "duration_ms": 120,
+      "pitch_dir": "flat",
+      "priority": "high",
+      "synth": {
+        "recipe": "thud",
+        "params": {
+          "f0": 90,
+          "f1": 40,
+          "dur": 0.5,
+          "noise": 0.45
+        }
+      },
+      "file": "assets/audio/sfx/feedback_boss.mp3"
+    },
+    {
+      "id": "feedback_event",
+      "layer": "feedback",
+      "cue": "reveal",
+      "desc": "关键揭示（叙事反转）",
+      "duration_ms": 120,
+      "pitch_dir": "flat",
+      "priority": "high",
+      "synth": {
+        "recipe": "chime",
+        "params": {
+          "freq": 880,
+          "dur": 0.5
+        }
+      },
+      "file": "assets/audio/sfx/feedback_event.mp3"
+    },
+    {
+      "id": "ambience_wind",
+      "layer": "ambience",
+      "cue": "ambient",
+      "desc": "环境：风/海",
+      "duration_ms": 120,
+      "pitch_dir": "flat",
+      "priority": "low",
+      "synth": {
+        "recipe": "pad_loop",
+        "params": {
+          "freq": 98.0,
+          "dur": 6.0
+        }
+      },
+      "file": "assets/audio/sfx/ambience_wind.mp3"
+    },
+    {
+      "id": "ambience_hum",
+      "layer": "ambience",
+      "cue": "ambient",
+      "desc": "环境：机械/电流",
+      "duration_ms": 120,
+      "pitch_dir": "flat",
+      "priority": "low",
+      "synth": {
+        "recipe": "pad_loop",
+        "params": {
+          "freq": 130.8,
+          "dur": 6.0,
+          "bright": 0.15
+        }
+      },
+      "file": "assets/audio/sfx/ambience_hum.mp3"
+    },
+    {
+      "id": "ambience_water",
+      "layer": "ambience",
+      "cue": "ambient",
+      "desc": "环境：水声底噪",
+      "duration_ms": 120,
+      "pitch_dir": "flat",
+      "priority": "low",
+      "synth": {
+        "recipe": "pad_loop",
+        "params": {
+          "freq": 146.8,
+          "dur": 6.0,
+          "bright": 0.4
+        }
+      },
+      "file": "assets/audio/sfx/ambience_water.mp3"
+    }
+  ],
+  "note": "gen_audio.py --spec 会按 synth.recipe 合成；无配方的事件标 manual 交外部工具"
+}

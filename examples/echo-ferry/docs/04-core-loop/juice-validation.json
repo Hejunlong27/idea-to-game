@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "errors": [],
+  "warnings": [
+    {
+      "path": "rules[story_reveal]",
+      "msg": "hit stop 220ms 偏长（>200ms 会打断节奏）"
+    }
+  ],
+  "distinct_effects": 9
+}

@@ -1,0 +1,69 @@
+{
+  "generated_at": "2026-11-01T14:58:35.044Z",
+  "url": "http://127.0.0.1:5199/index.html",
+  "fps_baseline": 125,
+  "results": [
+    {
+      "name": "boot 完成",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "canvas 存在且尺寸合理",
+      "ok": true,
+      "detail": "{\"w\":720,\"h\":1280,\"cw\":405,\"ch\":720}"
+    },
+    {
+      "name": "__gameState 可读（进入玩法后）",
+      "ok": true,
+      "detail": "phase,level,hull,memory,carried,delivered,soulsTotal,player,ghosts,revealed,audio,juice"
+    },
+    {
+      "name": "操作后状态发生变化",
+      "ok": true,
+      "detail": "{\"phase\":\"play\",\"level\":1,\"hull\":3,\"memory\":4,\"carried\":0,\"delivered\":0,\"soulsTotal\":1,\"player\":{\"c\":1,\"r\":7},\"ghosts\":4,\"revealed\":true,\"audio\":{\"state\":\"explo"
+    },
+    {
+      "name": "事件系统有输出",
+      "ok": true,
+      "detail": "4 条"
+    },
+    {
+      "name": "帧率（无 GPU，跳过判定）",
+      "ok": true,
+      "detail": "游戏 45 FPS / 基线 125 FPS　renderer=ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)　→ 必须在真机复测"
+    },
+    {
+      "name": "移动端无横向溢出",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "移动端无纵向溢出",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "禁用文本选择（CrazyGames 要求）",
+      "ok": true,
+      "detail": "none"
+    },
+    {
+      "name": "移动端 canvas 有尺寸",
+      "ok": true,
+      "detail": "{\"w\":390,\"h\":693}"
+    },
+    {
+      "name": "零 pageerror / console.error",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "无资源 404",
+      "ok": true,
+      "detail": ""
+    }
+  ],
+  "warnings": [],
+  "pass": true
+}

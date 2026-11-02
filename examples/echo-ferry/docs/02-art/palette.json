@@ -1,0 +1,20 @@
+{
+  "style_key": "vdna:watercolor+lowpoly_3d",
+  "style_tokens": "watercolor picture book illustration, soft pigment bleeding, cold-press paper grain, gentle washes, muted edges, children's book warmth, stone materials, clean_flat texture, flat even lighting, no directional shadow, no cast shadow, palette #0E1B2A #1B3A4B #2E5D6B with accent #F2C14A",
+  "negative": "hard outline, digital gradient, 3d render, photo, neon, hand-drawn, watercolor, pixel art, high poly, photoreal, text, letters, watermark, extra limbs",
+  "primary": [
+    "#0E1B2A",
+    "#1B3A4B",
+    "#2E5D6B",
+    "#4A8A8C",
+    "#E8DCC0"
+  ],
+  "accent": [
+    "#F2C14A",
+    "#7FD8CD"
+  ],
+  "background": "#08121C",
+  "danger": "#C6463C",
+  "text": "#F2EBDD",
+  "source": "docs/02-art/visual-dna.json（由 art_director.py 同步，不要手改）"
+}

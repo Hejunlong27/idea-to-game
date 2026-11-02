@@ -1,0 +1,51 @@
+{
+  "version": "3.0",
+  "channel": {
+    "channel": "auto",
+    "i2i": true,
+    "note": "声明了 i2i 工作流"
+  },
+  "consistency_key": "C1-hero-回声摆渡",
+  "seed": 625110056,
+  "status": "seed_only",
+  "reason": "auto 支持 i2i，但基准图尚未产出；先出 front 再回填 ref",
+  "steps": [
+    {
+      "order": 1,
+      "action": "出基准图 front",
+      "prompt_file": "docs/02-art/prompts/hero_front.txt",
+      "seed": 625110056,
+      "ref": "",
+      "check": "纯黑填充后剪影可辨"
+    },
+    {
+      "order": 2,
+      "action": "出 side（ref=front）",
+      "prompt_file": "docs/02-art/prompts/hero_side.txt",
+      "seed": 625110056,
+      "ref": "assets/raw/hero_front.png",
+      "check": "主色直方图距离 < 0.18"
+    },
+    {
+      "order": 3,
+      "action": "出 back（ref=front）",
+      "prompt_file": "docs/02-art/prompts/hero_back.txt",
+      "seed": 625110056,
+      "ref": "assets/raw/hero_front.png",
+      "check": "剪影宽高比偏差 < 0.12"
+    },
+    {
+      "order": 4,
+      "action": "出表情/姿态（ref=front）",
+      "prompt_file": "docs/02-art/prompts/hero_pose_*.txt",
+      "seed": 625110056,
+      "ref": "assets/raw/hero_front.png",
+      "check": "锚定色占比 8%–20%"
+    }
+  ],
+  "drift_thresholds": {
+    "palette_distance": 0.18,
+    "aspect_ratio_delta": 0.12
+  },
+  "note": "仅「多张图用同一 prompt」不构成一致性方案；status 必须是上述四态之一，不得虚报"
+}

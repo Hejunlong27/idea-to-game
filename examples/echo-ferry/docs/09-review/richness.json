@@ -1,0 +1,234 @@
+{
+  "verdict": "RICH",
+  "total": 94.0,
+  "stage": "design",
+  "dims": {
+    "gameplay": {
+      "label": "玩法深度",
+      "got": 30.0,
+      "max": 30,
+      "ratio": 1.0
+    },
+    "story": {
+      "label": "叙事完整",
+      "got": 25.0,
+      "max": 25,
+      "ratio": 1.0
+    },
+    "art": {
+      "label": "美学体系",
+      "got": 19.0,
+      "max": 25,
+      "ratio": 0.76
+    },
+    "audio": {
+      "label": "音频设计",
+      "got": 20.0,
+      "max": 20,
+      "ratio": 1.0
+    }
+  },
+  "items": [
+    {
+      "dim": "gameplay",
+      "code": "M1",
+      "got": 8,
+      "max": 8,
+      "note": "有效机制 6 个（需 ≥5）",
+      "fix": ""
+    },
+    {
+      "dim": "gameplay",
+      "code": "M2",
+      "got": 8.0,
+      "max": 8,
+      "note": "6/6 个机制有咬合引用，共 13 条引用边（需全咬合且边数 ≥5）",
+      "fix": ""
+    },
+    {
+      "dim": "gameplay",
+      "code": "M3",
+      "got": 6.0,
+      "max": 6,
+      "note": "非数值难度轴 3 条：信息可见度：全显示 → 残影会过期 → 记忆归零后完全无地图; 资源充裕度：5 格记忆会回复 → 4 格缓慢回复 → 3 格不再回复; 失败代价：受击后幽影被甩远 → 甩得越来越近 → 最后一关不再甩远",
+      "fix": ""
+    },
+    {
+      "dim": "gameplay",
+      "code": "M4",
+      "got": 8.0,
+      "max": 8,
+      "note": "3/3 关有合格取舍（需写成「A好但B坏」）",
+      "fix": ""
+    },
+    {
+      "dim": "story",
+      "code": "S1",
+      "got": 5.0,
+      "max": 5,
+      "note": "logline/setting/theme/规则≥3 → 4/4 达成",
+      "fix": ""
+    },
+    {
+      "dim": "story",
+      "code": "S2",
+      "got": 5.0,
+      "max": 5,
+      "note": "主角 want/need/flaw/arc → 4/4 达成",
+      "fix": ""
+    },
+    {
+      "dim": "story",
+      "code": "S3",
+      "got": 5.0,
+      "max": 5,
+      "note": "3/3 幕完整（需恰好 3 幕且每幕有 goal+turn）",
+      "fix": ""
+    },
+    {
+      "dim": "story",
+      "code": "S4",
+      "got": 4.0,
+      "max": 4,
+      "note": "3/3 关有 logline",
+      "fix": ""
+    },
+    {
+      "dim": "story",
+      "code": "S5",
+      "got": 3.0,
+      "max": 3,
+      "note": "对白 15 条，字段完整 15 条（需 ≥12 条全完整）",
+      "fix": ""
+    },
+    {
+      "dim": "story",
+      "code": "S6",
+      "got": 3.0,
+      "max": 3,
+      "note": "结局节拍 2 个",
+      "fix": ""
+    },
+    {
+      "dim": "art",
+      "code": "A1",
+      "got": 2.5,
+      "max": 5,
+      "note": "style_tokens 29 词 / negative 有 / 视角 无 / 光照 无",
+      "fix": "补 art-bible 的 perspective 与 lighting 段，style_tokens ≥15 词"
+    },
+    {
+      "dim": "art",
+      "code": "A2",
+      "got": 4.0,
+      "max": 4,
+      "note": "色数 7，语义角色 4/4 齐",
+      "fix": ""
+    },
+    {
+      "dim": "art",
+      "code": "A3",
+      "got": 6.0,
+      "max": 6,
+      "note": "覆盖 role 6/6：bg, character, fx, prop, tile, ui",
+      "fix": ""
+    },
+    {
+      "dim": "art",
+      "code": "A4",
+      "got": 1.5,
+      "max": 5,
+      "note": "一致性键 有，ref 链 0 条，固定 seed 有（需 ≥3 条 ref）",
+      "fix": "给主角类素材设 consistency_key + 固定 seed，后续姿态走 i2i ref 链"
+    },
+    {
+      "dim": "art",
+      "code": "A5",
+      "got": 3.0,
+      "max": 3,
+      "note": "UI 素材 6 个，UI 语言描述 有",
+      "fix": ""
+    },
+    {
+      "dim": "art",
+      "code": "A6",
+      "got": 2.0,
+      "max": 2,
+      "note": "主视觉 有",
+      "fix": ""
+    },
+    {
+      "dim": "audio",
+      "code": "U1",
+      "got": 5.0,
+      "max": 5,
+      "note": "音效 22 个（需 ≥16）",
+      "fix": ""
+    },
+    {
+      "dim": "audio",
+      "code": "U2",
+      "got": 5.0,
+      "max": 5,
+      "note": "覆盖 layer 4/4：ui, gameplay, feedback, ambience",
+      "fix": ""
+    },
+    {
+      "dim": "audio",
+      "code": "U3",
+      "got": 4.0,
+      "max": 4,
+      "note": "音乐 3 段，不同情绪 3 种",
+      "fix": ""
+    },
+    {
+      "dim": "audio",
+      "code": "U4",
+      "got": 3.0,
+      "max": 3,
+      "note": "关键节点 stinger 5 个（high 优先级 5）",
+      "fix": ""
+    },
+    {
+      "dim": "audio",
+      "code": "U5",
+      "got": 3.0,
+      "max": 3,
+      "note": "无配音（已声明理由：本游戏无对白）",
+      "fix": ""
+    }
+  ],
+  "cross_checks": [
+    {
+      "code": "X1",
+      "ok": true,
+      "detail": "蓝图 3 关 vs levels.json 3 关"
+    },
+    {
+      "code": "X2",
+      "ok": true,
+      "detail": "设计期跳过（音频尚未生产）"
+    },
+    {
+      "code": "X4",
+      "ok": true,
+      "detail": "设计期跳过（15 条对白待接入代码）"
+    }
+  ],
+  "min_fixes": [
+    {
+      "dim": "art",
+      "code": "A4",
+      "gain": 3.5,
+      "fix": "给主角类素材设 consistency_key + 固定 seed，后续姿态走 i2i ref 链"
+    },
+    {
+      "dim": "art",
+      "code": "A1",
+      "gain": 2.5,
+      "fix": "补 art-bible 的 perspective 与 lighting 段，style_tokens ≥15 词"
+    }
+  ],
+  "judged_by": "references/content-depth.md",
+  "has_blueprint": true
+}

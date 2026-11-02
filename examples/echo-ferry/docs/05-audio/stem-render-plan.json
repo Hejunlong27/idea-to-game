@@ -1,0 +1,50 @@
+{
+  "version": "3.0",
+  "note": "每一轨都是可独立循环的 20 秒片段，同一条 stem 在所有状态下共用 —— 这样切换状态只改音量，不会出现接缝。",
+  "targets": [
+    {
+      "stem": "melody",
+      "file": "assets/audio/bgm/stem_melody.mp3",
+      "duration_seconds": 20,
+      "loop": true,
+      "gain": 0.55,
+      "prompt": "solo sparse melody on wood_creak, sea_waves, felt_piano, sub_pulse, breath, long notes, wide silence between phrases, no drums"
+    },
+    {
+      "stem": "rhythm",
+      "file": "assets/audio/bgm/stem_rhythm.mp3",
+      "duration_seconds": 20,
+      "loop": true,
+      "gain": 0.45,
+      "prompt": "minimal rhythmic pulse, muted percussive ticks, steady tempo, no melody"
+    },
+    {
+      "stem": "bass",
+      "file": "assets/audio/bgm/stem_bass.mp3",
+      "duration_seconds": 20,
+      "loop": true,
+      "gain": 0.5,
+      "prompt": "deep sustained low drone, felt more than heard, slow swell, no melody"
+    },
+    {
+      "stem": "percussion",
+      "file": "assets/audio/bgm/stem_percussion.mp3",
+      "duration_seconds": 20,
+      "loop": true,
+      "gain": 0.4,
+      "prompt": "sparse impacts, wooden and metallic hits, large gaps, no continuous rhythm"
+    },
+    {
+      "stem": "atmosphere",
+      "file": "assets/audio/bgm/stem_atmosphere.mp3",
+      "duration_seconds": 20,
+      "loop": true,
+      "gain": 0.35,
+      "prompt": "ambient texture bed, wood_creak, sea_waves, felt_piano, sub_pulse, breath, continuous noise-like wash, no rhythm, no melody"
+    }
+  ],
+  "provider_hint": {
+    "yue2": "YuE2-Studio 逐轨生成时，style 里必须写明「solo <instrument>, no other instruments」",
+    "procedural": "python scripts/gen_stems.py --project . 合成（无外部依赖，始终可用）"
+  }
+}

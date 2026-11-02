@@ -29,8 +29,12 @@
 
 **核心机制的独特性**：视野不是被给予的，是被借来的；借来的地图会腐烂。
 
+**完整源码 + 可玩单文件都在仓库里**：`examples/echo-ferry/`（双击 `standalone.html` 即玩，无需服务器）。
+
 ```bash
-cd echo-ferry && dist/standalone.html   # 双击即玩
+cd examples/echo-ferry
+open standalone.html          # macOS；Windows 直接双击
+# 或从源码跑：npm i && npm run dev
 ```
 
 ### 上一版 Demo ·《守夜人》lighthouse-keep（v2）

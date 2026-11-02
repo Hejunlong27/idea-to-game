@@ -1,0 +1,62 @@
+{
+  "review": "playtest",
+  "zh": "试玩审核",
+  "generated_at": "2026-11-01T23:08:26+08:00",
+  "verdict": "PASS",
+  "summary": {
+    "PASS": 7,
+    "FAIL": 0,
+    "UNVERIFIED": 0
+  },
+  "checks": [
+    {
+      "code": "P1",
+      "title": "四种玩家策略都跑过",
+      "result": "PASS",
+      "evidence": "4 种策略：novice, explorer, strategist, extreme",
+      "fix": ""
+    },
+    {
+      "code": "P2",
+      "title": "试玩期间零运行时错误",
+      "result": "PASS",
+      "evidence": "0 条",
+      "fix": ""
+    },
+    {
+      "code": "P3",
+      "title": "无卡死",
+      "result": "PASS",
+      "evidence": "未检测到连续 6 秒状态不变",
+      "fix": ""
+    },
+    {
+      "code": "P4",
+      "title": "前 30 秒有正反馈",
+      "result": "PASS",
+      "evidence": "首次正反馈 5.573s",
+      "fix": ""
+    },
+    {
+      "code": "P5",
+      "title": "无意义重复劳动",
+      "result": "PASS",
+      "evidence": "重复动作占比 12%（阈值 70%）",
+      "fix": "同一操作重复而无新信息 = 重复劳动"
+    },
+    {
+      "code": "P6",
+      "title": "试玩有截图证据",
+      "result": "PASS",
+      "evidence": "25 张截图",
+      "fix": ""
+    },
+    {
+      "code": "P7",
+      "title": "已声明「AI 试玩 ≠ 真人测试」",
+      "result": "PASS",
+      "evidence": "AI 模拟试玩不等于真实用户测试。程序检测结果、AI 评价、人工评价必须分开看。",
+      "fix": ""
+    }
+  ]
+}

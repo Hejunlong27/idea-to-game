@@ -1,0 +1,72 @@
+{
+  "generated_at": "2026-11-01T23:08:26+08:00",
+  "verdict": "PASS",
+  "summary": {
+    "PASS": 38,
+    "FAIL": 0,
+    "UNVERIFIED": 0
+  },
+  "reviews": [
+    {
+      "review": "creative",
+      "zh": "创意审核",
+      "verdict": "PASS",
+      "summary": {
+        "PASS": 6,
+        "FAIL": 0,
+        "UNVERIFIED": 0
+      }
+    },
+    {
+      "review": "art",
+      "zh": "美术审核",
+      "verdict": "PASS",
+      "summary": {
+        "PASS": 6,
+        "FAIL": 0,
+        "UNVERIFIED": 0
+      }
+    },
+    {
+      "review": "animation",
+      "zh": "动画与表现审核",
+      "verdict": "PASS",
+      "summary": {
+        "PASS": 8,
+        "FAIL": 0,
+        "UNVERIFIED": 0
+      }
+    },
+    {
+      "review": "audio",
+      "zh": "音频审核",
+      "verdict": "PASS",
+      "summary": {
+        "PASS": 6,
+        "FAIL": 0,
+        "UNVERIFIED": 0
+      }
+    },
+    {
+      "review": "experience",
+      "zh": "体验审核",
+      "verdict": "PASS",
+      "summary": {
+        "PASS": 5,
+        "FAIL": 0,
+        "UNVERIFIED": 0
+      }
+    },
+    {
+      "review": "playtest",
+      "zh": "试玩审核",
+      "verdict": "PASS",
+      "summary": {
+        "PASS": 7,
+        "FAIL": 0,
+        "UNVERIFIED": 0
+      }
+    }
+  ],
+  "blocking": []
+}

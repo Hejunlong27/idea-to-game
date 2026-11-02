@@ -1,0 +1,55 @@
+{
+  "review": "audio",
+  "zh": "音频审核",
+  "generated_at": "2026-11-01T23:08:26+08:00",
+  "verdict": "PASS",
+  "summary": {
+    "PASS": 6,
+    "FAIL": 0,
+    "UNVERIFIED": 0
+  },
+  "checks": [
+    {
+      "code": "U1",
+      "title": "音频系统设计通过 schema",
+      "result": "PASS",
+      "evidence": "0 个错误",
+      "fix": ""
+    },
+    {
+      "code": "U2",
+      "title": "自适应音乐状态有真实区分度",
+      "result": "PASS",
+      "evidence": "4 个状态，4 种不同分轨配比",
+      "fix": "两个状态音量完全一样 = 切换听不出区别，自适应是假的"
+    },
+    {
+      "code": "U3",
+      "title": "音频实测（存在/削波/静音/接缝）",
+      "result": "PASS",
+      "evidence": "27 个文件：缺失 0、削波 0、静音 0、接缝可疑 0；总 1455.4KB/2048.0KB",
+      "fix": "补齐缺失文件或重做削波/静音的音效"
+    },
+    {
+      "code": "U4",
+      "title": "音频引擎真实接入（状态真的被切换）",
+      "result": "PASS",
+      "evidence": "源码实例化 AudioDirector 且调用 setState",
+      "fix": "玩法状态必须驱动音乐状态，否则分层没有意义"
+    },
+    {
+      "code": "U5",
+      "title": "声音承担玩法职责时有视觉替代（无障碍）",
+      "result": "PASS",
+      "evidence": "2 个玩法钩子，0 个缺 visual_fallback",
+      "fix": "静音玩家必须也能通关"
+    },
+    {
+      "code": "U6",
+      "title": "音频体积在预算内",
+      "result": "PASS",
+      "evidence": "1455.4KB / 2048.0KB",
+      "fix": ""
+    }
+  ]
+}

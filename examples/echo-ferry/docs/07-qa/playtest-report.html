@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<title>试玩报告 · echo-ferry</title>
+<style>
+body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;max-width:1080px;margin:0 auto;padding:28px 20px 80px;background:#0f1218;color:#e6e9f0;line-height:1.65}
+h1{font-size:26px;margin:0 0 4px} h2{font-size:19px;margin:32px 0 10px;border-left:3px solid #4ea1ff;padding-left:10px}
+.sub{color:#8b93a8;font-size:13px;margin-bottom:20px}
+table{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0 4px}
+th,td{border:1px solid #2a3140;padding:7px 9px;text-align:left}
+th{background:#1a2030;color:#aab3c6;font-weight:600}
+.bad{color:#ff6b5a} .good{color:#46d17f} .warn{color:#f2b04a}
+.card{background:#151a24;border:1px solid #242c3a;border-radius:8px;padding:14px 16px;margin:10px 0}
+.tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:10px;background:#243044;color:#9fb4d8;margin-right:6px}
+figure{display:inline-block;margin:6px;width:200px;vertical-align:top}
+figure img{width:100%;border:1px solid #2a3140;border-radius:6px}
+figcaption{font-size:11px;color:#8b93a8;text-align:center;margin-top:3px}
+ul{margin:6px 0 6px 18px;padding:0} li{margin:3px 0;font-size:14px}
+.note{font-size:12px;color:#8b93a8;border-left:2px solid #2a3140;padding-left:10px;margin-top:8px}
+</style></head><body>
+<h1>试玩报告</h1>
+<div class="sub">生成时间 2026-11-01T15:08:14.732Z　被测地址 http://127.0.0.1:5199/index.html　
+每策略 45s　生成器 <code>scripts/playtest.mjs</code></div>
+
+<div class="card"><b>AI 模拟试玩不等于真实用户测试。程序检测结果、AI 评价、人工评价必须分开看。</b></div>
+
+<h2>1. 程序检测结果（客观）</h2>
+<table><thead><tr><th>策略</th><th>时长</th><th>操作数</th><th>不同状态</th><th>重复率</th>
+<th>卡死</th><th>最长无反馈</th><th>首次正反馈</th><th>错误</th></tr></thead><tbody>
+<tr><td>新手玩家</td><td>47s</td><td>73</td><td>61</td><td>0.16</td><td>0</td><td>3051ms</td><td>10.971s</td><td>0</td></tr><tr><td>探索玩家</td><td>46s</td><td>83</td><td>78</td><td>0.06</td><td>0</td><td>1071ms</td><td>6.656s</td><td>0</td></tr><tr><td>策略玩家</td><td>46s</td><td>112</td><td>89</td><td>0.21</td><td>0</td><td>3660ms</td><td>5.968s</td><td>0</td></tr><tr><td>极限玩家</td><td>46s</td><td>258</td><td>250</td><td>0.03</td><td>0</td><td>471ms</td><td>5.573s</td><td>0</td></tr>
+</tbody></table>
+<p>事件总数 <b>136</b>　运行时错误 <b class="good">0</b></p>
+<ul><li class="good">未发现阻断性问题</li></ul>
+
+<h2>2. AI 评价（启发式，仅供参考）</h2>
+<ul><li>四种策略均未发现卡死、异常或长时间无反馈</li></ul>
+<p class="note">AI 评价来自脚本规则（事件密度、重复率、空闲间隔），不是审美判断，也不能替代人的主观体验。</p>
+
+<h2>3. 待人工确认（AI 无法判定）</h2>
+<ul><li>操作是否「一看就懂」需要真人判断 —— AI 的策略是脚本化的，不能代表新手</li><li>难度曲线是否合适需要真人玩 3 局以上</li><li>「值得记住的瞬间」是否成立，只能由人回答</li></ul>
+
+<h2>4. 事件分布</h2>
+<table><thead><tr><th>策略</th><th>事件</th><th>次数</th></tr></thead><tbody>
+<tr><td>novice</td><td>game_start</td><td>1</td></tr><tr><td>novice</td><td>level_started</td><td>1</td></tr><tr><td>novice</td><td>echo_ping</td><td>3</td></tr><tr><td>novice</td><td>enemy_spawn</td><td>3</td></tr><tr><td>novice</td><td>player_hit</td><td>10</td></tr><tr><td>novice</td><td>item_collected</td><td>3</td></tr><tr><td>novice</td><td>soul_delivered</td><td>1</td></tr><tr><td>novice</td><td>level_completed</td><td>1</td></tr><tr><td>novice</td><td>player_death</td><td>2</td></tr><tr><td>explorer</td><td>game_start</td><td>1</td></tr><tr><td>explorer</td><td>level_started</td><td>1</td></tr><tr><td>explorer</td><td>echo_ping</td><td>4</td></tr><tr><td>explorer</td><td>enemy_spawn</td><td>4</td></tr><tr><td>explorer</td><td>player_hit</td><td>9</td></tr><tr><td>explorer</td><td>item_collected</td><td>6</td></tr><tr><td>explorer</td><td>soul_delivered</td><td>4</td></tr><tr><td>explorer</td><td>level_completed</td><td>1</td></tr><tr><td>explorer</td><td>player_action</td><td>3</td></tr><tr><td>explorer</td><td>player_death</td><td>2</td></tr><tr><td>strategist</td><td>game_start</td><td>1</td></tr><tr><td>strategist</td><td>level_started</td><td>1</td></tr><tr><td>strategist</td><td>player_hit</td><td>7</td></tr><tr><td>strategist</td><td>item_collected</td><td>5</td></tr><tr><td>strategist</td><td>soul_delivered</td><td>3</td></tr><tr><td>strategist</td><td>level_completed</td><td>2</td></tr><tr><td>strategist</td><td>player_action</td><td>5</td></tr><tr><td>strategist</td><td>player_death</td><td>1</td></tr><tr><td>extreme</td><td>game_start</td><td>1</td></tr><tr><td>extreme</td><td>level_started</td><td>1</td></tr><tr><td>extreme</td><td>player_hit</td><td>17</td></tr><tr><td>extreme</td><td>item_collected</td><td>13</td></tr><tr><td>extreme</td><td>soul_delivered</td><td>7</td></tr><tr><td>extreme</td><td>level_completed</td><td>1</td></tr><tr><td>extreme</td><td>player_action</td><td>6</td></tr><tr><td>extreme</td><td>player_death</td><td>5</td></tr>
+</tbody></table>
+
+<h2>5. 运行时错误</h2>
+<ul><li>无</li></ul>
+
+<h2>6. 截图</h2>
+<div><figure><img src="playtest-shots/playtest-explorer-00.png" alt="playtest-explorer-00.png"><figcaption>playtest-explorer-00.png</figcaption></figure><figure><img src="playtest-shots/playtest-explorer-01.png" alt="playtest-explorer-01.png"><figcaption>playtest-explorer-01.png</figcaption></figure><figure><img src="playtest-shots/playtest-explorer-02.png" alt="playtest-explorer-02.png"><figcaption>playtest-explorer-02.png</figcaption></figure><figure><img src="playtest-shots/playtest-explorer-03.png" alt="playtest-explorer-03.png"><figcaption>playtest-explorer-03.png</figcaption></figure><figure><img src="playtest-shots/playtest-extreme-00.png" alt="playtest-extreme-00.png"><figcaption>playtest-extreme-00.png</figcaption></figure><figure><img src="playtest-shots/playtest-extreme-01.png" alt="playtest-extreme-01.png"><figcaption>playtest-extreme-01.png</figcaption></figure><figure><img src="playtest-shots/playtest-extreme-02.png" alt="playtest-extreme-02.png"><figcaption>playtest-extreme-02.png</figcaption></figure><figure><img src="playtest-shots/playtest-extreme-03.png" alt="playtest-extreme-03.png"><figcaption>playtest-extreme-03.png</figcaption></figure><figure><img src="playtest-shots/playtest-extreme-04.png" alt="playtest-extreme-04.png"><figcaption>playtest-extreme-04.png</figcaption></figure><figure><img src="playtest-shots/playtest-extreme-05.png" alt="playtest-extreme-05.png"><figcaption>playtest-extreme-05.png</figcaption></figure><figure><img src="playtest-shots/playtest-extreme-06.png" alt="playtest-extreme-06.png"><figcaption>playtest-extreme-06.png</figcaption></figure><figure><img src="playtest-shots/playtest-extreme-07.png" alt="playtest-extreme-07.png"><figcaption>playtest-extreme-07.png</figcaption></figure></div>
+
+<h2>7. 改进建议</h2>
+<ul>
+<li>保持当前反馈密度，重点验证真机帧率</li>
+</ul>
+</body></html>

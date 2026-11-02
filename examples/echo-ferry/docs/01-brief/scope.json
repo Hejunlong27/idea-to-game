@@ -1,0 +1,43 @@
+{
+  "genre": "puzzle",
+  "core_loop": "敲钟揭示并暴露自己 → 凭会腐烂的残影划船 → 接灵魂 → 送回岸边",
+  "controls": [
+    "方向键/WASD 划一格",
+    "空格 敲钟",
+    "点相邻格移动（触摸）"
+  ],
+  "mvp_features": [
+    "回声残影（核心机制）",
+    "回声暴露",
+    "记忆格",
+    "残影漂移",
+    "屏息",
+    "摆渡结算"
+  ],
+  "out_of_scope": [
+    "多角色切换",
+    "装备与成长",
+    "联网对战",
+    "超过 3 关",
+    "AI 生图素材",
+    "TTS 配音"
+  ],
+  "assets": {
+    "procedural": [
+      "t_water",
+      "t_shore",
+      "t_boat",
+      "t_boat_lit",
+      "t_soul",
+      "t_wraith",
+      "t_rock",
+      "t_ripple",
+      "t_dot"
+    ],
+    "audio_sfx": 22,
+    "audio_stems": 5,
+    "dialogue": 15
+  },
+  "orientation": "portrait",
+  "session_seconds": 180
+}

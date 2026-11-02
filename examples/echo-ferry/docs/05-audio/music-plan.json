@@ -1,0 +1,77 @@
+{
+  "version": "2.0",
+  "provider": "yue2",
+  "endpoint": "http://127.0.0.1:8791/mcp",
+  "items": [
+    {
+      "id": "calm",
+      "mood": "calm",
+      "when": "",
+      "style": "ambient folk, gentle and sparse, solo music box with soft pad, 72 bpm, no drums, long reverb tails, loopable",
+      "lyrics": "",
+      "title": "echo-ferry-calm",
+      "duration_seconds": 30,
+      "provider": "yue2",
+      "target_file": "assets/audio/bgm/calm.mp3",
+      "transcode": {
+        "ss": 2,
+        "t": 28,
+        "ac": 1,
+        "bitrate": "96k",
+        "loop": true
+      },
+      "fallback": {
+        "enabled": true,
+        "bpm": 72,
+        "mode": "major"
+      }
+    },
+    {
+      "id": "tense",
+      "mood": "tense",
+      "when": "",
+      "style": "dark minimal techno, uneasy and patient, low pulse with metallic ticks, 104 bpm, no melody, tight low end, loopable",
+      "lyrics": "",
+      "title": "echo-ferry-tense",
+      "duration_seconds": 30,
+      "provider": "yue2",
+      "target_file": "assets/audio/bgm/tense.mp3",
+      "transcode": {
+        "ss": 2,
+        "t": 28,
+        "ac": 1,
+        "bitrate": "96k",
+        "loop": true
+      },
+      "fallback": {
+        "enabled": true,
+        "bpm": 104,
+        "mode": "minor"
+      }
+    },
+    {
+      "id": "victory",
+      "mood": "victory",
+      "when": "",
+      "style": "uplifting orchestral pop, triumphant, brass and bells, 128 bpm, major key, big ending, not loopable",
+      "lyrics": "",
+      "title": "echo-ferry-victory",
+      "duration_seconds": 30,
+      "provider": "yue2",
+      "target_file": "assets/audio/bgm/victory.mp3",
+      "transcode": {
+        "ss": 2,
+        "t": 28,
+        "ac": 1,
+        "bitrate": "96k",
+        "loop": true
+      },
+      "fallback": {
+        "enabled": true,
+        "bpm": 128,
+        "mode": "major"
+      }
+    }
+  ],
+  "note": "lyrics 必须留空（YuE2 有人声会盖住反馈音）；产物需按 transcode 转码"
+}

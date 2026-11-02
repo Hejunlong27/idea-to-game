@@ -1,0 +1,58 @@
+{
+  "verified_at": "2026-11-01T17:29:50+08:00",
+  "checks": [
+    {
+      "id": "E1",
+      "question": "前 10 秒可理解：不需要文字说明也能做出第一个正确动作",
+      "result": "PASS",
+      "evidence": "levels.json 第 1 关含 hint「按 空格 敲钟：水面会亮，影子的位置会被记住」，且源码中存在引导逻辑"
+    },
+    {
+      "id": "E2",
+      "question": "前 30 秒有正反馈",
+      "result": "PASS",
+      "evidence": "试玩报告记录首次正反馈在 4.098s"
+    },
+    {
+      "id": "E3",
+      "question": "学习曲线",
+      "result": "PASS",
+      "evidence": "3 关，每关新机制 ≤1 且 id 均存在于 DNA（6 个机制）"
+    },
+    {
+      "id": "E4",
+      "question": "难度递进非数值",
+      "result": "PASS",
+      "evidence": "用到挑战轴 cost, information, resource（≥2 条非数值）"
+    },
+    {
+      "id": "E5",
+      "question": "存在意外（规则改写或未预告的代价）",
+      "result": "PASS",
+      "evidence": "源码中存在 story_reveal/memory_empty 事件，且 DNA 声明了推进质变"
+    },
+    {
+      "id": "E6",
+      "question": "值得记住的瞬间",
+      "result": "PASS",
+      "evidence": "1/1 个标志时刻绑定了源码中真实存在的事件（memory_empty）"
+    },
+    {
+      "id": "E7",
+      "question": "失败有学习价值",
+      "result": "PASS",
+      "evidence": "存在 player_death 事件与结束场景；表现层有慢动作（juice-plan）"
+    },
+    {
+      "id": "E8",
+      "question": "无意义重复劳动",
+      "result": "PASS",
+      "evidence": "试玩操作中重复动作占比 13%（阈值 70%）"
+    }
+  ],
+  "summary": {
+    "PASS": 8,
+    "FAIL": 0,
+    "UNVERIFIED": 0
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "size": {
+    "width": 1024,
+    "height": 1024
+  },
+  "trim": true,
+  "negative": "hard outline, digital gradient, 3d render, photo, neon, hand-drawn, watercolor, pixel art, high poly, photoreal, text, letters, watermark, extra limbs, multiple characters, cropped body, cut off limbs, back view, disconnected body parts, floating head, floating hands, exploded view, character sheet with separated elements",
+  "seed": 625110056
+}

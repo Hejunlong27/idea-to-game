@@ -1,0 +1,55 @@
+{
+  "review": "creative",
+  "zh": "创意审核",
+  "generated_at": "2026-11-01T23:08:26+08:00",
+  "verdict": "PASS",
+  "summary": {
+    "PASS": 6,
+    "FAIL": 0,
+    "UNVERIFIED": 0
+  },
+  "checks": [
+    {
+      "code": "C1",
+      "title": "创意发散（≥5 个结构不同的方案）",
+      "result": "PASS",
+      "evidence": "5 个方案，最小两两结构距离 3/5（要求 ≥3）",
+      "fix": "方案结构太像 —— 换交互动词（spatial/time/info/resource/risk 至少 3 项不同）"
+    },
+    {
+      "code": "C2",
+      "title": "Creative DNA 通过 schema",
+      "result": "PASS",
+      "evidence": "0 个 schema 错误",
+      "fix": ""
+    },
+    {
+      "code": "C3",
+      "title": "独特机制满足 6 条判据",
+      "result": "PASS",
+      "evidence": "5/5：一句话（8–80 字）、非数值、与≥2机制互动、改变策略、标志时刻",
+      "fix": "补齐缺失条件："
+    },
+    {
+      "code": "C4",
+      "title": "启发式相似度分析（换皮风险）",
+      "result": "PASS",
+      "evidence": "启发式相似度：与 `stealth`（潜行谱系）结构重合 0.48（风险 LOW）。重合在 radial/realtime 两个维度，差异在 info=hidden 与 risk=reversible 的组合方式：视野不是被剥夺，而是被借出且会过期。",
+      "fix": "与原型重合度过高 —— 按 archetypes.json 的 how_to_differentiate 重设计核心机制"
+    },
+    {
+      "code": "C5",
+      "title": "叙事与机制真实耦合",
+      "result": "PASS",
+      "evidence": "narrative_mechanic_link：第三条世界规则被直接写成了机制：记忆格就是「确认世界」的次数，用完就没有 —— 叙事的主题（遗忘）与玩法的资源（记忆）是",
+      "fix": "写清「哪条世界规则被写进了机制」，否则叙事只是贴皮"
+    },
+    {
+      "code": "C6",
+      "title": "引用模式带来源与许可",
+      "result": "PASS",
+      "evidence": "4 条引用，0 条缺 source/license",
+      "fix": "给每条引用补 source 与 license（任务书 §12.5）"
+    }
+  ]
+}

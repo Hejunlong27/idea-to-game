@@ -1,0 +1,48 @@
+{
+  "review": "experience",
+  "zh": "体验审核",
+  "generated_at": "2026-11-01T23:08:26+08:00",
+  "verdict": "PASS",
+  "summary": {
+    "PASS": 5,
+    "FAIL": 0,
+    "UNVERIFIED": 0
+  },
+  "checks": [
+    {
+      "code": "E1",
+      "title": "体验蓝图通过 schema",
+      "result": "PASS",
+      "evidence": "0 个错误",
+      "fix": ""
+    },
+    {
+      "code": "E2",
+      "title": "体验判据 E1–E8 已验证",
+      "result": "PASS",
+      "evidence": "8 条：PASS 8、FAIL 0、UNVERIFIED 0",
+      "fix": "未验证 ≠ 通过；跑 experience_forge.py --verify"
+    },
+    {
+      "code": "E3",
+      "title": "情绪曲线有高潮且峰值在 climax",
+      "result": "PASS",
+      "evidence": "峰值 1.0 在 climax",
+      "fix": "没有高潮的曲线留不下记忆点"
+    },
+    {
+      "code": "E4",
+      "title": "每关都有取舍决策",
+      "result": "PASS",
+      "evidence": "3 关，0 关缺决策",
+      "fix": ""
+    },
+    {
+      "code": "E5",
+      "title": "标志性时刻绑定了真实事件",
+      "result": "PASS",
+      "evidence": "1/1 已验证",
+      "fix": "标志时刻必须由代码里真实存在的游戏事件触发"
+    }
+  ]
+}

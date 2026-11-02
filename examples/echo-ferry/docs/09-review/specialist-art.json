@@ -1,0 +1,55 @@
+{
+  "review": "art",
+  "zh": "美术审核",
+  "generated_at": "2026-11-01T23:08:26+08:00",
+  "verdict": "PASS",
+  "summary": {
+    "PASS": 6,
+    "FAIL": 0,
+    "UNVERIFIED": 0
+  },
+  "checks": [
+    {
+      "code": "A1",
+      "title": "Visual DNA 通过 schema",
+      "result": "PASS",
+      "evidence": "0 个错误",
+      "fix": ""
+    },
+    {
+      "code": "A2",
+      "title": "色彩对比度达标（可读性）",
+      "result": "PASS",
+      "evidence": "4 组对比检查，0 组不达标",
+      "fix": "提高前景色明度或压暗背景，正文 ≥4.5:1、强调 ≥3:1"
+    },
+    {
+      "code": "A3",
+      "title": "实机截图与视觉 DNA 一致",
+      "result": "PASS",
+      "evidence": "6 张截图，主色相与 DNA 距离：file-protocol-guard.png:3°, qa-desktop.png:1°, qa-mobile.png:1°, smoke-01-boot.png:1°, smoke-02-start.png:1°, smoke-03-play.png:1°（阈值 25°）",
+      "fix": "画面色相偏离 DNA —— 检查素材或后处理是否引入了新色相"
+    },
+    {
+      "code": "A4",
+      "title": "角色一致性方案（不得虚报）",
+      "result": "PASS",
+      "evidence": "status=prompt_only（尚未出图；--consistency 会探测通道后更新为 full_ref_chain / seed）—— 已如实标注降级",
+      "fix": ""
+    },
+    {
+      "code": "A5",
+      "title": "文字由 Text 渲染（不画进素材）",
+      "result": "PASS",
+      "evidence": "源码中存在 Phaser Text 调用",
+      "fix": ""
+    },
+    {
+      "code": "A6",
+      "title": "场景承担叙事（环境随进度变化）",
+      "result": "PASS",
+      "evidence": "3 条场景叙事规则：记忆 ≤1 格",
+      "fix": "补「什么触发 + 画面怎么变 + 意味着什么」"
+    }
+  ]
+}

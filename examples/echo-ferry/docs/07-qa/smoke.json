@@ -1,0 +1,136 @@
+{
+  "generated_at": "2026-11-01T15:01:05.161Z",
+  "url": "http://127.0.0.1:5199/index.html",
+  "phases": [
+    {
+      "label": "boot",
+      "state": null
+    },
+    {
+      "label": "start",
+      "state": {
+        "phase": "play",
+        "level": 1,
+        "hull": 3,
+        "memory": 5,
+        "carried": 0,
+        "delivered": 0,
+        "soulsTotal": 1,
+        "player": {
+          "c": 1,
+          "r": 7
+        },
+        "ghosts": 0,
+        "revealed": false,
+        "audio": {
+          "state": "exploration",
+          "gains": {
+            "melody": 0.2865901229604122,
+            "rhythm": 0,
+            "bass": 0.16376578454880703,
+            "percussion": 0,
+            "atmosphere": 0.4094144613720175
+          },
+          "voices": 0,
+          "muted": false,
+          "events": [
+            "0ms game_start",
+            "0ms level_started"
+          ]
+        },
+        "juice": {
+          "quality": "high",
+          "reducedMotion": false
+        }
+      }
+    },
+    {
+      "label": "play",
+      "state": {
+        "phase": "play",
+        "level": 1,
+        "hull": 3,
+        "memory": 0,
+        "carried": 0,
+        "delivered": 0,
+        "soulsTotal": 1,
+        "player": {
+          "c": 6,
+          "r": 8
+        },
+        "ghosts": 0,
+        "revealed": true,
+        "audio": {
+          "state": "critical",
+          "gains": {
+            "melody": 0.17003861001970677,
+            "rhythm": 0.8917124646742923,
+            "bass": 0.8452347569311613,
+            "percussion": 0.4949154731829755,
+            "atmosphere": 0.12949771191242987
+          },
+          "voices": 0,
+          "muted": false,
+          "events": [
+            "3526ms enemy_spawn",
+            "3526ms echo_ping",
+            "4452ms echo_ping",
+            "4452ms enemy_spawn",
+            "4452ms echo_ping",
+            "5384ms echo_ping",
+            "5384ms enemy_spawn",
+            "5384ms memory_empty"
+          ]
+        },
+        "juice": {
+          "quality": "high",
+          "reducedMotion": false
+        }
+      }
+    }
+  ],
+  "final_state": {
+    "phase": "play",
+    "level": 1,
+    "hull": 3,
+    "memory": 0,
+    "carried": 0,
+    "delivered": 0,
+    "soulsTotal": 1,
+    "player": {
+      "c": 6,
+      "r": 8
+    },
+    "ghosts": 0,
+    "revealed": true,
+    "audio": {
+      "state": "critical",
+      "gains": {
+        "melody": 0.18370773864233853,
+        "rhythm": 0.8954934436744727,
+        "bass": 0.8474087789130822,
+        "percussion": 0.49723516032342,
+        "atmosphere": 0.13885136383283733
+      },
+      "voices": 0,
+      "muted": false,
+      "events": [
+        "3526ms enemy_spawn",
+        "3526ms echo_ping",
+        "4452ms echo_ping",
+        "4452ms enemy_spawn",
+        "4452ms echo_ping",
+        "5384ms echo_ping",
+        "5384ms enemy_spawn",
+        "5384ms memory_empty"
+      ]
+    },
+    "juice": {
+      "quality": "high",
+      "reducedMotion": false
+    }
+  },
+  "event_count": 11,
+  "errors": [],
+  "closed_loop": true
+}

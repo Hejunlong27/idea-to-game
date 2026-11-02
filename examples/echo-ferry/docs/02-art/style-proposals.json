@@ -1,0 +1,261 @@
+{
+  "version": "3.0",
+  "game_title": "回声摆渡",
+  "concept_id": "C1",
+  "created": "2026-11-01T22:20:37+08:00",
+  "how_to_choose": "看三套在「轮廓来源 / 材质 / 色温」上是否真的一眼可分；再由人确认（门禁 G2）",
+  "proposals": [
+    {
+      "id": "S1",
+      "name": "水彩绘本 × 低多边形",
+      "primary_style": "watercolor",
+      "secondary_style": "lowpoly_3d",
+      "reference_direction": "水彩绘本的轮廓与收边 + 低多边形的材质与纹理",
+      "color_system": {
+        "primary": [
+          "#0E1B2A",
+          "#1B3A4B",
+          "#2E5D6B",
+          "#4A8A8C",
+          "#E8DCC0"
+        ],
+        "accent": [
+          "#F2C14A",
+          "#7FD8CD"
+        ],
+        "danger": "#C6463C",
+        "background": "#08121C",
+        "text": "#F2EBDD",
+        "ratio": {
+          "background": 0.55,
+          "primary": 0.25,
+          "accent": 0.12,
+          "danger": 0.08
+        }
+      },
+      "outline": "soft_bleed，线宽随物件尺寸线性变化",
+      "shape_language": "round_soft",
+      "materials": [
+        "paint",
+        "stone"
+      ],
+      "lighting": "平光，无方向；无方向光，靠固有色区分",
+      "camera": "俯视 45° 斜角，相机固定，关键事件 1.06 倍推近",
+      "camera_en": "top-down 45 degree angle, fixed camera, slight zoom-in on key events",
+      "atmosphere": "clean_flat 质感 + 水彩绘本 的空间感",
+      "ui_language": "线框 + 单一强调色（#F2C14A），圆角 0，描边 2px",
+      "character_design": "横向剪影，不做五官；每个角色只带一个高辨识度道具",
+      "positive_prompt": "watercolor picture book illustration, soft pigment bleeding, cold-press paper grain, gentle washes, muted edges, children's book warmth, stone materials, clean_flat texture, flat even lighting, no directional shadow, no cast shadow, palette #0E1B2A #1B3A4B #2E5D6B with accent #F2C14A",
+      "negative_prompt": "hard outline, digital gradient, 3d render, photo, neon, hand-drawn, watercolor, pixel art, high poly, photoreal, text, letters, watermark, extra limbs",
+      "risks": [
+        "透明度容易失控，抠图会带走浅色边缘",
+        "深色主体必须换浅底",
+        "单张出图能看，成套一致性差",
+        "需要统一的相机角度否则像拼贴"
+      ],
+      "differentiation": "与 S2 的区别：轮廓来自 水彩绘本，色相偏移 +0°，饱和度 +0.00",
+      "contrast_checks": [
+        {
+          "pair": "正文/背景",
+          "fg": "#F2EBDD",
+          "bg": "#08121C",
+          "ratio": 15.9,
+          "need": 4.5,
+          "pass": true
+        },
+        {
+          "pair": "强调/背景",
+          "fg": "#F2C14A",
+          "bg": "#08121C",
+          "ratio": 11.23,
+          "need": 3.0,
+          "pass": true
+        },
+        {
+          "pair": "主色(最亮)/背景",
+          "fg": "#E8DCC0",
+          "bg": "#08121C",
+          "ratio": 13.86,
+          "need": 3.0,
+          "pass": true
+        },
+        {
+          "pair": "危险色/背景",
+          "fg": "#C6463C",
+          "bg": "#08121C",
+          "ratio": 3.9,
+          "need": 3.0,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "id": "S2",
+      "name": "像素 × 等距微缩",
+      "primary_style": "pixel_art",
+      "secondary_style": "isometric_diorama",
+      "reference_direction": "像素的轮廓与收边 + 等距微缩的材质与纹理",
+      "color_system": {
+        "primary": [
+          "#111527",
+          "#212D45",
+          "#374B62",
+          "#57727F",
+          "#E3E3C5"
+        ],
+        "accent": [
+          "#E5E656",
+          "#89C2CE"
+        ],
+        "danger": "#C66F3C",
+        "background": "#08101C",
+        "text": "#F2EBDD",
+        "ratio": {
+          "background": 0.55,
+          "primary": 0.25,
+          "accent": 0.12,
+          "danger": 0.08
+        }
+      },
+      "outline": "chunky_pixel，线宽随物件尺寸线性变化",
+      "shape_language": "geometric_hard",
+      "materials": [
+        "paint",
+        "wood"
+      ],
+      "lighting": "平光，无方向；无方向光，靠固有色区分",
+      "camera": "俯视 45° 斜角，相机固定，关键事件 1.06 倍推近",
+      "camera_en": "top-down 45 degree angle, fixed camera, slight zoom-in on key events",
+      "atmosphere": "clean_flat 质感 + 像素 的空间感",
+      "ui_language": "线框 + 单一强调色（#E5E656），圆角 0，描边 2px",
+      "character_design": "横向剪影，不做五官；每个角色只带一个高辨识度道具",
+      "positive_prompt": "16-bit pixel art, limited palette, hard pixel edges, dithering shading, no anti-aliasing, wood materials, clean_flat texture, flat even lighting, no directional shadow, no cast shadow, palette #111527 #212D45 #374B62 with accent #E5E656",
+      "negative_prompt": "smooth gradient, blurry, vector, 3d render, high resolution detail, perspective vanishing point, side view, flat 2d, photo, text, letters, watermark, extra limbs",
+      "risks": [
+        "AI 出不了精确像素网格，必须程序化重采样",
+        "低分辨率素材与高清 UI 会打架",
+        "等距比例必须写死，AI 会画出透视",
+        "边界需要裁切"
+      ],
+      "differentiation": "与 S1 的区别：轮廓来自 像素，色相偏移 +18°，饱和度 -0.12",
+      "contrast_checks": [
+        {
+          "pair": "正文/背景",
+          "fg": "#F2EBDD",
+          "bg": "#08101C",
+          "ratio": 16.08,
+          "need": 4.5,
+          "pass": true
+        },
+        {
+          "pair": "强调/背景",
+          "fg": "#E5E656",
+          "bg": "#08101C",
+          "ratio": 14.33,
+          "need": 3.0,
+          "pass": true
+        },
+        {
+          "pair": "主色(最亮)/背景",
+          "fg": "#E3E3C5",
+          "bg": "#08101C",
+          "ratio": 14.58,
+          "need": 3.0,
+          "pass": true
+        },
+        {
+          "pair": "危险色/背景",
+          "fg": "#C66F3C",
+          "bg": "#08101C",
+          "ratio": 5.21,
+          "need": 3.0,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "id": "S3",
+      "name": "黏土定格 × 超现实",
+      "primary_style": "clay",
+      "secondary_style": "surreal",
+      "reference_direction": "黏土定格的轮廓与收边 + 超现实的材质与纹理",
+      "color_system": {
+        "primary": [
+          "#0B232D",
+          "#164950",
+          "#267372",
+          "#3F9785",
+          "#ECD2BC"
+        ],
+        "accent": [
+          "#FC9940",
+          "#77E0BB"
+        ],
+        "danger": "#C63C52",
+        "background": "#08141C",
+        "text": "#F2EBDD",
+        "ratio": {
+          "background": 0.55,
+          "primary": 0.25,
+          "accent": 0.12,
+          "danger": 0.08
+        }
+      },
+      "outline": "soft_bleed，线宽随物件尺寸线性变化",
+      "shape_language": "round_soft",
+      "materials": [
+        "clay",
+        "glass"
+      ],
+      "lighting": "光从右上方来；柔光，阴影边缘晕开",
+      "camera": "俯视 45° 斜角，相机固定，关键事件 1.06 倍推近",
+      "camera_en": "top-down 45 degree angle, fixed camera, slight zoom-in on key events",
+      "atmosphere": "noise_film 质感 + 黏土定格 的空间感",
+      "ui_language": "线框 + 单一强调色（#FC9940），圆角 0，描边 2px",
+      "character_design": "横向剪影，不做五官；每个角色只带一个高辨识度道具",
+      "positive_prompt": "claymation stop-motion look, fingerprint texture, soft plasticine surfaces, warm practical lighting, shallow depth of field, glass materials, noise_film texture, light from upper right, soft diffused shadows, palette #0B232D #164950 #267372 with accent #FC9940",
+      "negative_prompt": "flat vector, pixel art, crisp digital, photo, cute, cartoon, flat vector, photo, text, letters, watermark, extra limbs",
+      "risks": [
+        "指纹纹理在 128px 下变成脏点",
+        "高光容易过曝",
+        "可读性最差，玩法元素必须高对比",
+        "AI 容易画成抽象噪声"
+      ],
+      "differentiation": "与 S1 的区别：轮廓来自 黏土定格，色相偏移 -14°，饱和度 +0.10",
+      "contrast_checks": [
+        {
+          "pair": "正文/背景",
+          "fg": "#F2EBDD",
+          "bg": "#08141C",
+          "ratio": 15.71,
+          "need": 4.5,
+          "pass": true
+        },
+        {
+          "pair": "强调/背景",
+          "fg": "#FC9940",
+          "bg": "#08141C",
+          "ratio": 8.67,
+          "need": 3.0,
+          "pass": true
+        },
+        {
+          "pair": "主色(最亮)/背景",
+          "fg": "#ECD2BC",
+          "bg": "#08141C",
+          "ratio": 12.87,
+          "need": 3.0,
+          "pass": true
+        },
+        {
+          "pair": "危险色/背景",
+          "fg": "#C63C52",
+          "bg": "#08141C",
+          "ratio": 3.7,
+          "need": 3.0,
+          "pass": true
+        }
+      ]
+    }
+  ]
+}

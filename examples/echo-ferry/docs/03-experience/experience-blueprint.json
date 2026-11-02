@@ -1,0 +1,175 @@
+{
+  "version": "3.0",
+  "meta": {
+    "game_title": "回声摆渡",
+    "created": "2026-11-01T17:29:50+08:00",
+    "creative_dna": "docs/01-brief/creative-dna.json",
+    "target_session_seconds": 150,
+    "target_emotions": [
+      "孤独",
+      "紧张",
+      "释然"
+    ],
+    "player_memory": "你会在关掉游戏后还记得那一声钟响之后，海面亮起来又暗下去的样子。",
+    "first_10s": "第一次敲钟，海面亮起，你看见三个影子 —— 其中一个在动。",
+    "first_30s": "你接住第一个灵魂，听到它在你船尾轻轻唱了一句。"
+  },
+  "emotion_curve": [
+    {
+      "phase": "curiosity",
+      "zh": "好奇",
+      "intensity": 0.35,
+      "at_seconds": 0.0,
+      "player_does": "看见海面全黑，只有一个可以按的键",
+      "feedback": "按下后海面亮起"
+    },
+    {
+      "phase": "learning",
+      "zh": "学习",
+      "intensity": 0.45,
+      "at_seconds": 25.0,
+      "player_does": "敲钟 → 看见影子 → 划过去",
+      "feedback": "接到第一个灵魂，听到它唱"
+    },
+    {
+      "phase": "mastery",
+      "zh": "掌握",
+      "intensity": 0.6,
+      "at_seconds": 50.0,
+      "player_does": "用上一次的残影规划两步",
+      "feedback": "连续两次不敲钟也走对"
+    },
+    {
+      "phase": "challenge",
+      "zh": "挑战",
+      "intensity": 0.8,
+      "at_seconds": 75.0,
+      "player_does": "残影开始骗人（影子会动）",
+      "feedback": "被幻影骗到，掉一格船体"
+    },
+    {
+      "phase": "surprise",
+      "zh": "意外",
+      "intensity": 0.7,
+      "at_seconds": 100.0,
+      "player_does": "记忆见底，全图熄灭",
+      "feedback": "听见心跳与桨声"
+    },
+    {
+      "phase": "climax",
+      "zh": "高潮",
+      "intensity": 1.0,
+      "at_seconds": 125.0,
+      "player_does": "闭眼划向桨声",
+      "feedback": "送达最后一个灵魂"
+    },
+    {
+      "phase": "satisfaction",
+      "zh": "满足",
+      "intensity": 0.5,
+      "at_seconds": 150.0,
+      "player_does": "灯亮起，海面安静",
+      "feedback": "看到三个灯位都亮着"
+    }
+  ],
+  "levels": [
+    {
+      "level": 1,
+      "emotion": "好奇",
+      "learn": "能做到：敲一次钟，读出声源方向并划过去",
+      "new_mechanic": null,
+      "core_decision": "现在敲钟确认方向，还是凭上一次的回声赌一把",
+      "challenge": "information",
+      "feedback": "钟响后水纹扩散 + 三个影子的方位音",
+      "climax": "第一次看见影子在动",
+      "reward": "岸边亮起第一盏灯",
+      "next_hook": "下一片海里，影子会开始动得更快",
+      "duration_seconds": 55
+    },
+    {
+      "level": 2,
+      "emotion": "紧张",
+      "learn": "能做到：用两次回声之间的差判断影子往哪走",
+      "new_mechanic": "ghost_drift",
+      "core_decision": "省下记忆慢慢摸，还是敲一次钟换一个确切答案",
+      "challenge": "resource",
+      "feedback": "残影逐渐褪色，褪到一半时轮廓开始抖",
+      "climax": "你按残影划过去，那里什么都没有",
+      "reward": "学会读「残影年龄」，岸边第二盏灯亮起",
+      "next_hook": "最后一关，记忆不会自己回来了",
+      "duration_seconds": 65
+    },
+    {
+      "level": 3,
+      "emotion": "释然",
+      "learn": "能做到：在完全没有地图的情况下靠声音靠岸",
+      "new_mechanic": null,
+      "core_decision": "把最后一格记忆留给落水者，还是留给自己靠岸",
+      "challenge": "cost",
+      "feedback": "心跳声随记忆减少变快，最后一格时全图熄灭",
+      "climax": "记忆归零，整片海同时暗下去",
+      "reward": "第三盏灯亮起，海面安静",
+      "next_hook": "（本作到此结束）",
+      "duration_seconds": 70
+    }
+  ],
+  "checks": [
+    {
+      "id": "E1",
+      "question": "前 10 秒可理解：不需要文字说明也能做出第一个正确动作",
+      "result": "PASS",
+      "evidence": "levels.json 第 1 关含 hint「按 空格 敲钟：水面会亮，影子的位置会被记住」，且源码中存在引导逻辑"
+    },
+    {
+      "id": "E2",
+      "question": "前 30 秒有正反馈",
+      "result": "PASS",
+      "evidence": "试玩报告记录首次正反馈在 4.098s"
+    },
+    {
+      "id": "E3",
+      "question": "学习曲线",
+      "result": "PASS",
+      "evidence": "3 关，每关新机制 ≤1 且 id 均存在于 DNA（6 个机制）"
+    },
+    {
+      "id": "E4",
+      "question": "难度递进非数值",
+      "result": "PASS",
+      "evidence": "用到挑战轴 cost, information, resource（≥2 条非数值）"
+    },
+    {
+      "id": "E5",
+      "question": "存在意外（规则改写或未预告的代价）",
+      "result": "PASS",
+      "evidence": "源码中存在 story_reveal/memory_empty 事件，且 DNA 声明了推进质变"
+    },
+    {
+      "id": "E6",
+      "question": "值得记住的瞬间",
+      "result": "PASS",
+      "evidence": "1/1 个标志时刻绑定了源码中真实存在的事件（memory_empty）"
+    },
+    {
+      "id": "E7",
+      "question": "失败有学习价值",
+      "result": "PASS",
+      "evidence": "存在 player_death 事件与结束场景；表现层有慢动作（juice-plan）"
+    },
+    {
+      "id": "E8",
+      "question": "无意义重复劳动",
+      "result": "PASS",
+      "evidence": "试玩操作中重复动作占比 13%（阈值 70%）"
+    }
+  ],
+  "signature_moments": [
+    {
+      "id": "M1",
+      "when": "记忆归零",
+      "what_happens": "最后一格记忆用掉的瞬间，整片海同时熄灭，画面只剩船头一盏将熄的灯和一圈圈扩散的水纹；你听见左前方三格处有桨声，于是闭着眼划了过去。",
+      "event": "memory_empty",
+      "verified": true
+    }
+  ]
+}
