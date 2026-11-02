@@ -1,10 +1,15 @@
 import Phaser from 'phaser';
-import { ASSETS, COLORS, GAME } from '../config';
+import { ASSETS } from '../config';
+import { buildTextures } from '../art';
 import { registerFrameAnims } from '../anim';
 
 /**
  * 启动场景：生成占位纹理、初始化存档、进入菜单。
- * 生图与切图完成后（ASSETS.useAtlas = true）在这里改为加载图集。
+ *
+ * 纹理来源全部收敛到 `art.ts` 的 `buildTextures()`。
+ * 生图与切图完成后（ASSETS.useAtlas = true）在 preload 里加载图集，
+ * 或把 `assets/img/<stem>.png` 映射到固定纹理键（见 `IMG_KEYS` 约定）——
+ * 无论哪种，玩法代码都不用改。
  */
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -18,10 +23,8 @@ export class BootScene extends Phaser.Scene {
   }
 
   create() {
-    // 用几何图形生成占位纹理，保证 P2 之前无需任何美术资源即可运行
-    const r = GAME.targetRadius;
-    this.makeCircleTexture('ph_target', r, COLORS.accent);
-    this.makeCircleTexture('ph_target_hit', r, COLORS.good);
+    // 程序化纹理：与已加载的 AI 图同名则跳过（混合美术的关键）
+    buildTextures(this);
 
     // 图集里的帧动画（帧名 <key>_0..N）—— 没有帧时静默跳过
     if (ASSETS.useAtlas) registerFrameAnims(this);
@@ -34,15 +37,5 @@ export class BootScene extends Phaser.Scene {
     (window as unknown as { __bootDone?: boolean }).__bootDone = true;
 
     this.scene.start('Menu');
-  }
-
-  private makeCircleTexture(key: string, radius: number, color: number) {
-    const g = this.add.graphics();
-    g.fillStyle(color, 1);
-    g.fillCircle(radius, radius, radius);
-    g.lineStyle(6, 0xffffff, 0.35);
-    g.strokeCircle(radius, radius, radius);
-    g.generateTexture(key, radius * 2, radius * 2);
-    g.destroy();
   }
 }

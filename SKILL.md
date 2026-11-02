@@ -1,6 +1,20 @@
 ---
 name: idea-to-game
-description: "将一句游戏想法或一款同款游戏名，连同美术风格参考图，自动转化为一个完整可玩、可提交到 CrazyGames / Poki / GameDistribution / Playgama / TapTap 等平台的 HTML5 小游戏。覆盖平台确认、立项策划、项目脚手架、平台 SDK 适配、玩法实现、AI 生图、切图打包图集、配乐音效、手感打磨、性能与体积审计、自动化测试、多平台打包过审共 12 个环节，并内置一名按 CrazyGames 官方审核与质量标准（作为不可放宽的硬底线）独立把关的'质量与玩法审核官'角色与六项专项审核（创意/美术/动画/音频/体验/试玩），未达标必须持续修改并重新送审直至通过。收到第一个指令后必须先向用户确认目标平台（并告知支持的平台清单），交付包严格按用户选定的平台产出。This skill should be used when the user wants to make a small/browser/HTML5/casual/hyper-casual game, or says 做个游戏、做个小游戏、我要做一款游戏、照《XX》做一个、开发网页游戏、上线到 CrazyGames/Poki/TapTap、make a game like XX、build an HTML5 game。Also use when the user provides an idea plus a style reference image and expects a playable game as output, or asks whether a game meets CrazyGames quality standards."
+display_name: IdeaToGame-创意游戏工坊
+display_name_en: IdeaToGame-Creative-Game-Studio
+description: "把一句游戏想法（或一款同款游戏名）连同美术风格参考图，端到端做成可玩的 HTML5 小游戏并出目标平台交付包。覆盖创意发散、玩法、视觉身份、音频身份、AI 生图、自适应音乐、表现力、自动试玩、多平台打包过审共 24 个环节，内置独立审核官与六项专项审核（创意/美术/动画/音频/体验/试玩），未达标不放行。首个指令后须先确认目标平台。触发词：做个游戏、做个小游戏、我要做一款游戏、照《XX》做一个、开发网页游戏、上线 CrazyGames/Poki/TapTap、make a game like XX、build an HTML5 game、这游戏能过 CrazyGames 审核吗。"
+description_zh: "一句想法到可上架的 HTML5 小游戏：创意发散、视觉与音频身份、AI 生图、自适应音乐、自动试玩、多平台打包全自动，内置审核官与六项专项审核。"
+description_en: "Turn one game idea into a shippable HTML5 game: creative divergence, visual and audio identity, AI art, adaptive music, automated playtest, multi-platform packaging, with a built-in reviewer and six specialist reviews."
+examples_zh:
+- "照《吸血鬼幸存者》做一个，但我想要水墨风格，上 CrazyGames"
+- "做个塔防小游戏，玩法要有点新意，别是换皮"
+- "把这个想法做成能过 CrazyGames 审核的版本"
+examples_en:
+- "Make a game like Vampire Survivors but in ink-wash style, ship to CrazyGames"
+- "Build a tower defense game with a genuinely new mechanic, not a reskin"
+- "Turn this idea into a build that passes CrazyGames review"
+version: 3.0.0
+author: "Hejunlong27"
 agent_created: true
 ---
 
@@ -14,6 +28,19 @@ agent_created: true
 **输出**：完整可玩的小游戏项目，含**用户选定平台**的可分包与过审自检清单
 
 本技能是**单一技能包**：12 个能力环节 + 1 名审核官角色全部内置于本包，不依赖外部安装的其他技能。所有环节通过 `modules/` 下的模块说明驱动，通过 `scripts/` 下的脚本落地，通过文件契约在环节之间传递产物。
+
+## 安装与分发
+
+```bash
+python scripts/install_skill.py --zip dist/idea-to-game-3.0.0.zip   # 装到 ~/.workbuddy-ai/skills/
+python scripts/verify_skill.py                                      # 自检（装完必跑）
+python scripts/build_skill_package.py                               # 打新包（自检不过不出包）
+```
+
+依赖与故障排查见 `INSTALL.md`。分发形态与「为什么不上架技能市场」见 `references/packaging.md`。
+
+**改包结构后必须跑 `verify_skill.py`**：分发包最大的坑是「装上了但静默不工作」，
+而漏模式库、模板缺文件、frontmatter 少字段、文件编码错这几类问题全都能机器判定。
 
 ## ⚠️ 第零件事：内容深度同样是一道闸（v2）
 
@@ -488,4 +515,8 @@ python <skill>/scripts/gate_check.py --project <project> --stage ship
 | **`references/creative-identity.md`** | **创意身份判据：7 维评分、相似度方法与其局限** | P0、每次创意评审 |
 | **`tests/`** | **49 个 pytest（schema / 状态机 / 契约 / 创意 / 端到端）** | 改任何脚本前后 |
 | **`scripts/ship_pack.py`** | **一键构建 + 审计 + 自检 + 打 zip + 商店素材 + 自检清单** | P4 交付时 |
+| **`scripts/verify_skill.py`** | **技能包自检：frontmatter / 目录 / 模板 / 模式库 / 脚本编译 / 引用断链 / 编码** | 改包结构后、打包前 |
+| **`scripts/build_skill_package.py`** | **打可分发包（自检通过才出 zip）** | 发版时 |
+| **`scripts/install_skill.py`** | **安装到 skills 目录（自动备份旧版 + 装后自检）** | 部署到别的机器 |
+| **`references/packaging.md`** | **分发策略：为什么不做市场三目录版，以及真要做时的 5 步重构** | 发版 / 上架前 |
 | `assets/template/` | Phaser 3.90 + Vite + 5 平台适配层模板 | P1 建项目时复制 |

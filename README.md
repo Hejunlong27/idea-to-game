@@ -107,8 +107,9 @@ open standalone.html          # macOS；Windows 直接双击
 ## 快速开始
 
 ```bash
-# 1. 安装到 WorkBuddy 技能目录
-unzip idea-to-game-v2.0.0.zip -d ~/.workbuddy-ai/skills/
+# 1. 安装（两种都行）
+python scripts/install_skill.py --zip dist/idea-to-game-3.0.0.zip   # 自动备份旧版 + 装后自检
+# 或：git clone https://github.com/Hejunlong27/idea-to-game.git ~/.workbuddy-ai/skills/idea-to-game
 
 # 2. 建项目（平台、画风一次定好）
 python ~/.workbuddy-ai/skills/idea-to-game/scripts/init_project.py \
@@ -134,6 +135,25 @@ python ~/.workbuddy-ai/skills/idea-to-game/scripts/juice_forge.py --project D:/g
 生图需要本地 ComfyUI 或 RunningHub Key，**两个都没有时自动降级为占位素材，流程不中断**。
 
 ---
+
+## 安装与分发
+
+```bash
+python scripts/verify_skill.py            # 自检：frontmatter / 目录 / 模板 / 模式库 / 编译 / 断链 / 编码
+python scripts/build_skill_package.py     # 打可分发包（自检不过不出包）
+python scripts/install_skill.py --zip dist/idea-to-game-3.0.0.zip
+```
+
+| 产物 | 体积 | 用途 |
+|---|---|---|
+| `dist/idea-to-game-3.0.0.zip` | 5.2MB / 346 文件 | 解压到 `~/.workbuddy-ai/skills/` 即用 |
+
+依赖与故障排查见 [`INSTALL.md`](INSTALL.md)。
+
+**为什么不上架技能市场**：平台只认 `SKILL.md` + `references/` `scripts/` `templates/` 三目录，
+而本技能的脚本依赖 `assets/template`（整个 Vite 工程模板）与 `assets/data`（模式库），
+拍平会直接破坏运行 —— 实测打出来的包能过平台解析，但装上去跑不动。
+要做的话需要先重构 80+ 处引用并全量回归，当前判断是不做。详见 [`references/packaging.md`](references/packaging.md)。
 
 ## 文档
 
