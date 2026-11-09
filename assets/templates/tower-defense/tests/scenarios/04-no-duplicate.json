@@ -1,0 +1,40 @@
+{
+  "id": "04-no-duplicate",
+  "name": "同格不可重复建塔：只扣一次钱",
+  "level": 1,
+  "note": "重复点击是移动端最常见操作。若不做去重，一次点击能烧光玩家所有金币。",
+  "setup": [
+    {
+      "type": "set",
+      "patch": {
+        "gold": 200,
+        "pauseWaves": true
+      }
+    }
+  ],
+  "steps": [
+    {
+      "type": "tap",
+      "c": 0,
+      "r": 1
+    },
+    {
+      "type": "tap",
+      "c": 0,
+      "r": 1
+    }
+  ],
+  "assertions": [
+    {
+      "path": "gold",
+      "op": "eq",
+      "value": 150
+    },
+    {
+      "path": "towerCount",
+      "op": "eq",
+      "value": 1
+    }
+  ],
+  "variantSafe": true
+}

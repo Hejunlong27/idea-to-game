@@ -1,0 +1,72 @@
+{
+  "generated_at": "2026-11-08T17:16:50.274Z",
+  "baseline": true,
+  "rows": [
+    {
+      "id": "tower-defense",
+      "genre": "tower-defense",
+      "path": "D:/w.ai/2026-10-16-09-25-56/tower-defense",
+      "status": "OK",
+      "pass_rate": 100,
+      "passed": 18,
+      "total": 18,
+      "rounds": 1,
+      "reproducible": null,
+      "scenario_count": 18,
+      "avg_duration_ms": 798,
+      "bundle_kb": 1485,
+      "failing": [],
+      "iterations": {
+        "total": 1,
+        "accepted": 1,
+        "rejected": 0,
+        "regressions": 0
+      },
+      "report_at": "2026-11-08T17:12:32.251Z"
+    },
+    {
+      "id": "simulator",
+      "genre": "simulator",
+      "path": "D:/w.ai/2026-10-16-09-25-56/simulator",
+      "status": "OK",
+      "pass_rate": 100,
+      "passed": 10,
+      "total": 10,
+      "rounds": 1,
+      "reproducible": null,
+      "scenario_count": 10,
+      "avg_duration_ms": 207,
+      "bundle_kb": 1478,
+      "failing": [],
+      "iterations": {
+        "total": 0,
+        "accepted": 0,
+        "rejected": 0,
+        "regressions": 0
+      },
+      "report_at": "2026-11-08T17:04:33.671Z"
+    },
+    {
+      "id": "echo-ferry",
+      "genre": "action-puzzle",
+      "path": "D:/w.ai/2026-10-16-09-25-56/echo-ferry",
+      "status": "OK",
+      "pass_rate": 100,
+      "passed": 8,
+      "total": 8,
+      "rounds": 1,
+      "reproducible": null,
+      "scenario_count": 8,
+      "avg_duration_ms": 209,
+      "bundle_kb": 1491,
+      "failing": [],
+      "iterations": {
+        "total": 1,
+        "accepted": 1,
+        "rejected": 0,
+        "regressions": 0
+      },
+      "report_at": "2026-11-08T17:04:39.488Z"
+    }
+  ]
+}

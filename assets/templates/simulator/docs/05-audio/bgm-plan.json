@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "note": "模拟器 BGM 规格。回合制节奏慢，两段都克制，靠音色而非鼓点区分。",
+  "tracks": [
+    {
+      "id": "calm",
+      "target": "assets/audio/bgm/stem_melody.mp3",
+      "prompt": "contemplative chinese cultivation ambient music, guqin and bamboo flute, sparse notes with long decay, mountain mist atmosphere, very slow, meditative, no vocals, no percussion, loopable, 72 bpm",
+      "lyrics": "",
+      "durationSec": 30,
+      "trimSec": 28
+    },
+    {
+      "id": "tense",
+      "target": "assets/audio/bgm/stem_rhythm.mp3",
+      "prompt": "ominous cultivation danger music, low drone, dissonant guqin bends, distant heartbeat pulse, oppressive stillness, no vocals, no melody lead, loopable, 110 bpm",
+      "lyrics": "",
+      "durationSec": 30,
+      "trimSec": 28
+    }
+  ]
+}

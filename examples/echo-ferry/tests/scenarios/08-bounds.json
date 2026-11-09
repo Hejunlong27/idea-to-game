@@ -1,0 +1,16 @@
+{
+  "id": "08-bounds",
+  "name": "地图边界：向界外移动无效",
+  "level": 1,
+  "note": "网格 7x9。站在 (0,0) 向负方向撞两次，坐标必须不变，且不能抛异常。",
+  "setup": [{ "type": "teleport", "c": 0, "r": 0 }],
+  "steps": [
+    { "type": "move", "dc": -1, "dr": 0 },
+    { "type": "move", "dc": 0, "dr": -1 }
+  ],
+  "assertions": [
+    { "path": "player.c", "op": "eq", "value": 0 },
+    { "path": "player.r", "op": "eq", "value": 0 },
+    { "path": "hull", "op": "eq", "value": 3 }
+  ]
+}

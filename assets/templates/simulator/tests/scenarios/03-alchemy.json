@@ -1,0 +1,13 @@
+{
+  "id": "03-alchemy",
+  "name": "炼丹：-10 灵石、+15 修为",
+  "level": 1,
+  "note": "与 02 成对：同一个行动，钱够时的正向路径。",
+  "setup": [{ "type": "set", "patch": { "eventChance": 0, "stats": { "stones": 20 } } }],
+  "steps": [{ "type": "act", "id": "alchemy" }],
+  "assertions": [
+    { "path": "stones", "op": "eq", "value": 10 },
+    { "path": "qi", "op": "eq", "value": 15 },
+    { "path": "turn", "op": "eq", "value": 1 }
+  ]
+}

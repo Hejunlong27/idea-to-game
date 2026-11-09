@@ -1,0 +1,12 @@
+{
+  "id": "04-target-expire",
+  "name": "靶子超时：未命中的靶子过期后连击归零",
+  "level": 1,
+  "note": "targetLifetimeMs=1100。等 1300ms 让它自然过期，验证「漏掉目标会断连击」这个压力机制真的生效。",
+  "setup": [{ "type": "set", "patch": { "combo": 5 } }],
+  "steps": [{ "type": "spawn" }, { "type": "wait", "ms": 1300 }],
+  "assertions": [
+    { "path": "combo", "op": "eq", "value": 0 },
+    { "path": "score", "op": "eq", "value": 0 }
+  ]
+}

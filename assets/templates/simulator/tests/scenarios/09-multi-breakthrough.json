@@ -1,0 +1,14 @@
+{
+  "id": "09-multi-breakthrough",
+  "name": "连跳境界：修为从 700 起跳应直达化神并累加寿元",
+  "level": 1,
+  "note": "突破用 while 不是 if。一次加太多修为时必须连跳，否则会卡在中间境界永远不升。寿元 80+20+25+30+40=195。",
+  "setup": [{ "type": "set", "patch": { "eventChance": 0, "stats": { "qi": 700 } } }],
+  "steps": [{ "type": "act", "id": "meditate" }],
+  "assertions": [
+    { "path": "stage", "op": "eq", "value": 4 },
+    { "path": "stageName", "op": "eq", "value": "化神" },
+    { "path": "lifespan", "op": "eq", "value": 195 },
+    { "path": "grade", "op": "eq", "value": "化神登仙" }
+  ]
+}

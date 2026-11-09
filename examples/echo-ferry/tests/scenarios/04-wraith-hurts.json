@@ -1,0 +1,14 @@
+{
+  "id": "04-wraith-hurts",
+  "name": "幽影伤害：撞上幽影扣 1 船体且玩家不前进",
+  "level": 1,
+  "note": "level1 的 wraithPos 含 (3,1)。玩家站在 (3,2) 向上撞。撞到不移动是设计意图——否则等于免费穿过。",
+  "setup": [{ "type": "set", "patch": { "hull": 3 } }, { "type": "teleport", "c": 3, "r": 2 }],
+  "steps": [{ "type": "move", "dc": 0, "dr": -1 }],
+  "assertions": [
+    { "path": "hull", "op": "eq", "value": 2 },
+    { "path": "player.c", "op": "eq", "value": 3 },
+    { "path": "player.r", "op": "eq", "value": 2 },
+    { "path": "phase", "op": "eq", "value": "play" }
+  ]
+}

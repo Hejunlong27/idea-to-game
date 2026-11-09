@@ -1,0 +1,14 @@
+{
+  "id": "08-lifespan-end",
+  "name": "寿元耗尽：年龄到达上限即结束",
+  "level": 1,
+  "note": "79 岁、寿元 80，打坐一年后到 80，必须判结束。若不判，玩家能无限修行下去。",
+  "setup": [{ "type": "set", "patch": { "eventChance": 0, "stats": { "age": 79, "lifespan": 80 } } }],
+  "steps": [{ "type": "act", "id": "meditate" }],
+  "assertions": [
+    { "path": "age", "op": "eq", "value": 80 },
+    { "path": "ended", "op": "truthy" },
+    { "path": "phase", "op": "eq", "value": "over" },
+    { "path": "endReason", "op": "eq", "value": "lifespan" }
+  ]
+}

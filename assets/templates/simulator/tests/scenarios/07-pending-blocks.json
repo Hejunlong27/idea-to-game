@@ -1,0 +1,16 @@
+{
+  "id": "07-pending-blocks",
+  "name": "事件未处理时行动无效：回合不推进、弹窗还在",
+  "level": 1,
+  "note": "这是回合制最容易出的漏：玩家能在弹窗底下继续点行动，等于一回合做两件事。",
+  "setup": [{ "type": "set", "patch": { "eventChance": 0, "forcedEvent": "beast" } }],
+  "steps": [
+    { "type": "act", "id": "meditate" },
+    { "type": "act", "id": "meditate" }
+  ],
+  "assertions": [
+    { "path": "turn", "op": "eq", "value": 1 },
+    { "path": "pending", "op": "eq", "value": "beast" },
+    { "path": "phase", "op": "eq", "value": "event" }
+  ]
+}

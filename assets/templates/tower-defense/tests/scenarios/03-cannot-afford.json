@@ -1,0 +1,35 @@
+{
+  "id": "03-cannot-afford",
+  "name": "金币不足：差 1 金也不能建塔",
+  "level": 1,
+  "note": "towerCost=50，给 49。这是最容易写错成 `<=` 的边界。",
+  "setup": [
+    {
+      "type": "set",
+      "patch": {
+        "gold": 49,
+        "pauseWaves": true
+      }
+    }
+  ],
+  "steps": [
+    {
+      "type": "tap",
+      "c": 0,
+      "r": 1
+    }
+  ],
+  "assertions": [
+    {
+      "path": "gold",
+      "op": "eq",
+      "value": 49
+    },
+    {
+      "path": "towerCount",
+      "op": "eq",
+      "value": 0
+    }
+  ],
+  "variantSafe": true
+}

@@ -2,7 +2,7 @@
 name: idea-to-game
 display_name: IdeaToGame-创意游戏工坊
 display_name_en: IdeaToGame-Creative-Game-Studio
-description: "把一句游戏想法（或一款同款游戏名）连同美术风格参考图，端到端做成可玩的 HTML5 小游戏并出目标平台交付包。覆盖创意发散、玩法、视觉身份、音频身份、AI 生图、自适应音乐、表现力、自动试玩、多平台打包过审共 24 个环节，内置独立审核官与六项专项审核（创意/美术/动画/音频/体验/试玩），未达标不放行。首个指令后须先确认目标平台。触发词：做个游戏、做个小游戏、我要做一款游戏、照《XX》做一个、开发网页游戏、上线 CrazyGames/Poki/TapTap、make a game like XX、build an HTML5 game、这游戏能过 CrazyGames 审核吗。"
+description: "把一句游戏想法（或同款游戏名）连同美术风格参考图，端到端做成可玩的 HTML5 小游戏并出目标平台交付包。覆盖创意、玩法、视觉与音频身份、AI 生图、自适应音乐、表现力、确定性测试、自动试玩与修复、多平台打包过审共 12 个能力环节，内置独立审核官与六项专项审核，未达标不放行。首个指令后须先确认目标平台。触发词：做个游戏、做个小游戏、我要做一款游戏、照《XX》做一个、开发网页游戏、上线 CrazyGames/Poki/TapTap、make a game like XX、build an HTML5 game、这游戏能过 CrazyGames 审核吗。"
 description_zh: "一句想法到可上架的 HTML5 小游戏：创意发散、视觉与音频身份、AI 生图、自适应音乐、自动试玩、多平台打包全自动，内置审核官与六项专项审核。"
 description_en: "Turn one game idea into a shippable HTML5 game: creative divergence, visual and audio identity, AI art, adaptive music, automated playtest, multi-platform packaging, with a built-in reviewer and six specialist reviews."
 examples_zh:
@@ -28,6 +28,31 @@ agent_created: true
 **输出**：完整可玩的小游戏项目，含**用户选定平台**的可分包与过审自检清单
 
 本技能是**单一技能包**：12 个能力环节 + 1 名审核官角色全部内置于本包，不依赖外部安装的其他技能。所有环节通过 `modules/` 下的模块说明驱动，通过 `scripts/` 下的脚本落地，通过文件契约在环节之间传递产物。
+
+> **术语口径（避免混淆）**：**12 个能力环节**指 `modules/` 里的能力模块（编号 00–12）；
+> **24 个状态阶段**指 `.gamedev/state.yaml` 的状态机节点（一个能力环节可能对应多个阶段，
+> 例如创意环节含 `creative` 与 `creative_dna` 两个阶段）。两个数字不是同一件事。
+
+## 品类模板（genre template）
+
+`assets/template/` 是**基础模板**（空骨架 + 工具链）；`assets/templates/<genre>/` 是**品类模板**（已验证可玩的核心循环 + 用例）。
+
+| 模板 | 覆盖的技术难点 | 状态 |
+|---|---|---|
+| `tower-defense` | 网格建造、路径推进、波次调度、索敌、3 塔 3 敌、升级/出售、多关卡 | 已完成，17 用例三轮稳定 |
+| `simulator` | 回合制、属性系统、事件选择、阶段突破、确定性随机 | 已完成，10 用例三轮稳定 |
+| `survivor` | 大量实体、碰撞、数值成长 | 待建 |
+| `merge-puzzle` | 网格状态转换、连锁逻辑 | 待建 |
+
+`simulator` 是**结构模板**，默认实例是修仙模拟器；炒股 / 家族 / 经营 / 养成换 `content/*.json` 即可派生，逻辑层不动。
+
+**用法**：用户点名品类时，直接复制 `assets/templates/<genre>/` 到项目目录，再按 `config.ts` 改数值与地图。**不要从基础模板重新写一遍** —— 品类模板的价值就是省掉「把核心循环调通」这一段。
+
+**新增品类模板的三条验收要求**：
+
+1. **能跑** —— `npm install && npm run dev` 起来就能玩，不依赖生图 / 音频通道（缺资源要静默降级）。
+2. **能测** —— 自带 `tests/scenarios/*.json`，至少覆盖：核心循环走通、资源边界、失败判定、胜利判定、重置干净。
+3. **能改** —— 数值与关卡全在 `config.ts`；换地图 / 调难度不改逻辑代码。
 
 ## 安装与分发
 
@@ -492,6 +517,18 @@ python <skill>/scripts/gate_check.py --project <project> --stage ship
 | `modules/00-…-11-*.md` | 各环节详细执行步骤 | 执行到该环节时 |
 | **`modules/12-review.md`** | **审核官角色定义、三处介入、判定与结论、不达标处理流程** | 执行任何 R 轮审核时 |
 | `scripts/*.py` | 确定性工具脚本，可直接执行 | 对应操作时 |
+| **`scripts/music_gen.py`** | **BGM 生成（provider 可插拔）：yue2-http 直连引擎 / procedural 兜底；内置转码** | P2.5 音乐时 |
+| **`references/audio-pipeline.md`** | **音频三层、YuE2 引擎 HTTP 契约、两段 BGM 映射状态机、转码规范** | 接音频时必读 |
+| **`references/art-direction-system.md`** | **美术驱动体系：五个认知纠正 + 五层架构 + 84px 三测试 + 实测参数** | P2 美术设计前必读 |
+| **`references/motion-design.md`** | **动效设计：顿帧是撞击感核心、缓动曲线表、节奏结构、震动分级、判据** | 做手感时必读 |
+| **`scripts/art_mockup.py`** | **拼一屏完整游戏画面（L0.5 demo），按真实布局参数，用来定四条铁律** | 铺素材前 |
+| **`scripts/consistency_check.py`** | **一致性度量：pHash + 剪影 IoU + 主色距离，判「能不能量产」** | 铺素材前必跑 |
+| **`scripts/comfy_gen.py`** | **ComfyUI 快速出图（草稿探索用，改提示词→出图 30 秒一轮）** | 试风格时 |
+| **`references/playtest-protocol.md`** | **真人试玩协议：怎么启动、试玩规则、五个主观问题、三指标判读** | 上线前真人验证 |
+| **`<项目>/scripts/playtest_report.mjs`** | **试玩遥测分析：首次建塔延迟/最长空闲/崩盘波次 → FAIL/WARN/INFO** | 真人玩完后 |
+| **`scripts/ship_check.py`** | **交付前技术门禁：构建+体积+音频+素材+用例，一次给出「能不能发」** | P4 交付前必跑 |
+| **`scripts/asset_registry.py`** | **素材台账：scan 合并来源+文件+引用 / check 一致性（断链·孤儿·超预算）/ report** | P2 生图后、交付前 |
+| **`references/asset-registry.md`** | **素材台账契约：数据模型、三级关联、检查项与两个边界情况** | 接素材或排查素材问题时 |
 | **`scripts/review_gate.py`** | **审核执行与结论判定（自动 + 人工条目合并出 verdict）** | 每轮审核时 |
 | **`scripts/gen_assets.py`** | **资产生成：ComfyUI / RunningHub / 占位，含台账与断点续跑** | P2 生图时 |
 | `scripts/gen_prompts.py` | 从 scope.json 批量生成提示词（自带 style_tokens） | P1 收尾、P2 之前 |
@@ -509,6 +546,15 @@ python <skill>/scripts/gate_check.py --project <project> --stage ship
 | **`scripts/specialist_review.py`** | **六项专项审核（创意/美术/动画/音频/体验/试玩），每条带实测证据** | R2 前 |
 | **`scripts/schema_check.py`** | **JSON Schema 校验器（零依赖）+ `--all` 校验项目内全部契约** | 任意阶段 |
 | **`scripts/playtest.py`** | **起服务 + 跑浏览器试玩 + 出 HTML 报告** | P4 |
+| **`<项目>/scripts/scenario.mjs`** | **确定性测试执行器：声明式用例 + 断言 + 可复现性验证（模板自带）** | P4、自动修复前 |
+| **`<项目>/scripts/iterate.mjs`** | **自动修复护栏：checkpoint / 改动范围校验 / 质量变化 / 回滚（模板自带）** | 修复 Bug 时 |
+| **`<项目>/src/game/test-api.ts`** | **Game Test API：可驱动、可复位、可构造边界场景（仅 DEV，不进发行包）** | 建项目时自带 |
+| **`references/game-test-schema.md`** | **测试与修复契约：TestAction / 用例格式 / Issue 定义 / ACCEPT 判定** | 写测试、做自动修复前 |
+| **`<项目>/scripts/diagnose.mjs`** | **Issue Analyzer：失败报告 → 代码候选位置（含二跳定位），可生成 issue** | 测试失败后第一件事 |
+| **`<项目>/scripts/balance_search.mjs`** | **数值平衡搜索：多参数网格 × 新手/老手双策略，输出难度曲线与甜点配置** | 定数值时 |
+| **`references/balance-tuning.md`** | **平衡方法论：为什么不用胜率、两个策略的意义、甜点判定、局限** | 调数值前必读 |
+| **`<项目>/scripts/compare.mjs`** | **原型对比：多变体 × 同一套机制用例 + bot 试玩，用数据选方案** | 定数值 / 选机制时 |
+| **`scripts/benchmark.mjs`** | **跨项目质量基准：通过率/耗时/体积/迭代，自动与上次对比** | 每次发版前 |
 | **`references/schemas/`** | **5 份身份契约 schema（creative / visual / audio / juice / experience）** | 任意阶段 |
 | **`references/game-event-schema.md`** | **统一事件契约：结构、标准事件、六条硬规则、反模式** | 接事件系统时 |
 | **`references/audio-emotion-design.md`** | **音频情绪设计：stem 分层、状态配比、变体规则、质检阈值** | P2.5 |
@@ -519,4 +565,5 @@ python <skill>/scripts/gate_check.py --project <project> --stage ship
 | **`scripts/build_skill_package.py`** | **打可分发包（自检通过才出 zip）** | 发版时 |
 | **`scripts/install_skill.py`** | **安装到 skills 目录（自动备份旧版 + 装后自检）** | 部署到别的机器 |
 | **`references/packaging.md`** | **分发策略：为什么不做市场三目录版，以及真要做时的 5 步重构** | 发版 / 上架前 |
-| `assets/template/` | Phaser 3.90 + Vite + 5 平台适配层模板 | P1 建项目时复制 |
+| `assets/template/` | **基础模板**：Phaser 3.90 + Vite + 5 平台适配层 + Game Test API + 测试/修复脚本 | P1 建项目时复制 |
+| **`assets/templates/tower-defense/`** | **品类模板·塔防**：蛇形路径 + 波次 + 索敌 + 资源循环 + 胜负判定，自带 10 条确定性用例 | 用户要塔防时直接用 |

@@ -1,0 +1,91 @@
+{
+  "version": 1,
+  "note": "模拟器音效计划。回合制节奏慢，音效偏柔和、克制。",
+  "items": [
+    {
+      "id": "gameplay_move",
+      "layer": "action",
+      "cue": "选择行动",
+      "synth": {
+        "recipe": "click",
+        "params": {
+          "gain": 0.6,
+          "dur": 0.07
+        }
+      }
+    },
+    {
+      "id": "gameplay_cast",
+      "layer": "action",
+      "cue": "事件弹出",
+      "synth": {
+        "recipe": "chime",
+        "params": {
+          "gain": 0.55
+        }
+      }
+    },
+    {
+      "id": "gameplay_hit",
+      "layer": "action",
+      "cue": "属性变化",
+      "synth": {
+        "recipe": "blip",
+        "params": {
+          "freq": 620,
+          "dur": 0.09,
+          "gain": 0.45
+        }
+      }
+    },
+    {
+      "id": "feedback_score",
+      "layer": "feedback",
+      "cue": "收益",
+      "synth": {
+        "recipe": "gold",
+        "params": {
+          "gain": 0.6
+        }
+      }
+    },
+    {
+      "id": "feedback_hurt",
+      "layer": "feedback",
+      "cue": "受损",
+      "synth": {
+        "recipe": "thud",
+        "params": {
+          "gain": 0.6
+        }
+      }
+    },
+    {
+      "id": "feedback_levelup",
+      "layer": "feedback",
+      "cue": "境界突破",
+      "synth": {
+        "recipe": "levelup"
+      }
+    },
+    {
+      "id": "feedback_win",
+      "layer": "feedback",
+      "cue": "化神",
+      "synth": {
+        "recipe": "chime",
+        "params": {
+          "gain": 0.9
+        }
+      }
+    },
+    {
+      "id": "feedback_defeat",
+      "layer": "feedback",
+      "cue": "寿元耗尽",
+      "synth": {
+        "recipe": "fail"
+      }
+    }
+  ]
+}

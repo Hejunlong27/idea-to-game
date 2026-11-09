@@ -1,0 +1,58 @@
+{
+  "$comment": "行动定义。effects 为属性增量；require 不满足时行动整体无效（不扣不增）。换主题只改这里，逻辑不动。",
+  "actions": [
+    {
+      "id": "meditate",
+      "name": "打坐",
+      "desc": "静心凝气，稳步积累",
+      "effects": [
+        { "stat": "qi", "delta": 8 },
+        { "stat": "mood", "delta": -2 }
+      ]
+    },
+    {
+      "id": "gather",
+      "name": "采药",
+      "desc": "换些灵石，顺便练气",
+      "effects": [
+        { "stat": "stones", "delta": 5 },
+        { "stat": "qi", "delta": 2 }
+      ]
+    },
+    {
+      "id": "adventure",
+      "name": "历练",
+      "desc": "凶险，但收获最大",
+      "effects": [
+        { "stat": "qi", "delta": 4 },
+        { "stat": "stones", "delta": 3 }
+      ],
+      "risk": {
+        "chance": 0.35,
+        "effects": [
+          { "stat": "mood", "delta": -15 },
+          { "stat": "qi", "delta": -5 }
+        ]
+      }
+    },
+    {
+      "id": "rest",
+      "name": "休整",
+      "desc": "调养心境，代价是荒废修行",
+      "effects": [
+        { "stat": "mood", "delta": 15 },
+        { "stat": "qi", "delta": -2 }
+      ]
+    },
+    {
+      "id": "alchemy",
+      "name": "炼丹",
+      "desc": "耗十块灵石换一炉修为",
+      "require": [{ "stat": "stones", "min": 10 }],
+      "effects": [
+        { "stat": "stones", "delta": -10 },
+        { "stat": "qi", "delta": 15 }
+      ]
+    }
+  ]
+}

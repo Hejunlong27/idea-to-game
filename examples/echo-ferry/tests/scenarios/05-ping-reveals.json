@@ -1,0 +1,13 @@
+{
+  "id": "05-ping-reveals",
+  "name": "敲钟：扣 1 记忆、进入揭示窗口、留下残影",
+  "level": 1,
+  "note": "起始位 (1,7)，revealRadius=4 内有 rock(3,6) 与 wraith(5,5)，必然留下残影。",
+  "setup": [{ "type": "set", "patch": { "memory": 3 } }],
+  "steps": [{ "type": "ping" }],
+  "assertions": [
+    { "path": "memory", "op": "eq", "value": 2 },
+    { "path": "revealed", "op": "truthy" },
+    { "path": "ghosts", "op": "gte", "value": 1 }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "id": "15-cannon-splash",
+  "name": "炮塔溅射：一发命中同位置的两个敌人",
+  "level": 1,
+  "note": "两只小妖都在出生点（dist=0）位置重合，炮塔溅射半径 0.9 格必然同时命中。只断「两个都掉血」，不断具体数值。两个坑都踩过：① 不先让塔进冷却会随机漏打（第一帧朝空处开火）；② 炮塔建在 (0,1) 时射程只有 1.5 格，等 980ms 后敌人已走出射程——所以建在 (1,1)，敌人在前 1.7 格内始终在射程里。",
+  "setup": [
+    {
+      "type": "set",
+      "patch": {
+        "gold": 100,
+        "pauseWaves": true,
+        "buildType": "cannon"
+      }
+    }
+  ],
+  "steps": [
+    {
+      "type": "tap",
+      "c": 1,
+      "r": 1
+    },
+    {
+      "type": "wait",
+      "ms": 120
+    },
+    {
+      "type": "set",
+      "patch": {
+        "spawnType": "grunt",
+        "spawnCount": 2
+      }
+    },
+    {
+      "type": "wait",
+      "ms": 1400
+    }
+  ],
+  "assertions": [
+    {
+      "path": "enemyCount",
+      "op": "eq",
+      "value": 2
+    },
+    {
+      "path": "enemies.0.hp",
+      "op": "lt",
+      "value": 20
+    },
+    {
+      "path": "enemies.1.hp",
+      "op": "lt",
+      "value": 20
+    }
+  ],
+  "variantSafe": true
+}

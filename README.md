@@ -11,10 +11,11 @@
 
 | | |
 |---|---|
-| **能出货** | 24 个能力环节串成流水线，一条命令出包 + 过审清单。5 个平台（CrazyGames / Poki / GameDistribution / Playgama / TapTap），体积按最严口径控制 |
+| **能出货** | 12 个能力环节（24 个状态阶段）串成流水线，一条命令出包 + 过审清单。5 个平台（CrazyGames / Poki / GameDistribution / Playgama / TapTap），体积按最严口径控制 |
 | **值得玩** | 内容丰富度四维门禁（玩法 30 / 叙事 25 / 美学 25 / 音频 20）。机制必须互相咬合，故事必须落地到代码，缺一项直接阻断 |
 | **有辨识度** | 五份身份契约（Creative / Visual / Audio / Juice / Experience DNA）+ 5 个结构不同的创意方向 + 相似度分析。DNA 会**编译成运行时配置**，不是文档摆设 |
 | **可信** | 六项专项审核（创意/美术/动画/音频/体验/试玩），38 条检查每条都要实测证据：读截图像素、测波形、扫源码、跑试玩。**未验证不算通过** |
+| **能自证** | 游戏暴露可驱动的测试接口，用例是声明式的确定性断言（不是敲键盘碰运气）。改完能算出**质量变化**，改坏了能回滚 |
 
 ---
 
@@ -28,6 +29,36 @@
 丰富度 **94/100**，专项审核 38 条证据全过，试玩 4 策略 0 错误。
 
 **核心机制的独特性**：视野不是被给予的，是被借来的；借来的地图会腐烂。
+
+---
+
+## 它怎么证明自己改对了
+
+模板自带可驱动的测试接口（`window.__test`，仅 DEV 生效，不进发行包）与声明式用例：
+
+```json
+{ "id": "02-memory-cap",
+  "setup":  [{ "type": "set", "patch": { "memory": 5 } }],
+  "steps":  [{ "type": "teleport", "c": 5, "r": 2 }, { "type": "move", "dc": 1, "dr": 0 }],
+  "assertions": [
+    { "path": "delivered", "op": "eq", "value": 1 },
+    { "path": "memory", "op": "lte", "valuePath": "memoryMax" }
+  ] }
+```
+
+`memory <= memoryMax` 而不是写死 `<= 5` —— 换个关卡依然成立，而且能抓住「忘了封顶」这类缺陷。
+
+实测（echo-ferry，8 条用例）：单条 **~150ms**，全量 **~2s**。注入一个「送达奖励突破记忆上限」的缺陷后：
+
+```
+02-memory-cap    FAIL → PASS      memory lte memoryMax  期望 5  实际 6
+其余 7 条        零回归
+判定             ACCEPT           通过率 8/8
+```
+
+`iterate.mjs` 负责护栏：改动前留 checkpoint、改动后校验范围（禁止改测试来让测试通过）、跑目标用例 + 全量回归、算质量变化、不通过就回滚。
+
+> 契约见 `references/game-test-schema.md`。ACCEPT 只等于「这批用例证明没修坏」，不等于「玩家会觉得好玩」。
 
 **完整源码 + 可玩单文件都在仓库里**：`examples/echo-ferry/`（双击 `standalone.html` 即玩，无需服务器）。
 
@@ -159,7 +190,7 @@ python scripts/install_skill.py --zip dist/idea-to-game-3.0.0.zip
 
 | 想知道什么 | 看哪 |
 |---|---|
-| 完整工作流、24 环节细节 | `SKILL.md` |
+| 完整工作流、12 个能力环节细节 | `SKILL.md` |
 | v3 升级做了什么 / 没做什么 | `docs/10-upgrade/`（审计 / 架构 / 实施 / 测试 / 迁移 / 功能状态） |
 | 创意怎么发散与评分 | `references/creative-identity.md` |
 | 视觉身份包含什么 | `references/schemas/visual-dna.schema.json` + `modules/03b-art-director.md` |

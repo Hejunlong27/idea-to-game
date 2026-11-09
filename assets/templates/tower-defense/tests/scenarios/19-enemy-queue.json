@@ -1,0 +1,24 @@
+{
+  "id": "19-enemy-queue",
+  "name": "敌人排队：同速敌人不会叠成一坨，按最小间距拉开",
+  "level": 1,
+  "note": "这条用例堵的是一个真实 bug：同速敌人会完全重合，玩家数不清有几个、血条也叠在一起（截图里 6 个敌人只看得见 1 个）。修法是软碰撞——按 dist 从远到近压一遍，相邻至少隔 0.5 格。此前所有用例都只有单个敌人，所以没抓到。用逐个生成 + 间隔 320ms 模拟真实刷怪，同帧生成会被下限钳在 0，测不出排队。",
+  "setup": [{ "type": "set", "patch": { "pauseWaves": true } }],
+  "steps": [
+    { "type": "set", "patch": { "spawnType": "grunt", "spawnCount": 1 } },
+    { "type": "wait", "ms": 320 },
+    { "type": "set", "patch": { "spawnType": "grunt", "spawnCount": 1 } },
+    { "type": "wait", "ms": 320 },
+    { "type": "set", "patch": { "spawnType": "grunt", "spawnCount": 1 } },
+    { "type": "wait", "ms": 320 },
+    { "type": "set", "patch": { "spawnType": "grunt", "spawnCount": 1 } },
+    { "type": "wait", "ms": 320 },
+    { "type": "set", "patch": { "spawnType": "grunt", "spawnCount": 1 } },
+    { "type": "wait", "ms": 600 }
+  ],
+  "assertions": [
+    { "path": "enemyCount", "op": "eq", "value": 5 },
+    { "path": "enemies.0.dist", "op": "gte", "value": 1.6 },
+    { "path": "enemies.1.dist", "op": "gte", "value": 1.1 }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "id": "03-rock-blocks",
+  "name": "礁石阻挡：撞上礁石不移动、不掉血",
+  "level": 1,
+  "note": "level1 的 rockPos 含 (2,3)。玩家站在 (2,2) 向下撞。",
+  "setup": [{ "type": "teleport", "c": 2, "r": 2 }],
+  "steps": [{ "type": "move", "dc": 0, "dr": 1 }],
+  "assertions": [
+    { "path": "player.c", "op": "eq", "value": 2 },
+    { "path": "player.r", "op": "eq", "value": 2 },
+    { "path": "hull", "op": "eq", "value": 3 }
+  ]
+}

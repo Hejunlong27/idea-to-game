@@ -1,0 +1,10 @@
+{
+  "$comment": "境界（成长阶段）。qiMin 是突破门槛，lifespanBonus 是突破后延寿。阶段只升不降。",
+  "stages": [
+    { "id": "qi_refining", "name": "炼气", "qiMin": 0, "lifespanBonus": 0 },
+    { "id": "foundation", "name": "筑基", "qiMin": 50, "lifespanBonus": 20 },
+    { "id": "golden_core", "name": "金丹", "qiMin": 150, "lifespanBonus": 25 },
+    { "id": "nascent_soul", "name": "元婴", "qiMin": 350, "lifespanBonus": 30 },
+    { "id": "spirit_severing", "name": "化神", "qiMin": 700, "lifespanBonus": 40 }
+  ]
+}

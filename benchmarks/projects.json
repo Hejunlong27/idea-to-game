@@ -1,0 +1,23 @@
+{
+  "$comment": "基准项目清单。path 可为绝对路径或相对本文件的路径；换机器需要改这里。首发品类：塔防 + 模拟器。",
+  "projects": [
+    {
+      "id": "tower-defense",
+      "path": "D:/w.ai/2026-10-16-09-25-56/tower-defense",
+      "genre": "tower-defense",
+      "note": "首发品类之一：3 塔 3 敌、升级/出售、2 关卡"
+    },
+    {
+      "id": "simulator",
+      "path": "D:/w.ai/2026-10-16-09-25-56/simulator",
+      "genre": "simulator",
+      "note": "首发品类之一：回合制、事件选择、境界突破"
+    },
+    {
+      "id": "echo-ferry",
+      "path": "D:/w.ai/2026-10-16-09-25-56/echo-ferry",
+      "genre": "action-puzzle",
+      "note": "动作类对照：验证测试链在非网格、非回合玩法上也成立"
+    }
+  ]
+}

@@ -23,7 +23,10 @@
     "playtest": "node scripts/playtest.mjs --url http://127.0.0.1:5173 --out docs/07-qa",
     "test": "npm run build && npm run test:standalone",
     "zip:all": "node scripts/zip-all.mjs",
-    "preview:cg": "npx --yes serve dist/crazygames -l 5173"
+    "preview:cg": "npx --yes serve dist/crazygames -l 5173",
+    "scenario": "node scripts/scenario.mjs --serve --port 5199",
+    "scenario:repeat": "node scripts/scenario.mjs --serve --port 5199 --repeat 2",
+    "iterate": "node scripts/iterate.mjs"
   },
   "dependencies": {
     "phaser": "^3.90.0"

@@ -1,0 +1,17 @@
+{
+  "id": "01-core-loop",
+  "name": "核心循环：收集灵魂 → 送达岸边 → 关卡完成",
+  "level": 1,
+  "setup": [{ "type": "set", "patch": { "memory": 5, "hull": 3 } }],
+  "steps": [
+    { "type": "teleport", "c": 5, "r": 2 },
+    { "type": "teleport", "c": 5, "r": 4 },
+    { "type": "move", "dc": 1, "dr": 0 }
+  ],
+  "assertions": [
+    { "path": "soulsLeft", "op": "eq", "value": 0 },
+    { "path": "delivered", "op": "eq", "value": 1 },
+    { "path": "carried", "op": "eq", "value": 0 },
+    { "path": "phase", "op": "eq", "value": "over" }
+  ]
+}

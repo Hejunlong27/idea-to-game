@@ -1,0 +1,50 @@
+{
+  "id": "14-frost-slows",
+  "name": "冰塔减速：被冰塔命中后敌人进入减速状态",
+  "level": 1,
+  "note": "冰塔伤害低（4）但能挂减速，是「输出不够时拖时间」的解法。断言 slowed 而不是速度数值，避免依赖帧率。同样先让塔进冷却再放敌人。",
+  "setup": [
+    {
+      "type": "set",
+      "patch": {
+        "gold": 100,
+        "pauseWaves": true,
+        "buildType": "frost"
+      }
+    }
+  ],
+  "steps": [
+    {
+      "type": "tap",
+      "c": 0,
+      "r": 1
+    },
+    {
+      "type": "wait",
+      "ms": 120
+    },
+    {
+      "type": "set",
+      "patch": {
+        "spawnType": "grunt",
+        "spawnCount": 1
+      }
+    },
+    {
+      "type": "wait",
+      "ms": 1000
+    }
+  ],
+  "assertions": [
+    {
+      "path": "enemies.0.slowed",
+      "op": "truthy"
+    },
+    {
+      "path": "enemies.0.hp",
+      "op": "lt",
+      "value": 20
+    }
+  ],
+  "variantSafe": true
+}

@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "note": "通用 BGM 规格（基础模板）。calm 铺常态、tense 铺压力段；先用 gen_audio 程序化兜底，YuE2 就绪后覆盖同名文件。",
+  "tracks": [
+    {
+      "id": "calm",
+      "target": "assets/audio/bgm/stem_melody.mp3",
+      "prompt": "calm background music for a casual game, gentle pulse, warm pad, light mallet arpeggio, loopable, no vocals, 84 bpm",
+      "lyrics": "",
+      "durationSec": 30,
+      "trimSec": 28
+    },
+    {
+      "id": "tense",
+      "target": "assets/audio/bgm/stem_rhythm.mp3",
+      "prompt": "tense game music, driving low percussion, pulsing bass, rising pressure, loopable, no vocals, 132 bpm",
+      "lyrics": "",
+      "durationSec": 30,
+      "trimSec": 28
+    }
+  ]
+}

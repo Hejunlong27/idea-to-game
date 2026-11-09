@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "note": "塔防 BGM 规格。两段对应状态机：calm → stem_melody（探索/铺塔），tense → stem_rhythm（波次压力）。生成后覆盖同名的程序化兜底版本。",
+  "tracks": [
+    {
+      "id": "calm",
+      "target": "assets/audio/bgm/stem_melody.mp3",
+      "prompt": "calm strategic tower defense background music, slow steady pulse, warm low strings, soft mallet arpeggio, subtle tension underneath, minimal percussion, loopable, no vocals, no drums solo, 84 bpm",
+      "lyrics": "",
+      "durationSec": 30,
+      "trimSec": 28
+    },
+    {
+      "id": "tense",
+      "target": "assets/audio/bgm/stem_rhythm.mp3",
+      "prompt": "tense tower defense combat music, driving low percussion, pulsing bass ostinato, urgent strings, rising pressure, no vocals, no melody solo, loopable, 132 bpm",
+      "lyrics": "",
+      "durationSec": 30,
+      "trimSec": 28
+    }
+  ]
+}

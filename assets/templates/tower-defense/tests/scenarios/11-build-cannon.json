@@ -1,0 +1,46 @@
+{
+  "id": "11-build-cannon",
+  "name": "炮塔：建造费 80，伤害与箭塔不同",
+  "level": 1,
+  "note": "buildType 切换后建塔要扣对应类型的钱，不能统一按 50 算。",
+  "setup": [
+    {
+      "type": "set",
+      "patch": {
+        "gold": 100,
+        "pauseWaves": true,
+        "buildType": "cannon"
+      }
+    }
+  ],
+  "steps": [
+    {
+      "type": "tap",
+      "c": 0,
+      "r": 1
+    }
+  ],
+  "assertions": [
+    {
+      "path": "gold",
+      "op": "eq",
+      "value": 20
+    },
+    {
+      "path": "towerCount",
+      "op": "eq",
+      "value": 1
+    },
+    {
+      "path": "towers.0.typeId",
+      "op": "eq",
+      "value": "cannon"
+    },
+    {
+      "path": "towers.0.damage",
+      "op": "eq",
+      "value": 14
+    }
+  ],
+  "variantSafe": true
+}

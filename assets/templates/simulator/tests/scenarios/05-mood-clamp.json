@@ -1,0 +1,12 @@
+{
+  "id": "05-mood-clamp",
+  "name": "心境下限：扣到 0 就停住，不出现负数",
+  "level": 1,
+  "note": "心境 2，打坐 -2 刚好归零。负数会让后续「心境<40 触发心魔」之类的判定链全乱。",
+  "setup": [{ "type": "set", "patch": { "eventChance": 0, "stats": { "mood": 2 } } }],
+  "steps": [{ "type": "act", "id": "meditate" }],
+  "assertions": [
+    { "path": "mood", "op": "eq", "value": 0 },
+    { "path": "mood", "op": "gte", "value": 0 }
+  ]
+}

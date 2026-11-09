@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import shutil
 import sys
 from datetime import datetime
@@ -23,6 +24,8 @@ from _common import (  # noqa: E402
     STAGES,
     TEMPLATE_DIR,
     dump_json,
+    genre_template,
+    list_genre_templates,
     ok,
     save_state,
     warn,
@@ -81,10 +84,16 @@ runninghub:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="初始化 IdeaToGame 项目")
-    ap.add_argument("--name", required=True, help="项目名（kebab-case）")
-    ap.add_argument("--idea", required=True, help="游戏想法描述，或同款游戏名")
+    ap.add_argument("--name", default="", help="项目名（kebab-case）")
+    ap.add_argument("--idea", default="", help="游戏想法描述，或同款游戏名")
     ap.add_argument("--style-ref", default="", help="风格参考图路径（会被复制到 assets/ref/）")
-    ap.add_argument("--genre", default="", help="品类，如 merge / idle / runner")
+    ap.add_argument(
+        "--genre",
+        default="",
+        help="品类模板名（tower-defense / simulator）。命中则用该品类的已验证玩法模板；"
+        "写业务品类（merge/idle/runner）但没有对应模板时回退基础模板。",
+    )
+    ap.add_argument("--list-genres", action="store_true", help="列出可用的品类模板后退出")
     ap.add_argument(
         "--platforms",
         default="",
@@ -94,6 +103,20 @@ def main() -> int:
     ap.add_argument("--style", default="", help="画风预设 key（见 assets/styles/，如 pixel-game / flat-vector）")
     ap.add_argument("--out", default=".", help="输出父目录，默认当前目录")
     args = ap.parse_args()
+
+    if args.list_genres:
+        avail = list_genre_templates()
+        if not avail:
+            print("当前没有任何品类模板（assets/templates/ 为空）")
+        else:
+            print("可用的品类模板：")
+            for k in avail:
+                print(f"  - {k}")
+            print("\n用法：python init_project.py --name <项目> --idea \"...\" --genre <模板名>")
+        return 0
+
+    if not args.name or not args.idea:
+        ap.error("--name 与 --idea 是必填的（只有 --list-genres 可以单独使用）")
 
     # 平台校验
     platforms = [p.strip().lower() for p in args.platforms.split(",") if p.strip()]
@@ -131,16 +154,38 @@ def main() -> int:
         (proj / "assets" / d).mkdir(parents=True, exist_ok=True)
     (proj / ".gamedev" / "logs").mkdir(parents=True, exist_ok=True)
 
-    if not TEMPLATE_DIR.is_dir():
-        warn(f"模板目录不存在，跳过模板复制：{TEMPLATE_DIR}")
+    # 模板选择：命中品类模板就用它（自带已验证的核心循环 + 用例），否则用基础骨架
+    genre_tpl = genre_template(args.genre)
+    tpl_dir = genre_tpl or TEMPLATE_DIR
+    tpl_label = f"品类模板 {args.genre}" if genre_tpl else "基础模板"
+    if args.genre and not genre_tpl:
+        avail = list_genre_templates()
+        warn(
+            f"没有 {args.genre!r} 的品类模板，回退基础模板"
+            + (f"（可用：{', '.join(avail)}）" if avail else "（当前没有任何品类模板）")
+        )
+
+    if not tpl_dir.is_dir():
+        warn(f"模板目录不存在，跳过模板复制：{tpl_dir}")
     else:
-        for item in TEMPLATE_DIR.iterdir():
+        for item in tpl_dir.iterdir():
             dst = proj / item.name
             if item.is_dir():
                 shutil.copytree(item, dst, dirs_exist_ok=True)
             else:
                 shutil.copy2(item, dst)
-        ok(f"已复制项目模板 → {proj}")
+        ok(f"已复制{tpl_label} → {proj}")
+
+    # 模板里的 package.json 用的是通用占位名，改成项目名
+    pkg = proj / "package.json"
+    if pkg.is_file():
+        try:
+            data = json.loads(pkg.read_text(encoding="utf-8"))
+            data["name"] = args.name
+            data["description"] = f"{args.idea[:60]}（IdeaToGame 生成）"
+            pkg.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        except (OSError, json.JSONDecodeError) as e:
+            warn(f"改写 package.json 失败：{e}")
 
     # 工作流模板（ComfyUI API 格式 + 使用说明）
     wf_src = SKILL_DIR / "assets" / "workflows"
@@ -171,6 +216,7 @@ def main() -> int:
             "idea": args.idea,
             "style_ref": style_ref,
             "genre": args.genre,
+            "template": args.genre if genre_tpl else "base",
             "created": datetime.now().astimezone().isoformat(timespec="seconds"),
         },
         "stages": {s: {"status": "pending"} for s in STAGES},

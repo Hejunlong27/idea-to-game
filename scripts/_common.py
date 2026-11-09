@@ -13,6 +13,25 @@ from pathlib import Path
 
 SKILL_DIR = Path(__file__).resolve().parent.parent
 TEMPLATE_DIR = SKILL_DIR / "assets" / "template"
+TEMPLATES_DIR = SKILL_DIR / "assets" / "templates"
+
+
+def genre_template(key: str):
+    """返回品类模板目录（assets/templates/<key>）；不存在或不是完整模板时返回 None。"""
+    if not key:
+        return None
+    p = TEMPLATES_DIR / key
+    return p if (p / "package.json").is_file() and (p / "src" / "game").is_dir() else None
+
+
+def list_genre_templates():
+    """列出可用的品类模板名（按字母序）。"""
+    if not TEMPLATES_DIR.is_dir():
+        return []
+    return sorted(
+        d.name for d in TEMPLATES_DIR.iterdir()
+        if (d / "package.json").is_file() and (d / "src" / "game").is_dir()
+    )
 
 STAGES = [
     "brief",

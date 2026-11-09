@@ -1,0 +1,44 @@
+{
+  "id": "16-sell-refund",
+  "name": "出售返还：建 50 金的箭塔，出售返 30（60%）",
+  "level": 1,
+  "note": "返还比例 SELL_REFUND=0.6。100-50+30=80。没有这个机制，玩家建错塔就只能重开。",
+  "setup": [
+    {
+      "type": "set",
+      "patch": {
+        "gold": 100,
+        "pauseWaves": true
+      }
+    }
+  ],
+  "steps": [
+    {
+      "type": "tap",
+      "c": 0,
+      "r": 1
+    },
+    {
+      "type": "set",
+      "patch": {
+        "sellAt": [
+          0,
+          1
+        ]
+      }
+    }
+  ],
+  "assertions": [
+    {
+      "path": "towerCount",
+      "op": "eq",
+      "value": 0
+    },
+    {
+      "path": "gold",
+      "op": "eq",
+      "value": 80
+    }
+  ],
+  "variantSafe": true
+}

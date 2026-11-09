@@ -1,0 +1,55 @@
+{
+  "id": "13-armor-reduces",
+  "name": "护甲减伤：甲兽 4 点护甲，箭塔 8 伤只打出 4",
+  "level": 1,
+  "note": "甲兽 hp 55、armor 4，塔单发 8 只造成 4。断言精确到 51，必须让「只打一次」确定：建塔后先等 100ms 让塔进入冷却（这一帧它会朝空处开火），再放敌人，于是下一次开火在 500ms 后，wait 700 只会命中一次。不这么做会连打两次变成 47。",
+  "setup": [
+    {
+      "type": "set",
+      "patch": {
+        "gold": 100,
+        "pauseWaves": true
+      }
+    }
+  ],
+  "steps": [
+    {
+      "type": "tap",
+      "c": 0,
+      "r": 1
+    },
+    {
+      "type": "wait",
+      "ms": 100
+    },
+    {
+      "type": "set",
+      "patch": {
+        "spawnType": "armored",
+        "spawnCount": 1
+      }
+    },
+    {
+      "type": "wait",
+      "ms": 700
+    }
+  ],
+  "assertions": [
+    {
+      "path": "enemyCount",
+      "op": "eq",
+      "value": 1
+    },
+    {
+      "path": "enemies.0.armor",
+      "op": "eq",
+      "value": 4
+    },
+    {
+      "path": "enemies.0.hp",
+      "op": "eq",
+      "value": 51
+    }
+  ],
+  "variantSafe": true
+}

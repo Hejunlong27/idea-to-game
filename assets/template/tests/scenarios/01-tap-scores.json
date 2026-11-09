@@ -1,0 +1,13 @@
+{
+  "id": "01-tap-scores",
+  "name": "命中得分：点中靶子得 1 分、连击 1、靶子标记为已命中",
+  "level": 1,
+  "note": "模板自带示例。靶子随机生成，所以先用 spawn 造一个再 tap（不带坐标 = 点第一个未命中的）。",
+  "setup": [],
+  "steps": [{ "type": "spawn" }, { "type": "tap" }],
+  "assertions": [
+    { "path": "score", "op": "eq", "value": 1 },
+    { "path": "combo", "op": "eq", "value": 1 },
+    { "path": "targets.0.hit", "op": "truthy" }
+  ]
+}

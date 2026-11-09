@@ -1,0 +1,14 @@
+{
+  "id": "06-ping-without-memory",
+  "name": "记忆耗尽：敲钟不生效、不扣成负数、不揭示",
+  "level": 1,
+  "note": "memory=0 时敲钟必须变成「无效动作」而不是「负数」。负数会让 memory<=0 的判定链全乱。",
+  "setup": [{ "type": "set", "patch": { "memory": 0 } }],
+  "steps": [{ "type": "ping" }, { "type": "ping" }],
+  "assertions": [
+    { "path": "memory", "op": "eq", "value": 0 },
+    { "path": "memory", "op": "gte", "value": 0 },
+    { "path": "revealed", "op": "falsy" },
+    { "path": "ghosts", "op": "eq", "value": 0 }
+  ]
+}

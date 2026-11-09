@@ -1,0 +1,41 @@
+{
+  "id": "05-enemy-advances",
+  "name": "敌人沿路径推进：距离增加且未越过终点",
+  "level": 1,
+  "note": "断言用 dist（已走格数）而不是像素坐标 —— 换分辨率或改 cell 尺寸都不失效。",
+  "setup": [
+    {
+      "type": "set",
+      "patch": {
+        "pauseWaves": true
+      }
+    }
+  ],
+  "steps": [
+    {
+      "type": "spawn"
+    },
+    {
+      "type": "wait",
+      "ms": 600
+    }
+  ],
+  "assertions": [
+    {
+      "path": "enemyCount",
+      "op": "eq",
+      "value": 1
+    },
+    {
+      "path": "enemies.0.dist",
+      "op": "gt",
+      "value": 0
+    },
+    {
+      "path": "enemies.0.dist",
+      "op": "lt",
+      "valuePath": "pathTotal"
+    }
+  ],
+  "variantSafe": true
+}

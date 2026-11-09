@@ -1,0 +1,127 @@
+{
+  "$comment": "事件定义。weight 越大越常见；require 是触发门槛。选项的 effects 与行动共用同一套结算规则。",
+  "events": [
+    {
+      "id": "old_man",
+      "title": "路边老者",
+      "text": "一位老者拦住你，说可传你一段口诀，但要收十块灵石。",
+      "weight": 3,
+      "options": [
+        {
+          "text": "付灵石（-10 灵石 / +12 修为）",
+          "effects": [
+            { "stat": "stones", "delta": -10 },
+            { "stat": "qi", "delta": 12 }
+          ]
+        },
+        {
+          "text": "婉拒（+3 心境）",
+          "effects": [{ "stat": "mood", "delta": 3 }]
+        }
+      ]
+    },
+    {
+      "id": "beast",
+      "title": "妖兽袭击",
+      "text": "林间窜出一头妖兽，挡在你回去的路上。",
+      "weight": 3,
+      "options": [
+        {
+          "text": "正面搏杀（+10 修为 / -12 心境）",
+          "effects": [
+            { "stat": "qi", "delta": 10 },
+            { "stat": "mood", "delta": -12 }
+          ]
+        },
+        {
+          "text": "绕路逃走（-5 心境 / +2 灵石）",
+          "effects": [
+            { "stat": "mood", "delta": -5 },
+            { "stat": "stones", "delta": 2 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "secret_realm",
+      "title": "秘境入口",
+      "text": "崖壁裂开一道缝隙，里面灵气浓得化不开。",
+      "weight": 2,
+      "require": [{ "stat": "qi", "min": 50 }],
+      "options": [
+        {
+          "text": "踏入秘境（+30 修为 / -20 心境）",
+          "effects": [
+            { "stat": "qi", "delta": 30 },
+            { "stat": "mood", "delta": -20 }
+          ]
+        },
+        {
+          "text": "记下位置先走（+5 心境）",
+          "effects": [{ "stat": "mood", "delta": 5 }]
+        }
+      ]
+    },
+    {
+      "id": "sect_help",
+      "title": "同门求助",
+      "text": "同门师弟被人围住，正朝你这边喊。",
+      "weight": 2,
+      "options": [
+        {
+          "text": "出手相助（-8 修为 / +12 心境）",
+          "effects": [
+            { "stat": "qi", "delta": -8 },
+            { "stat": "mood", "delta": 12 }
+          ]
+        },
+        {
+          "text": "当作没听见（-8 心境）",
+          "effects": [{ "stat": "mood", "delta": -8 }]
+        }
+      ]
+    },
+    {
+      "id": "heart_demon",
+      "title": "心魔",
+      "text": "打坐时，一个和你一模一样的声音在耳边说话。",
+      "weight": 2,
+      "require": [{ "stat": "mood", "max": 40 }],
+      "options": [
+        {
+          "text": "静心压下去（+10 心境 / -3 修为）",
+          "effects": [
+            { "stat": "mood", "delta": 10 },
+            { "stat": "qi", "delta": -3 }
+          ]
+        },
+        {
+          "text": "强行突破（+18 修为 / -15 心境）",
+          "effects": [
+            { "stat": "qi", "delta": 18 },
+            { "stat": "mood", "delta": -15 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "merchant",
+      "title": "行脚商人",
+      "text": "商人摊开一块布，上面摆着几枚成色不错的灵石。",
+      "weight": 1,
+      "options": [
+        {
+          "text": "全买下（-15 灵石 / +8 修为）",
+          "effects": [
+            { "stat": "stones", "delta": -15 },
+            { "stat": "qi", "delta": 8 }
+          ]
+        },
+        {
+          "text": "只看看（+1 心境）",
+          "effects": [{ "stat": "mood", "delta": 1 }]
+        }
+      ]
+    }
+  ]
+}

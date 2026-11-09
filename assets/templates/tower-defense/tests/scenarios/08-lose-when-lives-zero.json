@@ -1,0 +1,43 @@
+{
+  "id": "08-lose-when-lives-zero",
+  "name": "生命归零：判定失败",
+  "level": 1,
+  "note": "生命 1 + 漏一只 → 0 → phase 必须变 lost。enemyProgress=1.0 直接构造「已到终点」的终态，不赌帧率。",
+  "setup": [
+    {
+      "type": "set",
+      "patch": {
+        "lives": 1,
+        "pauseWaves": true
+      }
+    }
+  ],
+  "steps": [
+    {
+      "type": "spawn"
+    },
+    {
+      "type": "set",
+      "patch": {
+        "enemyProgress": 1.0
+      }
+    },
+    {
+      "type": "wait",
+      "ms": 400
+    }
+  ],
+  "assertions": [
+    {
+      "path": "lives",
+      "op": "eq",
+      "value": 0
+    },
+    {
+      "path": "phase",
+      "op": "eq",
+      "value": "lost"
+    }
+  ],
+  "variantSafe": true
+}

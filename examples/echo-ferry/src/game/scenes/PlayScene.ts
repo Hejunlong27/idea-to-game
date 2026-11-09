@@ -5,6 +5,7 @@ import { EventBus, GAME_EVENTS } from '../events';
 import { AudioDirector } from '../audio';
 import { JuiceDirector } from '../juice';
 import { bridge } from '../util';
+import { detachTestApi, installTestApi, type TestAction, type TestAdapter } from '../test-api';
 import LEVELS from '../levels.json';
 
 type Pt = { c: number; r: number };
@@ -131,6 +132,7 @@ export class PlayScene extends Phaser.Scene {
     this.buildHud();
     this.bindInput();
     this.exposeDebugHooks();
+    this.installTestHooks();
 
     this.bus.emit(GAME_EVENTS.GAME_START, { intensity: 0.5 });
     this.bus.emit(GAME_EVENTS.LEVEL_STARTED, {
@@ -384,6 +386,101 @@ export class PlayScene extends Phaser.Scene {
     };
   }
 
+  // ------------------------------------------------------------ 测试接口
+  /**
+   * 注册 Game Test API（仅 DEV 生效，生产构建被 DCE 掉）。
+   *
+   * 与 `exposeDebugHooks` 的区别：那边是**只读**快照，给试玩 Agent 观察用；
+   * 这边是**可写**驱动，能同步执行动作、精确构造边界场景。
+   * 没有它，测试就只能靠敲键盘碰运气，永远碰不到「记忆满时送达」这类边界。
+   */
+  private installTestHooks() {
+    const adapter: TestAdapter = {
+      capabilities: () => ['move', 'ping', 'wait', 'reset', 'teleport', 'set'],
+
+      getState: () => ({
+        phase: this.ended ? 'over' : 'play',
+        level: this.levelIdx + 1,
+        levelName: this.cfg.name,
+        hull: this.hull,
+        hullMax: RULES.hullMax,
+        memory: this.memory,
+        memoryMax: this.cfg.memoryMax ?? ECHO.memoryMax,
+        carried: this.carried,
+        delivered: this.delivered,
+        soulsTotal: this.totalSouls,
+        soulsLeft: this.ents.filter((e) => e.kind === 'soul' && e.alive).length,
+        player: { c: this.player.c, r: this.player.r },
+        wraiths: this.ents
+          .filter((e) => e.kind === 'wraith' && e.alive)
+          .map((e) => ({ c: e.c, r: e.r })),
+        rocks: this.ents.filter((e) => e.kind === 'rock' && e.alive).map((e) => ({ c: e.c, r: e.r })),
+        ghosts: this.ghosts.length,
+        revealed: this.time.now < this.revealUntil,
+        ended: this.ended,
+      }),
+
+      isOver: () => this.ended,
+
+      exec: (a: TestAction) => {
+        switch (a.type) {
+          case 'move':
+            this.step(a.dc, a.dr);
+            break;
+          case 'ping':
+            this.ping();
+            break;
+          case 'wait':
+            // 同步接口无法等待；runner 侧遇到 wait 会调用 settle()
+            break;
+          case 'reset':
+            this.scene.restart({ level: a.level ?? this.levelIdx });
+            break;
+          case 'teleport':
+            this.teleport(a.c, a.r);
+            break;
+          case 'set':
+            this.applyTestPatch(a.patch);
+            break;
+        }
+      },
+    };
+    installTestApi(adapter);
+  }
+
+  /** 直接摆位置。测试用它精确构造场景，绕过寻路与 tween。 */
+  private teleport(c: number, r: number) {
+    if (c < 0 || r < 0 || c >= GRID.cols || r >= GRID.rows) return;
+    this.player = { c, r };
+    this.boat.setPosition(this.cx(c), this.cy(r));
+    // 传送后立刻结算所在格：否则测试要额外走一步才能拿到货
+    const here = this.entAt(c, r);
+    if (here?.kind === 'soul') {
+      here.alive = false;
+      here.spr.destroy();
+      this.carried = 1;
+      this.bus.emit(GAME_EVENTS.ITEM_COLLECTED, {
+        intensity: 0.5,
+        context: { x: this.cx(c), y: this.cy(r), soul: true },
+      });
+    }
+    this.refreshHud();
+  }
+
+  /** 直接改内部值，用来构造「记忆满 / 船体 1」这类前置条件。 */
+  private applyTestPatch(patch: Record<string, unknown>) {
+    const num = (k: string) => (typeof patch[k] === 'number' ? (patch[k] as number) : undefined);
+    const hull = num('hull');
+    const memory = num('memory');
+    const carried = num('carried');
+    const delivered = num('delivered');
+    if (hull !== undefined) this.hull = hull;
+    if (memory !== undefined) this.memory = memory;
+    if (carried !== undefined) this.carried = carried;
+    if (delivered !== undefined) this.delivered = delivered;
+    this.refreshHud();
+  }
+
   /** bot 的目标：有货回岸边，没货去最近一个「记得的」灵魂位置 */
   private botTarget(): Pt | null {
     if (this.carried > 0) return DOCK;
@@ -484,6 +581,7 @@ export class PlayScene extends Phaser.Scene {
     this.carried = 0;
     this.delivered += 1;
     // 送达的回馈：多一格记忆（世界记得你做过什么）
+    // 必须封顶：记忆稀缺是本作的核心张力，突破上限会让玩家无限续杯
     this.memory = Math.min(this.cfg.memoryMax ?? ECHO.memoryMax, this.memory + 1);
     this.audio.play('feedback_levelup', { priority: 'high' });
     this.bus.emit('soul_delivered', {
@@ -775,6 +873,7 @@ export class PlayScene extends Phaser.Scene {
     delete w.__gameState;
     delete w.__gameEvents;
     delete w.__bot;
+    detachTestApi();
     this.juice?.destroy();
     this.audio?.destroy();
     this.bus?.clear();

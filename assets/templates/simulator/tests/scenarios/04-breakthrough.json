@@ -1,0 +1,14 @@
+{
+  "id": "04-breakthrough",
+  "name": "境界突破：修为达 50 自动升筑基、寿元 +20",
+  "level": 1,
+  "note": "qi 设 48，打坐 +8 到 56，跨过筑基门槛 50。断言寿元从 80 变 100 —— 突破必须真的改寿元，否则境界只是个名字。",
+  "setup": [{ "type": "set", "patch": { "eventChance": 0, "stats": { "qi": 48 } } }],
+  "steps": [{ "type": "act", "id": "meditate" }],
+  "assertions": [
+    { "path": "qi", "op": "eq", "value": 56 },
+    { "path": "stage", "op": "eq", "value": 1 },
+    { "path": "stageName", "op": "eq", "value": "筑基" },
+    { "path": "lifespan", "op": "eq", "value": 100 }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "id": "02-cannot-build-on-path",
+  "name": "路径格不可建造：不扣钱、不产生塔",
+  "level": 1,
+  "note": "(0,0) 是敌人入侵口，属于路径。在路径上建塔会让敌人无路可走。",
+  "setup": [
+    {
+      "type": "set",
+      "patch": {
+        "gold": 100,
+        "pauseWaves": true
+      }
+    }
+  ],
+  "steps": [
+    {
+      "type": "tap",
+      "c": 0,
+      "r": 0
+    }
+  ],
+  "assertions": [
+    {
+      "path": "gold",
+      "op": "eq",
+      "value": 100
+    },
+    {
+      "path": "towerCount",
+      "op": "eq",
+      "value": 0
+    }
+  ],
+  "variantSafe": true
+}

@@ -1,0 +1,35 @@
+{
+  "id": "09-win-when-cleared",
+  "name": "波次清空：判定胜利",
+  "level": 1,
+  "note": "waveIndex 设成 waves.length 表示所有波次已生成完，清空敌人后下一帧即胜利。（依赖具体配置，不参与变体对比）",
+  "setup": [
+    {
+      "type": "set",
+      "patch": {
+        "pauseWaves": true,
+        "clearEnemies": true,
+        "waveIndex": 3
+      }
+    }
+  ],
+  "steps": [
+    {
+      "type": "wait",
+      "ms": 150
+    }
+  ],
+  "assertions": [
+    {
+      "path": "phase",
+      "op": "eq",
+      "value": "won"
+    },
+    {
+      "path": "lives",
+      "op": "eq",
+      "value": 10
+    }
+  ],
+  "variantSafe": false
+}

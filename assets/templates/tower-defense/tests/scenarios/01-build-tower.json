@@ -1,0 +1,45 @@
+{
+  "id": "01-build-tower",
+  "name": "建塔：扣 50 金、塔出现在指定格",
+  "level": 1,
+  "note": "路径是 (0,0)→(5,0)…，所以 (0,1) 是可建造空地。pauseWaves 关掉自动刷怪，避免干扰。",
+  "setup": [
+    {
+      "type": "set",
+      "patch": {
+        "gold": 100,
+        "pauseWaves": true
+      }
+    }
+  ],
+  "steps": [
+    {
+      "type": "tap",
+      "c": 0,
+      "r": 1
+    }
+  ],
+  "assertions": [
+    {
+      "path": "gold",
+      "op": "eq",
+      "value": 50
+    },
+    {
+      "path": "towerCount",
+      "op": "eq",
+      "value": 1
+    },
+    {
+      "path": "towers.0.c",
+      "op": "eq",
+      "value": 0
+    },
+    {
+      "path": "towers.0.r",
+      "op": "eq",
+      "value": 1
+    }
+  ],
+  "variantSafe": true
+}

@@ -1,0 +1,33 @@
+{
+  "id": "18-wave-advances",
+  "name": "波次推进：第一波打完后会自动进入第二波",
+  "level": 1,
+  "note": "这条用例堵的是一个真实盲区：此前所有用例都 pauseWaves 或只跑几百毫秒，没人验证「波次会不会推进」。结果出现过同一波无限重复刷怪（击杀 73 只还停在第 1 波）的 bug。首波 3 只、间隔 0.8s、波间隔 2.2s，等 5 秒游戏时间足够跨到第二波。（依赖具体配置，不参与变体对比）",
+  "setup": [
+    {
+      "type": "set",
+      "patch": {
+        "gold": 100
+      }
+    }
+  ],
+  "steps": [
+    {
+      "type": "wait",
+      "ms": 5000
+    }
+  ],
+  "assertions": [
+    {
+      "path": "wave",
+      "op": "gte",
+      "value": 2
+    },
+    {
+      "path": "phase",
+      "op": "eq",
+      "value": "play"
+    }
+  ],
+  "variantSafe": false
+}

@@ -1,0 +1,17 @@
+{
+  "id": "07-reset-clean",
+  "name": "重置：船体/记忆/送达数全部回到关卡初始值",
+  "level": 1,
+  "note": "自动修复闭环每次都要从干净状态重跑，reset 不干净会污染后续用例结果。",
+  "setup": [
+    { "type": "set", "patch": { "hull": 1, "memory": 0, "delivered": 0, "carried": 0 } }
+  ],
+  "steps": [{ "type": "reset", "level": 0 }],
+  "assertions": [
+    { "path": "hull", "op": "eq", "value": 3 },
+    { "path": "memory", "op": "eq", "value": 5 },
+    { "path": "delivered", "op": "eq", "value": 0 },
+    { "path": "soulsLeft", "op": "eq", "value": 1 },
+    { "path": "phase", "op": "eq", "value": "play" }
+  ]
+}

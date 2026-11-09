@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "note": "通用音效规格（基础模板）。9 条标准事件覆盖绝大多数小游戏；换玩法时只改 id 或配方，不要新增事件名——audio.ts 的事件订阅按这些 id 走。",
+  "items": [
+    { "id": "gameplay_cast", "layer": "action", "cue": "主动作/施放", "synth": { "recipe": "sweep_up", "params": { "f0": 380, "f1": 880, "dur": 0.13 } } },
+    { "id": "gameplay_hit", "layer": "action", "cue": "命中/碰撞", "synth": { "recipe": "blip", "params": { "freq": 1100, "dur": 0.09, "gain": 0.6 } } },
+    { "id": "gameplay_block", "layer": "action", "cue": "受阻/无效操作", "synth": { "recipe": "thud" } },
+    { "id": "gameplay_move", "layer": "action", "cue": "移动/切换", "synth": { "recipe": "blip", "params": { "freq": 760, "dur": 0.07, "gain": 0.5 } } },
+    { "id": "feedback_score", "layer": "feedback", "cue": "得分/收益", "synth": { "recipe": "gold" } },
+    { "id": "feedback_hurt", "layer": "feedback", "cue": "受损/失败一步", "synth": { "recipe": "bomb" } },
+    { "id": "feedback_levelup", "layer": "feedback", "cue": "升级/突破", "synth": { "recipe": "chime" } },
+    { "id": "feedback_win", "layer": "feedback", "cue": "通关", "synth": { "recipe": "levelup" } },
+    { "id": "feedback_defeat", "layer": "feedback", "cue": "失败", "synth": { "recipe": "fail" } }
+  ]
+}

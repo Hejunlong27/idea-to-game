@@ -1,0 +1,38 @@
+{
+  "id": "17-second-level",
+  "name": "第二关：切关后地图与路径长度都变了",
+  "level": 2,
+  "note": "关卡数据全在 config.ts 的 LEVELS。第二关路径总长 20 格（第一关 30），起点从左上变左下。这条用例保证「多关卡」不是摆设。（依赖具体配置，不参与变体对比）",
+  "setup": [
+    {
+      "type": "set",
+      "patch": {
+        "pauseWaves": true
+      }
+    }
+  ],
+  "steps": [],
+  "assertions": [
+    {
+      "path": "level",
+      "op": "eq",
+      "value": 2
+    },
+    {
+      "path": "pathTotal",
+      "op": "eq",
+      "value": 20
+    },
+    {
+      "path": "lives",
+      "op": "eq",
+      "value": 8
+    },
+    {
+      "path": "gold",
+      "op": "eq",
+      "value": 130
+    }
+  ],
+  "variantSafe": false
+}

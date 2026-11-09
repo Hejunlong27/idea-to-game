@@ -1,0 +1,18 @@
+{
+  "id": "06-event-effects",
+  "name": "事件选项：选「付灵石」后扣 10 灵石、得 12 修为、弹窗关闭",
+  "level": 1,
+  "note": "forcedEvent 强制触发「路边老者」，绕开随机抽取。打坐先得 8 修为，事件再 +12 → 20。",
+  "setup": [
+    { "type": "set", "patch": { "eventChance": 0, "forcedEvent": "old_man", "stats": { "stones": 20 } } }
+  ],
+  "steps": [
+    { "type": "act", "id": "meditate" },
+    { "type": "choose", "index": 0 }
+  ],
+  "assertions": [
+    { "path": "pending", "op": "falsy" },
+    { "path": "stones", "op": "eq", "value": 10 },
+    { "path": "qi", "op": "eq", "value": 20 }
+  ]
+}

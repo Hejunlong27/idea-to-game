@@ -4,6 +4,7 @@ import { bridge } from '../util';
 import { EventBus, GAME_EVENTS } from '../events';
 import { AudioDirector } from '../audio';
 import { JuiceDirector } from '../juice';
+import { detachTestApi, installTestApi, type TestAction, type TestAdapter } from '../test-api';
 
 type Target = Phaser.GameObjects.Image & { bornAt: number; lifetime: number; hit: boolean };
 
@@ -73,6 +74,8 @@ export class PlayScene extends Phaser.Scene {
 
     // ---- 供 QA / 试玩读取的只读快照
     this.exposeDebugHooks();
+    // ---- 供 scenario runner 驱动的可写测试接口（仅 DEV）
+    this.installTestHooks();
 
     this.bus.emit(GAME_EVENTS.GAME_START, { intensity: 0.5 });
     this.bus.emit(GAME_EVENTS.LEVEL_STARTED, { intensity: 0.4, context: { level: 1 } });
@@ -258,11 +261,84 @@ export class PlayScene extends Phaser.Scene {
     this.time.delayedCall(650, () => this.scene.start('GameOver', { score: this.score }));
   }
 
+  // ------------------------------------------------------------ 测试接口
+  /**
+   * 注册 Game Test API（仅 DEV 生效，生产构建被 DCE 掉）。
+   *
+   * 模板的玩法是「限时打靶」，靶子随机生成 —— 测试无法预知坐标。
+   * 所以这里提供 `tap`（不带坐标 = 点第一个未命中的靶）和 `spawn`（强制生成），
+   * 让用例可以「先造一个靶、再打掉它」，而不依赖随机时序。
+   *
+   * 换成别的玩法时，改这个 adapter 即可，runner 与用例格式不用动。
+   */
+  private installTestHooks() {
+    const adapter: TestAdapter = {
+      capabilities: () => ['tap', 'spawn', 'wait', 'reset', 'set'],
+
+      getState: () => ({
+        phase: this.ended ? 'over' : 'play',
+        score: this.score,
+        combo: this.combo,
+        remainMs: Math.max(0, GAME.roundMs - (this.time.now - this.startedAt)),
+        targetCount: this.targets.length,
+        targets: this.targets.map((t) => ({ x: Math.round(t.x), y: Math.round(t.y), hit: t.hit })),
+        ended: this.ended,
+      }),
+
+      isOver: () => this.ended,
+
+      exec: (a: TestAction) => {
+        switch (a.type) {
+          case 'tap':
+            this.testTap(a.x, a.y);
+            break;
+          case 'spawn':
+            this.spawnTarget(GAME.targetLifetimeMs);
+            break;
+          case 'reset':
+            this.scene.restart({});
+            break;
+          case 'set':
+            this.applyTestPatch(a.patch);
+            break;
+          case 'wait':
+            // 同步接口无法等待；runner 侧遇到 wait 会调用 settle()
+            break;
+        }
+      },
+    };
+    installTestApi(adapter);
+  }
+
+  /** 命中判定：给了坐标按距离找，没给就点第一个未命中的靶。 */
+  private testTap(x?: number, y?: number) {
+    if (this.ended) return;
+    const live = this.targets.filter((t) => !t.hit);
+    if (!live.length) return;
+    if (x === undefined || y === undefined) {
+      this.hitTarget(live[0]);
+      return;
+    }
+    const r = GAME.targetRadius;
+    const hit = live.find((t) => Math.hypot(t.x - x, t.y - y) <= r);
+    if (hit) this.hitTarget(hit);
+  }
+
+  /** 直接改内部值，用来构造「连击已 x 次」这类前置条件。 */
+  private applyTestPatch(patch: Record<string, unknown>) {
+    if (typeof patch.score === 'number') {
+      this.score = patch.score;
+      this.scoreText.setText(String(this.score));
+    }
+    if (typeof patch.combo === 'number') this.combo = patch.combo;
+  }
+
   private cleanup() {
     const w = window as unknown as Record<string, unknown>;
     delete w.__gameState;
     delete w.__gameEvents;
     delete w.__bot;
+    detachTestApi();
     this.juice?.destroy();
     this.audio?.destroy();
     this.bus?.clear();

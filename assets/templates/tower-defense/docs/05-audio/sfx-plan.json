@@ -1,0 +1,99 @@
+{
+  "version": 1,
+  "note": "塔防音效计划。先用程序化配方铺底（保证不静音），YuE2 起来后可只替换 BGM，音效保留程序化。",
+  "items": [
+    {
+      "id": "gameplay_cast",
+      "layer": "action",
+      "cue": "建塔",
+      "synth": {
+        "recipe": "sweep_up",
+        "params": {
+          "f0": 380,
+          "f1": 880,
+          "dur": 0.13
+        }
+      }
+    },
+    {
+      "id": "gameplay_hit",
+      "layer": "action",
+      "cue": "塔开火",
+      "synth": {
+        "recipe": "blip",
+        "params": {
+          "freq": 1200,
+          "dur": 0.09,
+          "gain": 0.55
+        }
+      }
+    },
+    {
+      "id": "gameplay_block",
+      "layer": "action",
+      "cue": "撞礁石/钱不够",
+      "synth": {
+        "recipe": "thud",
+        "params": {
+          "gain": 0.7
+        }
+      }
+    },
+    {
+      "id": "gameplay_move",
+      "layer": "action",
+      "cue": "选中/切换",
+      "synth": {
+        "recipe": "blip",
+        "params": {
+          "freq": 760,
+          "dur": 0.07,
+          "gain": 0.5
+        }
+      }
+    },
+    {
+      "id": "feedback_score",
+      "layer": "feedback",
+      "cue": "击杀得分",
+      "synth": {
+        "recipe": "gold"
+      }
+    },
+    {
+      "id": "feedback_hurt",
+      "layer": "feedback",
+      "cue": "漏怪",
+      "synth": {
+        "recipe": "bomb",
+        "params": {
+          "gain": 0.8
+        }
+      }
+    },
+    {
+      "id": "feedback_levelup",
+      "layer": "feedback",
+      "cue": "塔升级",
+      "synth": {
+        "recipe": "chime"
+      }
+    },
+    {
+      "id": "feedback_win",
+      "layer": "feedback",
+      "cue": "通关",
+      "synth": {
+        "recipe": "levelup"
+      }
+    },
+    {
+      "id": "feedback_defeat",
+      "layer": "feedback",
+      "cue": "失守",
+      "synth": {
+        "recipe": "fail"
+      }
+    }
+  ]
+}

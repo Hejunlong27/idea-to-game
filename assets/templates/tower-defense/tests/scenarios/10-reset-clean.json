@@ -1,0 +1,49 @@
+{
+  "id": "10-reset-clean",
+  "name": "重置：金币/生命/塔全部回到开局值",
+  "level": 1,
+  "note": "自动修复每次都要从干净状态重跑，reset 不干净会污染后续用例。（依赖具体配置，不参与变体对比）",
+  "setup": [
+    {
+      "type": "set",
+      "patch": {
+        "gold": 7,
+        "lives": 2,
+        "pauseWaves": true
+      }
+    },
+    {
+      "type": "tap",
+      "c": 0,
+      "r": 1
+    }
+  ],
+  "steps": [
+    {
+      "type": "reset"
+    }
+  ],
+  "assertions": [
+    {
+      "path": "gold",
+      "op": "eq",
+      "value": 100
+    },
+    {
+      "path": "lives",
+      "op": "eq",
+      "value": 10
+    },
+    {
+      "path": "towerCount",
+      "op": "eq",
+      "value": 0
+    },
+    {
+      "path": "phase",
+      "op": "eq",
+      "value": "play"
+    }
+  ],
+  "variantSafe": false
+}

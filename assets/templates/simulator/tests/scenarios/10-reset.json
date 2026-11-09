@@ -1,0 +1,17 @@
+{
+  "id": "10-reset",
+  "name": "重置：属性/回合/境界全部回到开局值",
+  "level": 1,
+  "note": "自动修复每次都要从干净状态重跑，reset 不干净会污染后续用例。",
+  "setup": [
+    { "type": "set", "patch": { "eventChance": 0, "stats": { "qi": 100, "age": 50 }, "stage": 2 } }
+  ],
+  "steps": [{ "type": "reset" }],
+  "assertions": [
+    { "path": "qi", "op": "eq", "value": 0 },
+    { "path": "age", "op": "eq", "value": 16 },
+    { "path": "turn", "op": "eq", "value": 0 },
+    { "path": "stage", "op": "eq", "value": 0 },
+    { "path": "phase", "op": "eq", "value": "play" }
+  ]
+}

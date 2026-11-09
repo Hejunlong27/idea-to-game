@@ -1,0 +1,53 @@
+{
+  "id": "06-tower-kills-reward",
+  "name": "塔击杀：敌人消失、击杀数 +1、金币 +15",
+  "level": 1,
+  "note": "建塔在 (0,1)，敌人出生点 (0,0) 距其 1 格，射程 1.7 格内。把敌人血量设成 1 让它必死，避免等满 3 次攻击。",
+  "setup": [
+    {
+      "type": "set",
+      "patch": {
+        "gold": 100,
+        "pauseWaves": true
+      }
+    }
+  ],
+  "steps": [
+    {
+      "type": "tap",
+      "c": 0,
+      "r": 1
+    },
+    {
+      "type": "spawn"
+    },
+    {
+      "type": "set",
+      "patch": {
+        "enemyHp": 1
+      }
+    },
+    {
+      "type": "wait",
+      "ms": 1200
+    }
+  ],
+  "assertions": [
+    {
+      "path": "kills",
+      "op": "eq",
+      "value": 1
+    },
+    {
+      "path": "enemyCount",
+      "op": "eq",
+      "value": 0
+    },
+    {
+      "path": "gold",
+      "op": "eq",
+      "value": 65
+    }
+  ],
+  "variantSafe": true
+}

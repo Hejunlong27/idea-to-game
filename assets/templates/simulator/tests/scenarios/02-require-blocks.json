@@ -1,0 +1,13 @@
+{
+  "id": "02-require-blocks",
+  "name": "条件不足：灵石不够时炼丹不执行、不扣钱、不推进回合",
+  "level": 1,
+  "note": "炼丹要 10 灵石，给 5。若只 clamp 而不拦执行，玩家能零成本白嫖修为。",
+  "setup": [{ "type": "set", "patch": { "eventChance": 0, "stats": { "stones": 5 } } }],
+  "steps": [{ "type": "act", "id": "alchemy" }],
+  "assertions": [
+    { "path": "stones", "op": "eq", "value": 5 },
+    { "path": "qi", "op": "eq", "value": 0 },
+    { "path": "turn", "op": "eq", "value": 0 }
+  ]
+}

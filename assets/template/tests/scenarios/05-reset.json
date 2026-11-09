@@ -1,0 +1,13 @@
+{
+  "id": "05-reset",
+  "name": "重置：分数与连击回到 0，场景仍可玩",
+  "level": 1,
+  "note": "自动修复每次都要从干净状态重跑，reset 不干净会污染后续用例。",
+  "setup": [{ "type": "set", "patch": { "score": 7, "combo": 3 } }],
+  "steps": [{ "type": "reset" }],
+  "assertions": [
+    { "path": "score", "op": "eq", "value": 0 },
+    { "path": "combo", "op": "eq", "value": 0 },
+    { "path": "phase", "op": "eq", "value": "play" }
+  ]
+}

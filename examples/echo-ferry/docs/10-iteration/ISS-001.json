@@ -1,0 +1,19 @@
+{
+  "id": "ISS-001",
+  "type": "gameplay_bugfix",
+  "severity": "high",
+  "detected_by": "02-memory-cap",
+  "detected_at": "2026-11-08",
+  "description": "送达灵魂的记忆奖励突破 memoryMax 上限：满记忆时送达一次，memory 变成 6 而关卡上限是 5。",
+  "impact": "破坏本作核心机制「记忆稀缺」——玩家可以靠反复送达无限续记忆；同时 HUD 只有 memoryMax 个槽位，第 6 格不可见，玩家看到的状态与真实状态不一致。",
+  "evidence": {
+    "assertion": "memory lte memoryMax",
+    "expected": 5,
+    "actual": 6,
+    "scenario": "02-memory-cap"
+  },
+  "root_cause": "src/game/scenes/PlayScene.ts deliver() 里给 memory 加 1 时未做 Math.min 封顶。",
+  "allowed_paths": ["src/game/"],
+  "forbidden_paths": ["assets/", "docs/09-review/", "tests/scenarios/"],
+  "validation": ["02-memory-cap", "01-core-loop", "07-reset-clean"]
+}

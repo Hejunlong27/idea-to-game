@@ -1,0 +1,17 @@
+{
+  "id": "02-combo-bonus",
+  "name": "连击加成：第二次连续命中得 1+1=2 分，总分 3",
+  "level": 1,
+  "note": "scorePerHit=1、comboBonus=1。验证加成公式而不是只验证「有加分」。",
+  "setup": [],
+  "steps": [
+    { "type": "spawn" },
+    { "type": "tap" },
+    { "type": "spawn" },
+    { "type": "tap" }
+  ],
+  "assertions": [
+    { "path": "combo", "op": "eq", "value": 2 },
+    { "path": "score", "op": "eq", "value": 3 }
+  ]
+}

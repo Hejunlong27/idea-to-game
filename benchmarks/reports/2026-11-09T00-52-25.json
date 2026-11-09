@@ -1,0 +1,102 @@
+{
+  "generated_at": "2026-11-09T00:52:25.921Z",
+  "baseline": true,
+  "rows": [
+    {
+      "id": "tower-defense",
+      "genre": "tower-defense",
+      "path": "D:/w.ai/2026-10-16-09-25-56/tower-defense",
+      "status": "OK",
+      "pass_rate": 100,
+      "passed": 18,
+      "total": 18,
+      "rounds": 1,
+      "reproducible": null,
+      "scenario_count": 18,
+      "avg_duration_ms": 813,
+      "bundle_kb": 1489,
+      "assets": {
+        "images": 0,
+        "image_kb": 0,
+        "audio": 11,
+        "audio_kb": 691.7,
+        "ai": 2,
+        "procedural": 9,
+        "unknown": 0,
+        "budget_kb": null
+      },
+      "failing": [],
+      "iterations": {
+        "total": 1,
+        "accepted": 1,
+        "rejected": 0,
+        "regressions": 0
+      },
+      "report_at": "2026-11-09T00:50:40.520Z"
+    },
+    {
+      "id": "simulator",
+      "genre": "simulator",
+      "path": "D:/w.ai/2026-10-16-09-25-56/simulator",
+      "status": "OK",
+      "pass_rate": 100,
+      "passed": 10,
+      "total": 10,
+      "rounds": 1,
+      "reproducible": null,
+      "scenario_count": 10,
+      "avg_duration_ms": 230,
+      "bundle_kb": 1481,
+      "assets": {
+        "images": 0,
+        "image_kb": 0,
+        "audio": 10,
+        "audio_kb": 688.9,
+        "ai": 2,
+        "procedural": 8,
+        "unknown": 0,
+        "budget_kb": null
+      },
+      "failing": [],
+      "iterations": {
+        "total": 0,
+        "accepted": 0,
+        "rejected": 0,
+        "regressions": 0
+      },
+      "report_at": "2026-11-09T00:50:57.046Z"
+    },
+    {
+      "id": "echo-ferry",
+      "genre": "action-puzzle",
+      "path": "D:/w.ai/2026-10-16-09-25-56/echo-ferry",
+      "status": "OK",
+      "pass_rate": 100,
+      "passed": 8,
+      "total": 8,
+      "rounds": 1,
+      "reproducible": null,
+      "scenario_count": 8,
+      "avg_duration_ms": 209,
+      "bundle_kb": 1491,
+      "assets": {
+        "images": 6,
+        "image_kb": 211.8,
+        "audio": 27,
+        "audio_kb": 1455.3,
+        "ai": 6,
+        "procedural": 27,
+        "unknown": 0,
+        "budget_kb": 2000
+      },
+      "failing": [],
+      "iterations": {
+        "total": 1,
+        "accepted": 1,
+        "rejected": 0,
+        "regressions": 0
+      },
+      "report_at": "2026-11-08T17:04:39.488Z"
+    }
+  ]
+}

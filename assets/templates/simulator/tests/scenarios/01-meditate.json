@@ -1,0 +1,47 @@
+{
+  "id": "01-meditate",
+  "name": "打坐：修为 +8、心境 -2、年龄与回合各 +1",
+  "level": 1,
+  "note": "eventChance 设 0 关掉随机事件，否则事件弹窗会打断断言。logCount 断言用来抓「同一条行动被写两遍」——初始 1 条 + 本次 1 条 = 2。",
+  "setup": [
+    {
+      "type": "set",
+      "patch": {
+        "eventChance": 0
+      }
+    }
+  ],
+  "steps": [
+    {
+      "type": "act",
+      "id": "meditate"
+    }
+  ],
+  "assertions": [
+    {
+      "path": "qi",
+      "op": "eq",
+      "value": 8
+    },
+    {
+      "path": "mood",
+      "op": "eq",
+      "value": 58
+    },
+    {
+      "path": "age",
+      "op": "eq",
+      "value": 17
+    },
+    {
+      "path": "turn",
+      "op": "eq",
+      "value": 1
+    },
+    {
+      "path": "logCount",
+      "op": "eq",
+      "value": 2
+    }
+  ]
+}

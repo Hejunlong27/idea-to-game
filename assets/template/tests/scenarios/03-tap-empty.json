@@ -1,0 +1,12 @@
+{
+  "id": "03-tap-empty",
+  "name": "空场点击：不得分、不加连击、不抛异常",
+  "level": 1,
+  "note": "场上没有靶子时点击必须是无害的。点空得分会让玩家挂机刷分。",
+  "setup": [],
+  "steps": [{ "type": "tap" }],
+  "assertions": [
+    { "path": "score", "op": "eq", "value": 0 },
+    { "path": "combo", "op": "eq", "value": 0 }
+  ]
+}

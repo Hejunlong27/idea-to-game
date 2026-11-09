@@ -1,0 +1,48 @@
+{
+  "id": "07-leak-costs-life",
+  "name": "漏怪：敌人到达基地扣 1 生命并消失",
+  "level": 1,
+  "note": "把敌人推到 98% 进度，600ms 内必然到终点。enemyProgress=1.0 直接构造「已到终点」的终态，不赌帧率。",
+  "setup": [
+    {
+      "type": "set",
+      "patch": {
+        "lives": 10,
+        "pauseWaves": true
+      }
+    }
+  ],
+  "steps": [
+    {
+      "type": "spawn"
+    },
+    {
+      "type": "set",
+      "patch": {
+        "enemyProgress": 1.0
+      }
+    },
+    {
+      "type": "wait",
+      "ms": 400
+    }
+  ],
+  "assertions": [
+    {
+      "path": "lives",
+      "op": "eq",
+      "value": 9
+    },
+    {
+      "path": "enemyCount",
+      "op": "eq",
+      "value": 0
+    },
+    {
+      "path": "phase",
+      "op": "eq",
+      "value": "play"
+    }
+  ],
+  "variantSafe": true
+}

@@ -1,0 +1,51 @@
+{
+  "id": "12-upgrade-tower",
+  "name": "升级：扣 45 金（50×0.9×1），伤害 8 → 12",
+  "level": 1,
+  "note": "升级费按「建造费 × 系数 × 当前等级」算。伤害 8×1.45=11.6 取整 12。先点空地建塔，再点同一格选中它，最后升级。",
+  "setup": [
+    {
+      "type": "set",
+      "patch": {
+        "gold": 200,
+        "pauseWaves": true
+      }
+    }
+  ],
+  "steps": [
+    {
+      "type": "tap",
+      "c": 0,
+      "r": 1
+    },
+    {
+      "type": "tap",
+      "c": 0,
+      "r": 1
+    },
+    {
+      "type": "set",
+      "patch": {
+        "upgradeSelected": true
+      }
+    }
+  ],
+  "assertions": [
+    {
+      "path": "gold",
+      "op": "eq",
+      "value": 105
+    },
+    {
+      "path": "towers.0.level",
+      "op": "eq",
+      "value": 2
+    },
+    {
+      "path": "towers.0.damage",
+      "op": "eq",
+      "value": 12
+    }
+  ],
+  "variantSafe": true
+}

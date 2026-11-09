@@ -1,0 +1,17 @@
+{
+  "id": "02-memory-cap",
+  "name": "记忆上限：送达奖励不得突破 memoryMax",
+  "level": 1,
+  "note": "本作核心机制是「记忆稀缺」。送达奖励 +1 记忆时若不封顶，稀缺性被破坏，记忆槽 UI 也会画不出。断言用 valuePath 跟 memoryMax 比，换关卡依然成立。",
+  "setup": [{ "type": "set", "patch": { "memory": 5, "hull": 3 } }],
+  "steps": [
+    { "type": "teleport", "c": 5, "r": 2 },
+    { "type": "teleport", "c": 5, "r": 4 },
+    { "type": "move", "dc": 1, "dr": 0 }
+  ],
+  "assertions": [
+    { "path": "delivered", "op": "eq", "value": 1 },
+    { "path": "memory", "op": "lte", "valuePath": "memoryMax" },
+    { "path": "memory", "op": "eq", "value": 5 }
+  ]
+}
