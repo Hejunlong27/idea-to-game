@@ -1,18 +1,19 @@
 import Phaser from 'phaser';
 import { COLORS, LAYOUT } from '../config';
-import { readSave } from '../util';
+import { readSaveWhenReady } from '../util';
 
 /** 菜单场景：显示最高分与开始入口。首屏到可玩必须 <3 秒。 */
 export class MenuScene extends Phaser.Scene {
+  private ready = false;
+
   constructor() {
     super('Menu');
   }
 
-  async create() {
+  create() {
     const { width: W, height: H } = LAYOUT;
+    this.ready = false;
     this.cameras.main.setBackgroundColor(COLORS.bg);
-
-    const save = await readSave(this);
 
     this.add
       .text(W / 2, H * 0.3, 'IDEA TO GAME', {
@@ -31,8 +32,8 @@ export class MenuScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    this.add
-      .text(W / 2, H * 0.52, `最高分 ${save.best}`, {
+    const highScore = this.add
+      .text(W / 2, H * 0.52, '最高分 …', {
         fontFamily: 'system-ui, sans-serif',
         fontSize: '34px',
         color: COLORS.text,
@@ -43,7 +44,7 @@ export class MenuScene extends Phaser.Scene {
       .rectangle(W / 2, H * 0.68, 420, 110, COLORS.accent, 1)
       .setStrokeStyle(3, 0xffffff, 0.25);
     const btnText = this.add
-      .text(W / 2, H * 0.68, '开始', {
+      .text(W / 2, H * 0.68, '读取中…', {
         fontFamily: 'system-ui, sans-serif',
         fontSize: '40px',
         color: '#0b1020',
@@ -52,7 +53,10 @@ export class MenuScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     btn.setInteractive({ useHandCursor: true });
-    const start = () => this.scene.start('Play');
+    const start = () => {
+      if (!this.ready) return;
+      this.scene.start('Play');
+    };
     btn.on('pointerdown', start);
     btnText.setInteractive({ useHandCursor: true }).on('pointerdown', start);
 
@@ -64,6 +68,18 @@ export class MenuScene extends Phaser.Scene {
       yoyo: true,
       repeat: -1,
       ease: 'Sine.easeInOut',
+    });
+
+    readSaveWhenReady(this, (save) => {
+      // 存到 registry：PlayScene 的引导与结算要读写它
+      this.registry.set('save', save);
+      highScore.setText(`最高分 ${save.best}`);
+      btnText.setText('开始');
+      this.ready = true;
+
+      // 桌面端用键盘开始；同时这也是测试脚本进入玩法场景的标准入口
+      this.input.keyboard?.once('keydown-SPACE', start);
+      this.input.keyboard?.once('keydown-ENTER', start);
     });
   }
 }

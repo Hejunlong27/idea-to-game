@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { COLORS, LAYOUT } from '../config';
-import { bridge, readSave, writeSave } from '../util';
+import { bridge, readSaveWhenReady, writeSave } from '../util';
 
 /** 结束场景：展示成绩、存档、重开。失败后 2 秒内必须能重开。 */
 export class GameOverScene extends Phaser.Scene {
@@ -8,6 +8,7 @@ export class GameOverScene extends Phaser.Scene {
   private best = 0;
   private played = 0;
   private busy = false;
+  private ready = false;
 
   constructor() {
     super('GameOver');
@@ -17,16 +18,11 @@ export class GameOverScene extends Phaser.Scene {
     this.score = data?.score ?? 0;
   }
 
-  async create() {
+  create() {
     const { width: W, height: H } = LAYOUT;
     this.cameras.main.setBackgroundColor(COLORS.bg);
     this.busy = false;
-
-    const save = await readSave(this);
-    this.best = Math.max(save.best, this.score);
-    this.played = Number(save.played ?? 0) + 1;
-
-    await writeSave(this, { ...save, best: this.best, played: this.played });
+    this.ready = false;
 
     this.add
       .text(W / 2, H * 0.3, '结束', {
@@ -45,36 +41,56 @@ export class GameOverScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    this.add
-      .text(W / 2, H * 0.52, `最高分 ${this.best}`, {
+    const bestLabel = this.add
+      .text(W / 2, H * 0.52, '最高分 …', {
         fontFamily: 'system-ui, sans-serif',
         fontSize: '32px',
         color: COLORS.textDim,
       })
       .setOrigin(0.5);
 
-    const btn = this.add
-      .rectangle(W / 2, H * 0.68, 420, 110, COLORS.accent, 1)
-      .setStrokeStyle(3, 0xffffff, 0.25)
-      .setInteractive({ useHandCursor: true });
-    const btnText = this.add
-      .text(W / 2, H * 0.68, '再来一局', {
+    const loading = this.add
+      .text(W / 2, H * 0.6, '保存成绩…', {
         fontFamily: 'system-ui, sans-serif',
-        fontSize: '40px',
-        color: '#0b1020',
-        fontStyle: 'bold',
+        fontSize: '18px',
+        color: COLORS.textDim,
       })
-      .setOrigin(0.5)
-      .setInteractive({ useHandCursor: true });
+      .setOrigin(0.5);
 
-    const restart = () => this.restart();
-    btn.on('pointerdown', restart);
-    btnText.on('pointerdown', restart);
+    readSaveWhenReady(this, (save) => {
+      this.best = Math.max(save.best, this.score);
+      this.played = Number(save.played ?? 0) + 1;
+      const nextSave = { ...save, best: this.best, played: this.played };
+
+      this.registry.set('save', nextSave);
+      bestLabel.setText(`最高分 ${this.best}`);
+      loading.destroy();
+      this.ready = true;
+      void writeSave(this, nextSave);
+
+      const btn = this.add
+        .rectangle(W / 2, H * 0.68, 420, 110, COLORS.accent, 1)
+        .setStrokeStyle(3, 0xffffff, 0.25)
+        .setInteractive({ useHandCursor: true });
+      const btnText = this.add
+        .text(W / 2, H * 0.68, '再来一局', {
+          fontFamily: 'system-ui, sans-serif',
+          fontSize: '40px',
+          color: '#0b1020',
+          fontStyle: 'bold',
+        })
+        .setOrigin(0.5)
+        .setInteractive({ useHandCursor: true });
+
+      const restart = () => this.restart();
+      btn.on('pointerdown', restart);
+      btnText.on('pointerdown', restart);
+    });
   }
 
   /** 每两局插一次插屏广告；广告失败或拦截器场景下直接重开。 */
   private async restart() {
-    if (this.busy) return;
+    if (!this.ready || this.busy) return;
     this.busy = true;
 
     if (this.played % 2 === 0) {

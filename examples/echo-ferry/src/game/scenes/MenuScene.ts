@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { COLORS, LAYOUT } from '../config';
 import { TEXTURES } from '../art';
-import { readSave } from '../util';
+import { readSaveWhenReady } from '../util';
 
 /** 菜单：一句话说明玩法，一个按钮开始。首屏到可玩必须 <3 秒。 */
 export class MenuScene extends Phaser.Scene {
@@ -9,10 +9,9 @@ export class MenuScene extends Phaser.Scene {
     super('Menu');
   }
 
-  async create() {
+  create() {
     const { width: W, height: H } = LAYOUT;
     this.cameras.main.setBackgroundColor(COLORS.bg);
-    const save = await readSave(this);
 
     // AI 生成的雾海背景（混合美术：背景用 AI，UI 与地块保持程序化）
     if (this.textures.exists(TEXTURES.bg)) {
@@ -67,8 +66,8 @@ export class MenuScene extends Phaser.Scene {
       )
       .setOrigin(0.5);
 
-    this.add
-      .text(W / 2, H * 0.62, `最远送到 ${save.best} 个灵魂`, {
+    const bestLabel = this.add
+      .text(W / 2, H * 0.62, '最远送到 … 个灵魂', {
         fontFamily: 'system-ui, sans-serif',
         fontSize: '24px',
         color: COLORS.text,
@@ -110,5 +109,10 @@ export class MenuScene extends Phaser.Scene {
         color: COLORS.textDim,
       })
       .setOrigin(0.5);
+
+    // 进度展示是增强信息，不阻塞开始入口；create() 仍然同步返回。
+    readSaveWhenReady(this, (save) => {
+      bestLabel.setText(`最远送到 ${save.best} 个灵魂`);
+    });
   }
 }

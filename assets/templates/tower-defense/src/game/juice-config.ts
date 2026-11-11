@@ -47,9 +47,13 @@ export const JUICE_RULES: JuiceRule[] = [
       { type: 'camera_shake', scale: 0.6 },
       { type: 'particles', amount: 10, color: '#FF6B5A' },
       { type: 'screen_flash', scale: 0.25, color: '#FF6B5A' },
+      { type: 'hit_stop', durationMs: 60 },
     ],
   },
-  { event: 'item_collected', effects: [{ type: 'particles', amount: 8 }, { type: 'ui_motion', scale: 0.5 }] },
+  {
+    event: 'item_collected',
+    effects: [{ type: 'particles', amount: 8 }, { type: 'ui_motion', scale: 0.5 }, { type: 'hit_stop', durationMs: 50 }],
+  },
   { event: 'enemy_defeated', effects: [{ type: 'particles', amount: 18 }, { type: 'hit_stop', durationMs: 60 }] },
   {
     event: 'level_completed',

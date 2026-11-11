@@ -147,7 +147,20 @@ export function installTestApi(adapter: TestAdapter): boolean {
       for (const a of actions) api.exec(a);
     },
     settle,
-    reset: (level) => api.exec({ type: 'reset', level }),
+    reset: (level) => {
+      const adapter = current;
+      if (!adapter) throw new Error('__test: 没有活跃的场景适配器');
+      if (!adapter.capabilities().includes('reset')) {
+        throw new Error('__test: 本游戏不支持动作 reset');
+      }
+      current = null;
+      try {
+        adapter.exec({ type: 'reset', level });
+      } catch (error) {
+        current = adapter;
+        throw error;
+      }
+    },
     isOver: () => (current ? current.isOver() : true),
     clock: () => (current?.getClock ? current.getClock() : null),
   };

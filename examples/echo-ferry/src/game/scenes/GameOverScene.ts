@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { COLORS, LAYOUT } from '../config';
-import { readSave, writeSave } from '../util';
+import { updateSave } from '../util';
 import LEVELS from '../levels.json';
 
 interface OverData {
@@ -22,7 +22,7 @@ export class GameOverScene extends Phaser.Scene {
     this.over = data ?? { win: false, delivered: 0, total: 1, level: 0 };
   }
 
-  async create() {
+  create() {
     const { width: W, height: H } = LAYOUT;
     this.cameras.main.setBackgroundColor(COLORS.bg);
     const d = this.over;
@@ -62,15 +62,6 @@ export class GameOverScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    // 存档：最远送达数
-    try {
-      const save = await readSave(this);
-      const best = Math.max(Number(save.best) || 0, d.delivered + d.level * 3);
-      await writeSave(this, { ...save, best });
-    } catch {
-      /* 存档失败不影响继续 */
-    }
-
     const makeBtn = (y: number, label: string, primary: boolean, onClick: () => void) => {
       const btn = this.add
         .rectangle(W / 2, y, 380, 96, primary ? COLORS.accent : 0x1b3a4b, primary ? 0.16 : 0.35)
@@ -109,5 +100,11 @@ export class GameOverScene extends Phaser.Scene {
       if (d.win && !isLast) this.scene.start('Play', { level: d.level + 1 });
       else this.scene.start('Play', { level: d.win ? 0 : d.level });
     });
+
+    // 纯持久化任务：先捕获平台实例，所以玩家立即重开也不会丢成绩。
+    updateSave(this, (save) => ({
+      ...save,
+      best: Math.max(Number(save.best) || 0, d.delivered + d.level * 3),
+    }));
   }
 }

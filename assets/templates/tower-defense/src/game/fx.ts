@@ -29,8 +29,9 @@ export class Fx {
   private reduced: boolean;
   /** 当前存活的粒子数，用于限流 */
   private live = 0;
-  /** 顿帧到期时间，用于防抖 */
-  private hitStopUntil = 0;
+  private comboText: Phaser.GameObjects.Text | null = null;
+  private comboTween: Phaser.Tweens.Tween | null = null;
+  private comboTimer: Phaser.Time.TimerEvent | null = null;
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -40,29 +41,30 @@ export class Fx {
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
 
-  /**
-   * 顿帧（hit stop）：打击瞬间冻结表现层。
-   *
-   * **这是「撞击感」的核心，比加粒子有效得多。**
-   * 人眼对「运动突然停止」极其敏感，这一停会被解读成「撞到了硬东西」；
-   * 而粒子飞散只传达「有东西碎了」，不传达「撞得多重」。
-   *
-   * 铁律：**只缩放 tweens.timeScale，绝不改 time.timeScale。**
-   * 后者会改 delta，破坏玩法确定性（测试会失败、回放不一致）。
-   */
-  hitStop(ms: number): void {
-    if (this.reduced || ms <= 0) return;
-    const now = this.scene.time.now;
-    const until = now + ms;
-    // 连杀时多次触发，只保留最长的那次，避免叠加成卡顿
-    if (until <= this.hitStopUntil) return;
-    this.hitStopUntil = until;
-    this.scene.tweens.timeScale = 0.02;
-    this.scene.time.delayedCall(ms, () => {
-      if (this.scene.time.now >= this.hitStopUntil - 8) {
-        this.scene.tweens.timeScale = 1;
-      }
+  /** Tween callbacks are the normal cleanup path; scene-clock fallback guarantees a hard lifetime. */
+  private destroyAfter(
+    object: Phaser.GameObjects.GameObject,
+    fallbackMs: number,
+    onDestroyed?: () => void,
+  ): () => void {
+    let timer: Phaser.Time.TimerEvent | null = null;
+    let done = false;
+    const cleanup = () => {
+      if (done) return;
+      done = true;
+      timer?.remove(false);
+      this.scene.tweens.killTweensOf(object);
+      if (object.active) object.destroy();
+      onDestroyed?.();
+    };
+    object.once('destroy', () => {
+      if (done) return;
+      done = true;
+      timer?.remove(false);
+      onDestroyed?.();
     });
+    timer = this.scene.time.delayedCall(fallbackMs, cleanup);
+    return cleanup;
   }
 
   /** 击杀爆裂：碎片向外飞散 + 快速淡出 */
@@ -79,6 +81,9 @@ export class Fx {
       const ang = (Math.PI * 2 * i) / n + (i % 5) * 0.3;
       const dist = 26 + (i % 4) * 14;
       this.live += 1;
+      const cleanup = this.destroyAfter(g, 520, () => {
+        this.live = Math.max(0, this.live - 1);
+      });
       this.scene.tweens.add({
         targets: g,
         x: x + Math.cos(ang) * dist,
@@ -87,10 +92,7 @@ export class Fx {
         scale: 0.4,
         duration: 260 + (i % 3) * 60,
         ease: 'Quad.easeOut',
-        onComplete: () => {
-          this.live -= 1;
-          g.destroy();
-        },
+        onComplete: cleanup,
       });
     }
   }
@@ -104,13 +106,14 @@ export class Fx {
     g.fillStyle(color, 0.6);
     g.fillCircle(0, 0, 15);
     g.setPosition(x, y);
+    const cleanup = this.destroyAfter(g, 260);
     this.scene.tweens.add({
       targets: g,
       scale: 1.6,
       alpha: 0,
       duration: 110,
       ease: 'Quad.easeOut',
-      onComplete: () => g.destroy(),
+      onComplete: cleanup,
     });
   }
 
@@ -123,12 +126,13 @@ export class Fx {
     g.fillStyle(color, 0.8);
     g.fillCircle(0, 0, 7);
     g.setPosition(x, y);
+    const cleanup = this.destroyAfter(g, 300);
     this.scene.tweens.add({
       targets: g,
       scale: 2,
       alpha: 0,
       duration: 140,
-      onComplete: () => g.destroy(),
+      onComplete: cleanup,
     });
   }
 
@@ -145,6 +149,7 @@ export class Fx {
     g.fillStyle(0xffffff, 0.85);
     g.fillCircle(-2, -2, 2.5);
     g.setPosition(x, y);
+    const cleanup = this.destroyAfter(g, 700);
 
     // 先向上弹一下再飞向目标，比直线更有「掉落物」的感觉
     const midX = (x + tx) / 2;
@@ -164,7 +169,7 @@ export class Fx {
           duration: 220,
           ease: 'Cubic.easeIn',
           onComplete: () => {
-            g.destroy();
+            cleanup();
             onArrive?.();
           },
         });
@@ -178,29 +183,51 @@ export class Fx {
     this.scene.cameras.main.flash(duration, (color >> 16) & 0xff, (color >> 8) & 0xff, color & 0xff, false);
   }
 
-  /** 连杀计数：连续击杀时在屏幕中上跳一下 */
-  combo(x: number, y: number, n: number): void {
+  /** 连杀只保留一个 HUD 提示，连续击杀刷新计数，不在路径上叠字。 */
+  combo(n: number): void {
     if (n < 2) return;
-    const t = this.scene.add
-      .text(x, y, `${n} 连杀`, {
-        fontFamily: 'system-ui, sans-serif',
-        fontSize: `${20 + Math.min(n, 6) * 3}px`,
-        color: n >= 5 ? '#ffd166' : '#ffffff',
-        fontStyle: 'bold',
-        stroke: '#000000',
-        strokeThickness: 3,
-      })
-      .setOrigin(0.5)
-      .setDepth(45);
+    const cam = this.scene.cameras.main;
+    const anchorX = cam.width / 2;
+    const anchorY = cam.height * 0.16;
+    let t = this.comboText;
+    if (!t?.active) {
+      t = this.scene.add
+        .text(anchorX, anchorY, '', {
+          fontFamily: 'system-ui, sans-serif',
+          fontSize: '28px',
+          color: '#ffffff',
+          fontStyle: 'bold',
+          stroke: '#000000',
+          strokeThickness: 3,
+        })
+        .setOrigin(0.5)
+        .setDepth(45);
+      this.comboText = t;
+    }
+    this.comboTween?.stop();
+    this.comboTimer?.remove(false);
+    t.setPosition(anchorX, anchorY).setText(`${n} 连杀`).setStyle({
+      fontSize: `${20 + Math.min(n, 6) * 3}px`,
+      color: n >= 5 ? '#ffd166' : '#ffffff',
+    }).setAlpha(1).setScale(1);
 
-    this.scene.tweens.add({
+    const cleanup = () => {
+      this.comboTimer?.remove(false);
+      this.scene.tweens.killTweensOf(t!);
+      if (t!.active) t!.destroy();
+      if (this.comboText === t) this.comboText = null;
+      this.comboTween = null;
+      this.comboTimer = null;
+    };
+    this.comboTimer = this.scene.time.delayedCall(900, cleanup);
+    this.comboTween = this.scene.tweens.add({
       targets: t,
-      y: y - 44,
-      scale: 1.25,
+      y: anchorY - 16,
+      scale: 1.12,
       alpha: 0,
-      duration: 620,
+      duration: 520,
       ease: 'Quad.easeOut',
-      onComplete: () => t.destroy(),
+      onComplete: cleanup,
     });
   }
 
@@ -230,6 +257,14 @@ export class Fx {
       .setDepth(46)
       .setAlpha(0);
 
+    let timer: Phaser.Time.TimerEvent | null = null;
+    const cleanup = () => {
+      this.scene.tweens.killTweensOf(t);
+      if (t.active) t.destroy();
+      timer?.remove(false);
+    };
+    t.once('destroy', () => timer?.remove(false));
+    timer = this.scene.time.delayedCall(1100, cleanup);
     this.scene.tweens.add({
       targets: t,
       alpha: 1,
@@ -237,7 +272,7 @@ export class Fx {
       duration: 180,
       yoyo: true,
       hold: 420,
-      onComplete: () => t.destroy(),
+      onComplete: cleanup,
     });
   }
 
@@ -248,30 +283,38 @@ export class Fx {
     ring.lineStyle(3, color, 0.9);
     ring.strokeCircle(0, 0, 16);
     ring.setPosition(x, y);
+    const cleanupRing = this.destroyAfter(ring, 520);
     this.scene.tweens.add({
       targets: ring,
       scale: 2.4,
       alpha: 0,
       duration: 380,
       ease: 'Quad.easeOut',
-      onComplete: () => ring.destroy(),
+      onComplete: cleanupRing,
     });
 
     const beam = this.scene.add.graphics().setDepth(36);
     beam.fillStyle(color, 0.55);
     beam.fillRect(-5, -70, 10, 70);
     beam.setPosition(x, y);
+    const cleanupBeam = this.destroyAfter(beam, 560);
     this.scene.tweens.add({
       targets: beam,
       alpha: 0,
       scaleY: 1.4,
       duration: 420,
       ease: 'Quad.easeOut',
-      onComplete: () => beam.destroy(),
+      onComplete: cleanupBeam,
     });
   }
 
   destroy(): void {
+    this.comboTimer?.remove(false);
+    this.comboTween?.stop();
+    this.comboText?.destroy();
+    this.comboTimer = null;
+    this.comboTween = null;
+    this.comboText = null;
     this.live = 0;
   }
 }

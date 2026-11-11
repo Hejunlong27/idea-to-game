@@ -24,6 +24,13 @@ import { buildPathCells, cellAt, cellCenter, isBuildable, pathDirAt, pathPointAt
 import { Telemetry } from '../telemetry';
 import { Fx } from '../fx';
 
+const SKILL_CHARGE_MAX = 100;
+const SKILL_CHARGE_PER_KILL = 20;
+const LIGHTNING_DAMAGE = 30;
+const LIGHTNING_RADIUS = 1.25;
+const FROST_DURATION_MS = 2000;
+const FROST_FACTOR = 0.35;
+
 interface Enemy {
   id: number;
   typeId: string;
@@ -131,6 +138,15 @@ export class PlayScene extends Phaser.Scene {
   private hudLives!: Phaser.GameObjects.Text;
   private hudWave!: Phaser.GameObjects.Text;
   private hudHint!: Phaser.GameObjects.Text;
+  private skillChargeText!: Phaser.GameObjects.Text;
+  private skillChargeBar!: Phaser.GameObjects.Rectangle;
+  private lightningButton!: Phaser.GameObjects.Rectangle;
+  private lightningLabel!: Phaser.GameObjects.Text;
+  private frostButton!: Phaser.GameObjects.Rectangle;
+  private frostLabel!: Phaser.GameObjects.Text;
+  private skillCharge = 0;
+  private skillTargeting = false;
+  private skillCasts = 0;
   private bottom!: Phaser.GameObjects.Container;
   private lastHud = '';
 
@@ -152,6 +168,7 @@ export class PlayScene extends Phaser.Scene {
   private builtOnce = false;
   /** 上一次的波次索引，用于检测「第 N 波清完」 */
   private lastWaveIndex = 0;
+  private floatingTexts: Phaser.GameObjects.Text[] = [];
 
   private bus!: EventBus;
   private audio!: AudioDirector;
@@ -217,6 +234,9 @@ export class PlayScene extends Phaser.Scene {
     this.fx = new Fx(this);
     this.comboCount = 0;
     this.lastKillAt = -9999;
+    this.skillCharge = 0;
+    this.skillTargeting = false;
+    this.skillCasts = 0;
     this.telemetry = new Telemetry('tower-defense');
     this.builtOnce = false;
     this.lastWaveIndex = 0;
@@ -331,7 +351,144 @@ export class PlayScene extends Phaser.Scene {
 
     this.bottom = this.add.container(0, 0).setDepth(25);
     this.renderBottom();
+    this.buildTacticalSkills();
     this.refreshHud();
+  }
+
+  private buildTacticalSkills() {
+    const { width: W } = LAYOUT;
+    const y = 1204;
+    const buttonW = 280;
+    const buttonH = 60;
+
+    this.skillChargeText = this.add
+      .text(W / 2, 1132, '', {
+        fontFamily: 'system-ui, sans-serif',
+        fontSize: '15px',
+        color: COLORS.textDim,
+      })
+      .setOrigin(0.5)
+      .setDepth(28);
+
+    this.add.rectangle(W / 2, 1154, 420, 8, COLORS.panelEdge).setDepth(28);
+    this.skillChargeBar = this.add
+      .rectangle(W / 2 - 210, 1154, 1, 8, COLORS.good)
+      .setOrigin(0, 0.5)
+      .setDepth(29);
+
+    this.lightningButton = this.add
+      .rectangle(190, y, buttonW, buttonH, COLORS.panel)
+      .setStrokeStyle(2, COLORS.panelEdge)
+      .setInteractive({ useHandCursor: true })
+      .setDepth(28);
+    this.lightningLabel = this.add
+      .text(190, y, '雷击\n选点伤害', {
+        fontFamily: 'system-ui, sans-serif',
+        fontSize: '16px',
+        color: COLORS.textDim,
+        fontStyle: 'bold',
+        align: 'center',
+      })
+      .setOrigin(0.5)
+      .setDepth(29);
+    this.lightningButton.on('pointerdown', () => this.beginLightningTargeting());
+
+    this.frostButton = this.add
+      .rectangle(W - 190, y, buttonW, buttonH, COLORS.panel)
+      .setStrokeStyle(2, COLORS.panelEdge)
+      .setInteractive({ useHandCursor: true })
+      .setDepth(28);
+    this.frostLabel = this.add
+      .text(W - 190, y, '寒潮\n全场减速 2 秒', {
+        fontFamily: 'system-ui, sans-serif',
+        fontSize: '16px',
+        color: COLORS.textDim,
+        fontStyle: 'bold',
+        align: 'center',
+      })
+      .setOrigin(0.5)
+      .setDepth(29);
+    this.frostButton.on('pointerdown', () => this.castFrost());
+    this.refreshSkillHud();
+  }
+
+  private refreshSkillHud() {
+    if (!this.skillChargeText || !this.skillChargeBar) return;
+    const ready = this.skillCharge >= SKILL_CHARGE_MAX;
+    this.skillChargeText.setText(`灵能 ${this.skillCharge}/${SKILL_CHARGE_MAX} · 击杀蓄能`);
+    this.skillChargeBar.setSize(Math.max(1, 420 * this.skillCharge / SKILL_CHARGE_MAX), 8);
+    this.skillChargeBar.setFillStyle(ready ? COLORS.good : COLORS.accent);
+    this.lightningButton?.setFillStyle(this.skillTargeting ? 0x26364b : ready ? 0x24384f : COLORS.panel);
+    this.lightningButton?.setStrokeStyle(2, this.skillTargeting ? COLORS.accent : ready ? COLORS.accent : COLORS.panelEdge);
+    this.lightningLabel?.setText(this.skillTargeting ? '选择道路格\n点选敌群释放' : '雷击\n点选范围造成伤害');
+    this.lightningLabel?.setColor(ready ? COLORS.text : COLORS.textDim);
+    this.frostButton?.setFillStyle(ready ? 0x24384f : COLORS.panel);
+    this.frostButton?.setStrokeStyle(2, ready ? COLORS.accent : COLORS.panelEdge);
+    this.frostLabel?.setColor(ready ? COLORS.text : COLORS.textDim);
+  }
+
+  private beginLightningTargeting() {
+    if (this.skillCharge < SKILL_CHARGE_MAX) {
+      this.flashHint('击杀敌人蓄积灵能');
+      return;
+    }
+    this.skillTargeting = !this.skillTargeting;
+    this.hudHint.setText(this.skillTargeting ? '选择道路格上的敌群释放雷击 · Esc 取消' : '');
+    this.refreshSkillHud();
+  }
+
+  private castLightning(c: number, r: number) {
+    if (!this.skillTargeting || !this.pathCells.has(`${c},${r}`)) return false;
+    const point = cellCenter(c, r);
+    const radius = GRID.cell * LIGHTNING_RADIUS;
+    const targets = this.enemies.filter((e) => Math.hypot(e.spr.x - point.x, e.spr.y - point.y) <= radius);
+    if (targets.length === 0) {
+      this.hudHint.setText('范围内没有敌人，再选一个道路格');
+      return false;
+    }
+
+    this.skillTargeting = false;
+    this.skillCharge -= SKILL_CHARGE_MAX;
+    this.skillCasts += 1;
+    this.hudHint.setText('');
+    this.fx.burst(point.x, point.y, 0x9b6bd6, 14);
+    this.cameras.main.shake(100, 0.0035);
+    this.audio.play('gameplay_cast', { priority: 'high' });
+    this.telemetry.record('ability_cast', { ability: 'lightning', c, r, targets: targets.length });
+    for (const enemy of targets) this.hitEnemy(enemy, LIGHTNING_DAMAGE, false);
+    this.refreshSkillHud();
+    this.refreshHud();
+    return true;
+  }
+
+  private castFrost() {
+    if (this.skillCharge < SKILL_CHARGE_MAX) {
+      this.flashHint('击杀敌人蓄积灵能');
+      return;
+    }
+    if (this.enemies.length === 0) {
+      this.flashHint('场上没有敌人，保留灵能');
+      return;
+    }
+
+    this.skillCharge -= SKILL_CHARGE_MAX;
+    this.skillCasts += 1;
+    for (const enemy of this.enemies) {
+      this.applySlow(enemy, FROST_FACTOR, FROST_DURATION_MS);
+      this.fx.spark(enemy.spr.x, enemy.spr.y, 0x8fd6e8);
+    }
+    this.audio.play('gameplay_cast', { priority: 'high' });
+    this.telemetry.record('ability_cast', { ability: 'frost', targets: this.enemies.length });
+    this.flashHint('寒潮生效：所有敌人减速 2 秒');
+    this.refreshSkillHud();
+    this.refreshHud();
+  }
+
+  private cancelSkillTargeting() {
+    if (!this.skillTargeting) return;
+    this.skillTargeting = false;
+    this.hudHint.setText('');
+    this.refreshSkillHud();
   }
 
   /** 底部栏：建造模式显示三种塔，选中塔时显示升级/出售 */
@@ -477,6 +634,14 @@ export class PlayScene extends Phaser.Scene {
         gold: this.gold,
         wave: this.waveIndex + 1,
       });
+      if (this.skillTargeting) {
+        if (cell && this.pathCells.has(`${cell.c},${cell.r}`)) {
+          this.castLightning(cell.c, cell.r);
+        } else if (cell) {
+          this.hudHint.setText('雷击只能指定道路格');
+        }
+        return;
+      }
       if (!cell) return;
 
       const hit = this.towers.find((t) => t.c === cell.c && t.r === cell.r);
@@ -489,6 +654,9 @@ export class PlayScene extends Phaser.Scene {
       this.renderBottom();
       this.buildTower(cell.c, cell.r, this.buildTypeId);
     });
+    this.input.keyboard?.on('keydown-Q', () => this.beginLightningTargeting());
+    this.input.keyboard?.on('keydown-E', () => this.castFrost());
+    this.input.keyboard?.on('keydown-ESC', () => this.cancelSkillTargeting());
   }
 
   // ---------------------------------------------------------------- 塔
@@ -591,7 +759,6 @@ export class PlayScene extends Phaser.Scene {
     t.level += 1;
     t.spr.setScale(1.14);
     this.tweens.add({ targets: t.spr, scale: 1, duration: 180, ease: 'Back.easeOut' });
-    this.fx.hitStop(50);
     this.fx.upgrade(t.cx, t.cy, this.typeOf(t.typeId).color);
     this.telemetry.record('upgrade', { c: t.c, r: t.r, level: t.level, cost, gold: this.gold });
     this.audio.play('feedback_levelup', { priority: 'high' });
@@ -651,12 +818,12 @@ export class PlayScene extends Phaser.Scene {
   }
 
   /** 伤害结算：护甲先减，最低仍造成 1 点（否则高护甲会让塔完全无效） */
-  private hitEnemy(e: Enemy, raw: number): void {
+  private hitEnemy(e: Enemy, raw: number, grantSkillCharge = true): void {
     const type = ENEMY_TYPES[e.typeId] ?? ENEMY_TYPES.grunt;
     const dmg = Math.max(1, Math.round(raw) - type.armor);
     e.hp -= dmg;
     this.floatDamage(e, dmg);
-    if (e.hp <= 0) this.killEnemy(e);
+    if (e.hp <= 0) this.killEnemy(e, grantSkillCharge);
   }
 
   /**
@@ -668,23 +835,37 @@ export class PlayScene extends Phaser.Scene {
   private floatDamage(e: Enemy, dmg: number): void {
     const now = this.time.now;
     const rec = this.floatAccum.get(e.id);
-    if (rec && now - rec.at < 220 && rec.text.active) {
+    if (rec && now - rec.at < 360 && rec.text.active) {
       rec.total += dmg;
       rec.at = now;
       rec.text.setText(`${rec.total}`);
       return;
     }
-    const text = this.floatText(e.spr.x, e.spr.y - 26, `${dmg}`, '#ffffff');
-    if (text) this.floatAccum.set(e.id, { total: dmg, at: now, text });
+    let record: { total: number; at: number; text: Phaser.GameObjects.Text } | null = null;
+    const text = this.floatText(e.spr.x, e.spr.y - 26, `${dmg}`, '#ffffff', 420, () => {
+      if (record && this.floatAccum.get(e.id) === record) this.floatAccum.delete(e.id);
+    });
+    if (text) {
+      record = { total: dmg, at: now, text };
+      this.floatAccum.set(e.id, record);
+    }
   }
 
-  private killEnemy(e: Enemy): void {
+  private killEnemy(e: Enemy, grantSkillCharge = true): void {
     const i = this.enemies.indexOf(e);
     if (i < 0) return;
     this.enemies.splice(i, 1);
     this.kills += 1;
     const reward = (ENEMY_TYPES[e.typeId] ?? ENEMY_TYPES.grunt).reward;
     this.gold += reward;
+    if (grantSkillCharge) {
+      const wasReady = this.skillCharge >= SKILL_CHARGE_MAX;
+      this.skillCharge = Math.min(SKILL_CHARGE_MAX, this.skillCharge + SKILL_CHARGE_PER_KILL);
+      this.refreshSkillHud();
+      if (!wasReady && this.skillCharge >= SKILL_CHARGE_MAX) {
+        this.flashHint('灵能已满：可使用雷击或寒潮');
+      }
+    }
 
     // 击杀反馈四连：爆裂 + 震屏 + 连杀 + 金币飞行
     const type = ENEMY_TYPES[e.typeId] ?? ENEMY_TYPES.grunt;
@@ -693,13 +874,12 @@ export class PlayScene extends Phaser.Scene {
     // 按敌人重量分级：甲兽更重，顿帧和震屏都更强
     const heavy = type.id === 'armored';
     this.fx.burst(kx, ky, type.color, heavy ? 14 : 10);
-    this.fx.hitStop(heavy ? 80 : 40);
     this.cameras.main.shake(heavy ? 90 : 60, heavy ? 0.004 : 0.0022);
 
     const nowKill = this.time.now;
     this.comboCount = nowKill - this.lastKillAt < 1500 ? this.comboCount + 1 : 1;
     this.lastKillAt = nowKill;
-    if (this.comboCount >= 2) this.fx.combo(kx, ky - 48, this.comboCount);
+    if (this.comboCount >= 2) this.fx.combo(this.comboCount);
 
     // 金币飞向 HUD：让「击杀=有钱」变成可见的动作，而不是数字默默跳
     this.fx.coinFly(kx, ky, 44, 108);
@@ -733,7 +913,6 @@ export class PlayScene extends Phaser.Scene {
     e.barBg.destroy();
 
     this.lives -= 1;
-    this.fx.hitStop(60);
     this.fx.flash(0xff3b30, 0.3, 180);
     this.telemetry.record('leak', { lives: this.lives, wave: this.waveIndex + 1, typeId: e.typeId });
     this.cameras.main.shake(120, 0.006);
@@ -859,14 +1038,14 @@ export class PlayScene extends Phaser.Scene {
       // 目标可能已被打死，重新取一次
       const still = this.enemies.find((o) => o.id === target!.id);
       if (still) {
-        still.slowUntil = this.time.now + (type.slowMs ?? 1500);
-        still.slowFactor = type.slowFactor;
+        this.applySlow(still, type.slowFactor, type.slowMs ?? 1500);
       }
     }
   }
 
   // ---------------------------------------------------------------- HUD
   private refreshHud(): void {
+    this.refreshSkillHud();
     const waveLabel =
       this.waveIndex >= this.level.waves.length
         ? '最后一波'
@@ -879,8 +1058,23 @@ export class PlayScene extends Phaser.Scene {
     this.hudWave.setText(waveLabel);
   }
 
-  private floatText(x: number, y: number, msg: string, color: string): Phaser.GameObjects.Text | null {
+  private floatText(
+    x: number,
+    y: number,
+    msg: string,
+    color: string,
+    durationMs = 420,
+    onDestroy?: () => void,
+  ): Phaser.GameObjects.Text | null {
     if (!this.scene.isActive()) return null;
+    this.floatingTexts = this.floatingTexts.filter((text) => text.active);
+    while (this.floatingTexts.length >= 8) {
+      const oldest = this.floatingTexts.shift();
+      if (oldest?.active) {
+        this.tweens.killTweensOf(oldest);
+        oldest.destroy();
+      }
+    }
     // 同格多敌人同时受伤时，飘字会完全重叠成一坨 —— 加一点确定性偏移错开
     const jx = ((this.nextFloatSeed = (this.nextFloatSeed * 1103515245 + 12345) & 0x7fffffff) % 17) - 8;
     const jy = (this.nextFloatSeed % 11) - 5;
@@ -893,11 +1087,22 @@ export class PlayScene extends Phaser.Scene {
       })
       .setOrigin(0.5)
       .setDepth(40);
+    this.floatingTexts.push(t);
+    let fallback: Phaser.Time.TimerEvent | null = null;
+    t.once('destroy', () => {
+      fallback?.remove(false);
+      this.floatingTexts = this.floatingTexts.filter((text) => text !== t);
+      onDestroy?.();
+    });
+    fallback = this.time.delayedCall(durationMs + 300, () => {
+      this.tweens.killTweensOf(t);
+      if (t.active) t.destroy();
+    });
     this.tweens.add({
       targets: t,
       y: y + jy - 34,
       alpha: 0,
-      duration: 620,
+      duration: durationMs,
       ease: 'Quad.easeOut',
       onComplete: () => t.destroy(),
     });
@@ -909,6 +1114,13 @@ export class PlayScene extends Phaser.Scene {
     this.time.delayedCall(900, () => {
       if (!this.ended) this.hudHint.setText('');
     });
+  }
+
+  private applySlow(enemy: Enemy, factor: number, durationMs: number) {
+    const now = this.time.now;
+    const alreadySlowed = now < enemy.slowUntil;
+    enemy.slowFactor = alreadySlowed ? Math.min(enemy.slowFactor, factor) : factor;
+    enemy.slowUntil = Math.max(enemy.slowUntil, now + durationMs);
   }
 
   private finish(win: boolean): void {
@@ -988,8 +1200,10 @@ export class PlayScene extends Phaser.Scene {
 
     // ---- 波次推进埋点
     if (this.waveIndex !== this.lastWaveIndex) {
-      this.fx.waveClear(this.lastWaveIndex + 1);
-      this.telemetry.record('wave_clear', { wave: this.lastWaveIndex + 1, lives: this.lives, gold: this.gold });
+      if (this.enemies.length === 0) {
+        this.fx.waveClear(this.lastWaveIndex + 1);
+        this.telemetry.record('wave_clear', { wave: this.lastWaveIndex + 1, lives: this.lives, gold: this.gold });
+      }
       this.lastWaveIndex = this.waveIndex;
     }
 
@@ -1011,6 +1225,7 @@ export class PlayScene extends Phaser.Scene {
     for (const e of [...this.enemies]) {
       const type = ENEMY_TYPES[e.typeId] ?? ENEMY_TYPES.grunt;
       const slow = now < e.slowUntil ? e.slowFactor : 1;
+      if (now >= e.slowUntil) e.slowFactor = 1;
       e.dist += type.speed * slow * baseStep;
 
       const p = pathPointAt(this.level.path, e.dist);
@@ -1087,6 +1302,8 @@ export class PlayScene extends Phaser.Scene {
         enemies: this.enemies.length,
         towers: this.towers.length,
         kills: this.kills,
+        skillCharge: this.skillCharge,
+        skillCasts: this.skillCasts,
         audio: this.audio.snapshot(),
         juice: { quality: this.juice.qualityLevel, reducedMotion: this.juice.reducedMotion },
       }),
@@ -1164,6 +1381,13 @@ export class PlayScene extends Phaser.Scene {
           slowed: this.time.now < e.slowUntil,
         })),
         towerCount: this.towers.length,
+        skillCharge: this.skillCharge,
+        skillCasts: this.skillCasts,
+        tweenScale: this.tweens.timeScale,
+        transientFxCount: this.children.list.filter((object) => {
+          const depth = (object as Phaser.GameObjects.GameObject & { depth?: number }).depth;
+          return depth !== undefined && [36, 37, 38, 39, 40, 41, 45, 46].includes(depth);
+        }).length,
         towers: this.towers.map((t) => ({
           id: t.id,
           typeId: t.typeId,
@@ -1234,9 +1458,14 @@ export class PlayScene extends Phaser.Scene {
     const gold = num('gold');
     const lives = num('lives');
     const kills = num('kills');
+    const skillCharge = num('skillCharge');
     if (gold !== undefined) this.gold = gold;
     if (lives !== undefined) this.lives = lives;
     if (kills !== undefined) this.kills = kills;
+    if (skillCharge !== undefined) {
+      this.skillCharge = Math.max(0, Math.min(SKILL_CHARGE_MAX, Math.round(skillCharge)));
+      this.refreshSkillHud();
+    }
 
     if (typeof patch.buildType === 'string') {
       this.buildTypeId = patch.buildType;
@@ -1308,6 +1537,8 @@ export class PlayScene extends Phaser.Scene {
     delete w.__bot;
     detachTestApi();
     this.juice?.destroy();
+    this.fx?.destroy();
+    this.fx?.destroy();
     this.audio?.destroy();
     this.bus?.clear();
   }

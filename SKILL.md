@@ -526,7 +526,8 @@ python <skill>/scripts/gate_check.py --project <project> --stage ship
 | **`scripts/comfy_gen.py`** | **ComfyUI 快速出图（草稿探索用，改提示词→出图 30 秒一轮）** | 试风格时 |
 | **`references/playtest-protocol.md`** | **真人试玩协议：怎么启动、试玩规则、五个主观问题、三指标判读** | 上线前真人验证 |
 | **`<项目>/scripts/playtest_report.mjs`** | **试玩遥测分析：首次建塔延迟/最长空闲/崩盘波次 → FAIL/WARN/INFO** | 真人玩完后 |
-| **`scripts/ship_check.py`** | **交付前技术门禁：构建+体积+音频+素材+用例，一次给出「能不能发」** | P4 交付前必跑 |
+| **`scripts/ship_check.py`** | **交付前技术门禁：构建+体积+音频+素材+生命周期+用例，一次给出「能不能发」** | P4 交付前必跑 |
+| **`scripts/check_scene_lifecycle.mjs`** | **Phaser 生命周期契约：禁止 `create()` 为 async 或直接 `await`** | 改场景后、交付前 |
 | **`scripts/asset_registry.py`** | **素材台账：scan 合并来源+文件+引用 / check 一致性（断链·孤儿·超预算）/ report** | P2 生图后、交付前 |
 | **`references/asset-registry.md`** | **素材台账契约：数据模型、三级关联、检查项与两个边界情况** | 接素材或排查素材问题时 |
 | **`scripts/review_gate.py`** | **审核执行与结论判定（自动 + 人工条目合并出 verdict）** | 每轮审核时 |

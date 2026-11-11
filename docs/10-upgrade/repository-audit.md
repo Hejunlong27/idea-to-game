@@ -1,7 +1,7 @@
 # IdeaToGame 仓库审计报告（v3.0 起点）
 
 > 审计时间：2026-11-01
-> 审计对象：`Hejunlong27/idea-to-game`（本地工作副本 `C:/Users/15274/.workbuddy-ai/skills/idea-to-game/`，HEAD `8691e14`）
+> 审计对象：`Hejunlong27/idea-to-game`（仓库工作副本；审计时 HEAD `8691e14`）
 > 审计方式：逐文件读取真实代码（`SKILL.md`、`README.md`、`modules/*.md` 14 份、`references/*.md` 12 份、
 > `scripts/*.py` 20 个、`assets/template/` 全部 20 个文件、`assets/data/`、`assets/styles/`、`assets/workflows/`）。
 > **本报告不依据 README 推断能力，所有结论都有代码位置支撑。**

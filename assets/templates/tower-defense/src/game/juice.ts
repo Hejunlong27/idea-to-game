@@ -41,7 +41,11 @@ export class JuiceDirector {
   private lastFlashAt = -1e9;
   private quality: Quality = 'high';
   private reduceMotion = false;
+  /** Timed effects share one scale owner so overlapping callbacks cannot restore zero. */
   private tweenScaleRestore = 1;
+  private hitStopUntil = 0;
+  private slowMotionUntil = 0;
+  private slowMotionScale = 0.35;
   private active: ActiveEffect[] = [];
   private counters = new Map<string, number>();
   private resolvedTarget: unknown = null;
@@ -54,6 +58,7 @@ export class JuiceDirector {
     this.rules = JUICE_RULES;
     this.quality = quality;
     this.reduceMotion = detectReduceMotion();
+    this.tweenScaleRestore = scene.tweens.timeScale;
     this.ensureParticleTexture();
     this.ensureFlashLayer();
   }
@@ -311,21 +316,36 @@ export class JuiceDirector {
   /** 只冻结表现（tween），不动逻辑步长 —— 这样玩法判定与回放不受影响 */
   private hitStop(ms: number, k: number) {
     const dur = Math.max(20, Math.min(140, ms * (0.6 + k)));
-    this.tweenScaleRestore = this.scene.tweens.timeScale;
-    this.scene.tweens.timeScale = 0;
+    const now = this.scene.time.now;
+    this.hitStopUntil = Math.max(this.hitStopUntil, now + dur);
     this.active.push({ kind: 'hit_stop', until: this.now + dur });
-    this.scene.time.delayedCall(dur, () => {
-      this.scene.tweens.timeScale = this.tweenScaleRestore;
-    });
+    this.applyTimedTweenScale();
+    this.scheduleTimedTweenScaleRestore(this.hitStopUntil);
   }
 
   private slowMotion(ms: number, k: number) {
     const dur = Math.max(120, Math.min(700, ms * (0.7 + k)));
-    const restore = this.scene.tweens.timeScale;
-    this.scene.tweens.timeScale = 0.35;
-    this.scene.time.delayedCall(dur, () => {
-      this.scene.tweens.timeScale = restore;
-    });
+    const now = this.scene.time.now;
+    this.slowMotionUntil = Math.max(this.slowMotionUntil, now + dur);
+    this.active.push({ kind: 'slow_motion', until: this.now + dur });
+    this.applyTimedTweenScale();
+    this.scheduleTimedTweenScaleRestore(this.slowMotionUntil);
+  }
+
+  private applyTimedTweenScale() {
+    const now = this.scene.time.now;
+    if (now < this.hitStopUntil) {
+      this.scene.tweens.timeScale = 0;
+    } else if (now < this.slowMotionUntil) {
+      this.scene.tweens.timeScale = this.slowMotionScale;
+    } else {
+      this.scene.tweens.timeScale = this.tweenScaleRestore;
+    }
+  }
+
+  private scheduleTimedTweenScaleRestore(until: number) {
+    const delay = Math.max(0, until - this.scene.time.now);
+    this.scene.time.delayedCall(delay, () => this.applyTimedTweenScale());
   }
 
   private flash(color: string, k: number) {
@@ -386,7 +406,9 @@ export class JuiceDirector {
     } catch {
       /* ignore */
     }
-    this.scene.tweens.timeScale = 1;
+    this.hitStopUntil = 0;
+    this.slowMotionUntil = 0;
+    this.scene.tweens.timeScale = this.tweenScaleRestore;
   }
 }
 

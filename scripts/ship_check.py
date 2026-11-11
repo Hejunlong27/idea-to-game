@@ -41,6 +41,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -71,7 +72,10 @@ def log(msg: str = "") -> None:
 
 def run(cmd: list[str], cwd: Path | None = None, timeout: int = 900) -> tuple[int, str]:
     try:
-        r = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, timeout=timeout)
+        # Windows + Python 3.14 默认 GBK；统一子进程输出为 UTF-8，避免 reader 线程崩溃。
+        env = {**os.environ, "PYTHONUTF8": "1", "PYTHONIOENCODING": "utf-8"}
+        r = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, env=env,
+                           encoding="utf-8", errors="replace", timeout=timeout)
         return r.returncode, (r.stdout or "") + (r.stderr or "")
     except subprocess.TimeoutExpired:
         return 124, "超时"
@@ -309,7 +313,23 @@ def main() -> int:
         if code != 0:
             issues.append("素材台账：一致性检查未通过")
 
-    # ---- 4. 用例
+    # ---- 4. 场景生命周期
+    log("\n[场景生命周期]")
+    lifecycle_result: dict = {"status": "SKIP"}
+    lifecycle_script = SKILL_SCRIPTS / "check_scene_lifecycle.mjs"
+    if not lifecycle_script.exists():
+        log("  跳过：缺少 check_scene_lifecycle.mjs")
+    else:
+        code, out = run([bin_of("node"), str(lifecycle_script), "--project", str(proj)],
+                        cwd=proj, timeout=60)
+        lifecycle_result = {"status": "PASS" if code == 0 else "FAIL", "output": out.strip()}
+        lines = [ln.strip() for ln in out.splitlines() if ln.strip()]
+        summary = next((ln for ln in lines if ln.startswith(("PASS:", "FAIL:", "SKIP:", "ERROR:"))), "")
+        log(f"  {summary or ('PASS' if code == 0 else 'FAIL')}")
+        if code != 0:
+            issues.append("场景生命周期：create() 仍含 async 或直接 await")
+
+    # ---- 5. 用例
     log("\n[玩法用例]")
     tests_result = None
     if not args.tests:
@@ -335,7 +355,7 @@ def main() -> int:
         for i in issues:
             log(f"  ✗ {i}")
     else:
-        log("  构建、体积、音频、素材、用例全部通过")
+        log("  构建、体积、音频、素材、生命周期、用例全部通过")
 
     out_path = proj / args.json
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -346,10 +366,15 @@ def main() -> int:
         "platforms": platform_results,
         "audio": audio,
         "assets": assets_result,
+        "lifecycle": lifecycle_result,
         "tests": tests_result,
         "issues": issues,
     }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    log(f"\n报告：{out_path.relative_to(proj)}")
+    try:
+        report_label = out_path.relative_to(proj)
+    except ValueError:
+        report_label = out_path
+    log(f"\n报告：{report_label}")
 
     return 0 if verdict == "PASS" else 1
 

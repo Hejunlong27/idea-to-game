@@ -5,7 +5,7 @@
     {
       "id": "tower-defense",
       "genre": "tower-defense",
-      "path": "D:/w.ai/2026-10-16-09-25-56/tower-defense",
+      "path": "../../tower-defense",
       "status": "OK",
       "pass_rate": 100,
       "passed": 18,
@@ -37,7 +37,7 @@
     {
       "id": "simulator",
       "genre": "simulator",
-      "path": "D:/w.ai/2026-10-16-09-25-56/simulator",
+      "path": "../../simulator",
       "status": "OK",
       "pass_rate": 100,
       "passed": 10,
@@ -69,7 +69,7 @@
     {
       "id": "echo-ferry",
       "genre": "action-puzzle",
-      "path": "D:/w.ai/2026-10-16-09-25-56/echo-ferry",
+      "path": "../../echo-ferry",
       "status": "OK",
       "pass_rate": 100,
       "passed": 8,

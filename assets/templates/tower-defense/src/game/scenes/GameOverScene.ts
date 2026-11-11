@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { COLORS, LAYOUT, LEVELS, type LevelRecord } from '../config';
-import { bridge, readSave, writeSave } from '../util';
+import { bridge, readSaveWhenReady, writeSave } from '../util';
 
 /**
  * 结束场景：展示星级与成绩、写存档、下一关或重开。
@@ -12,6 +12,8 @@ import { bridge, readSave, writeSave } from '../util';
  *
  * 星级只升不降（Math.max），避免「这局打得差反而把记录刷低」。
  * 关卡流程：胜利且还有下一关 → 「下一关」；失败重开本关，不跳关。
+ *
+ * create() 先同步绘制结果，再异步读档；按钮仅在 registry.save 就绪后挂载。
  */
 export class GameOverScene extends Phaser.Scene {
   private score = 0;
@@ -22,6 +24,7 @@ export class GameOverScene extends Phaser.Scene {
   private level = 0;
   private levelId = 1;
   private busy = false;
+  private ready = false;
 
   constructor() {
     super('GameOver');
@@ -43,32 +46,11 @@ export class GameOverScene extends Phaser.Scene {
     this.levelId = data?.levelId ?? this.level + 1;
   }
 
-  async create() {
+  create() {
     const { width: W, height: H } = LAYOUT;
     this.cameras.main.setBackgroundColor(COLORS.bg);
     this.busy = false;
-
-    const save = await readSave(this);
-    const levels = { ...((save.levels as Record<string, LevelRecord>) ?? {}) };
-    const key = String(this.levelId);
-    const prev = levels[key] ?? { stars: 0, best: 0 };
-    const merged: LevelRecord = {
-      stars: Math.max(prev.stars, this.stars),
-      best: Math.max(prev.best, this.score),
-    };
-    levels[key] = merged;
-
-    const totalStars = Object.values(levels).reduce((a, r) => a + (r.stars ?? 0), 0);
-    const nextSave = {
-      ...save,
-      version: 1,
-      best: Math.max(Number(save.best ?? 0), this.score),
-      levels,
-      totalStars,
-      plays: Number(save.plays ?? 0) + 1,
-    };
-    await writeSave(this, nextSave);
-    this.registry.set('save', nextSave);
+    this.ready = false;
 
     // ---- 标题
     this.add
@@ -80,18 +62,16 @@ export class GameOverScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    // ---- 星级（只有通关才有星）
-    const starText = '★'.repeat(merged.stars) + '☆'.repeat(3 - merged.stars);
-    this.add
-      .text(W / 2, H * 0.3, starText, {
+    // ---- 先显示本局结果；读档后再补上历史星级和累计数据
+    const starLabel = this.add
+      .text(W / 2, H * 0.3, '★'.repeat(this.stars) + '☆'.repeat(3 - this.stars), {
         fontFamily: 'system-ui, sans-serif',
         fontSize: '52px',
-        color: merged.stars > 0 ? '#f0c674' : '#3a4250',
+        color: this.stars > 0 ? '#f0c674' : '#3a4250',
         fontStyle: 'bold',
       })
       .setOrigin(0.5);
 
-    // ---- 本局 / 记录
     this.add
       .text(W / 2, H * 0.4, `本局 ${this.score}`, {
         fontFamily: 'system-ui, sans-serif',
@@ -99,62 +79,106 @@ export class GameOverScene extends Phaser.Scene {
         color: COLORS.text,
       })
       .setOrigin(0.5);
-    this.add
-      .text(W / 2, H * 0.46, `本关最佳 ${merged.best}`, {
+
+    const bestLabel = this.add
+      .text(W / 2, H * 0.46, `本关最佳 ${this.score}`, {
         fontFamily: 'system-ui, sans-serif',
         fontSize: '24px',
         color: COLORS.textDim,
       })
       .setOrigin(0.5);
-    this.add
-      .text(W / 2, H * 0.51, `累计 ${totalStars} / ${LEVELS.length * 3} 星`, {
+
+    const totalLabel = this.add
+      .text(W / 2, H * 0.51, `累计 ${this.stars} / ${LEVELS.length * 3} 星`, {
         fontFamily: 'system-ui, sans-serif',
         fontSize: '22px',
         color: '#f0c674',
       })
       .setOrigin(0.5);
 
-    // ---- 按钮
-    const hasNext = this.nextLevel >= 0;
-    const label = hasNext ? '下一关' : this.win ? '再玩一次' : '重试本关';
-    const target = hasNext ? this.nextLevel : this.level;
-
-    const btn = this.add
-      .rectangle(W / 2, H * 0.66, 420, 110, hasNext ? COLORS.good : COLORS.accent, 1)
-      .setStrokeStyle(3, 0xffffff, 0.25)
-      .setInteractive({ useHandCursor: true });
-    const btnText = this.add
-      .text(W / 2, H * 0.66, label, {
+    const loading = this.add
+      .text(W / 2, H * 0.58, '保存成绩…', {
         fontFamily: 'system-ui, sans-serif',
-        fontSize: '38px',
-        color: '#0b1020',
-        fontStyle: 'bold',
-      })
-      .setOrigin(0.5)
-      .setInteractive({ useHandCursor: true });
-
-    const go = () => this.go(target);
-    btn.on('pointerdown', go);
-    btnText.on('pointerdown', go);
-    // 桌面端键盘 + 测试脚本入口
-    this.input.keyboard?.once('keydown-SPACE', go);
-    this.input.keyboard?.once('keydown-ENTER', go);
-
-    // ---- 回菜单（玩家想换关或退出时不用等广告）
-    const menu = this.add
-      .text(W / 2, H * 0.78, '返回菜单', {
-        fontFamily: 'system-ui, sans-serif',
-        fontSize: '22px',
+        fontSize: '18px',
         color: COLORS.textDim,
       })
-      .setOrigin(0.5)
-      .setInteractive({ useHandCursor: true });
-    menu.on('pointerdown', () => this.scene.start('Menu'));
+      .setOrigin(0.5);
+
+    readSaveWhenReady(this, (save) => {
+      const levels = { ...((save.levels as Record<string, LevelRecord>) ?? {}) };
+      const key = String(this.levelId);
+      const prev = levels[key] ?? { stars: 0, best: 0 };
+      const merged: LevelRecord = {
+        stars: Math.max(prev.stars, this.stars),
+        best: Math.max(prev.best, this.score),
+      };
+      levels[key] = merged;
+
+      const totalStars = Object.values(levels).reduce((a, r) => a + (r.stars ?? 0), 0);
+      const nextSave = {
+        ...save,
+        version: 1,
+        best: Math.max(Number(save.best ?? 0), this.score),
+        levels,
+        totalStars,
+        plays: Number(save.plays ?? 0) + 1,
+      };
+
+      this.registry.set('save', nextSave);
+      starLabel.setText('★'.repeat(merged.stars) + '☆'.repeat(3 - merged.stars));
+      starLabel.setColor(merged.stars > 0 ? '#f0c674' : '#3a4250');
+      bestLabel.setText(`本关最佳 ${merged.best}`);
+      totalLabel.setText(`累计 ${totalStars} / ${LEVELS.length * 3} 星`);
+      loading.destroy();
+      this.ready = true;
+
+      // create() 已经返回，写档作为后台任务执行；即使马上切场景也会继续。
+      void writeSave(this, nextSave);
+
+      // ---- 按钮
+      const hasNext = this.nextLevel >= 0;
+      const label = hasNext ? '下一关' : this.win ? '再玩一次' : '重试本关';
+      const target = hasNext ? this.nextLevel : this.level;
+
+      const btn = this.add
+        .rectangle(W / 2, H * 0.66, 420, 110, hasNext ? COLORS.good : COLORS.accent, 1)
+        .setStrokeStyle(3, 0xffffff, 0.25)
+        .setInteractive({ useHandCursor: true });
+      const btnText = this.add
+        .text(W / 2, H * 0.66, label, {
+          fontFamily: 'system-ui, sans-serif',
+          fontSize: '38px',
+          color: '#0b1020',
+          fontStyle: 'bold',
+        })
+        .setOrigin(0.5)
+        .setInteractive({ useHandCursor: true });
+
+      const go = () => this.go(target);
+      btn.on('pointerdown', go);
+      btnText.on('pointerdown', go);
+      // 桌面端键盘 + 测试脚本入口
+      this.input.keyboard?.once('keydown-SPACE', go);
+      this.input.keyboard?.once('keydown-ENTER', go);
+
+      // ---- 回菜单（玩家想换关或退出时不用等广告）
+      const menu = this.add
+        .text(W / 2, H * 0.78, '返回菜单', {
+          fontFamily: 'system-ui, sans-serif',
+          fontSize: '22px',
+          color: COLORS.textDim,
+        })
+        .setOrigin(0.5)
+        .setInteractive({ useHandCursor: true });
+      menu.on('pointerdown', () => {
+        if (this.ready) this.scene.start('Menu');
+      });
+    });
   }
 
   /** 每两局插一次插屏广告；广告失败或拦截器场景下直接继续。 */
   private async go(level: number) {
-    if (this.busy) return;
+    if (!this.ready || this.busy) return;
     this.busy = true;
 
     const save = (this.registry.get('save') as Record<string, unknown>) ?? {};
